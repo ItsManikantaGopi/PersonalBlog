@@ -20,7 +20,7 @@ class GitHubService {
       return {
         'login': _username,
         'name': 'Manikanta Gopi',
-        'bio': 'Flutter Developer',
+        'bio': 'Software Engineer',
         'public_repos': 20,
         'followers': 50,
         'following': 30,

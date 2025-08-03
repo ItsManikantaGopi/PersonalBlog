@@ -32,7 +32,7 @@ class _HeroSectionState extends State<HeroSection>
   @override
   void initState() {
     super.initState();
-    
+
     // Background animation for subtle movement
     _backgroundController = AnimationController(
       duration: const Duration(seconds: 20),
@@ -42,19 +42,15 @@ class _HeroSectionState extends State<HeroSection>
       begin: 0.0,
       end: 1.0,
     ).animate(_backgroundController);
-    
+
     // Floating animation for profile image
     _floatingController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
     );
-    _floatingAnimation = Tween<double>(
-      begin: -10.0,
-      end: 10.0,
-    ).animate(CurvedAnimation(
-      parent: _floatingController,
-      curve: Curves.easeInOut,
-    ));
+    _floatingAnimation = Tween<double>(begin: -10.0, end: 10.0).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
+    );
 
     _backgroundController.repeat();
     _floatingController.repeat(reverse: true);
@@ -80,7 +76,7 @@ class _HeroSectionState extends State<HeroSection>
           children: [
             // Animated background elements
             _buildAnimatedBackground(),
-            
+
             // Main content
             ResponsiveLayout(
               mobile: _buildMobileLayout(context),
@@ -190,9 +186,9 @@ class _HeroSectionState extends State<HeroSection>
               ),
             ),
           ),
-          
+
           const SizedBox(width: AppConstants.spaceXXL),
-          
+
           // Right side - Profile image
           Expanded(
             flex: 2,
@@ -201,9 +197,7 @@ class _HeroSectionState extends State<HeroSection>
               child: SlideAnimation(
                 horizontalOffset: 50.0,
                 child: FadeInAnimation(
-                  child: Center(
-                    child: _buildProfileImage(context, size: 200),
-                  ),
+                  child: Center(child: _buildProfileImage(context, size: 200)),
                 ),
               ),
             ),
@@ -225,10 +219,7 @@ class _HeroSectionState extends State<HeroSection>
             height: size,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppConstants.accentColor,
-                width: 3,
-              ),
+              border: Border.all(color: AppConstants.accentColor, width: 3),
               boxShadow: [
                 BoxShadow(
                   color: AppConstants.accentColor.withValues(alpha: 0.3),
@@ -263,17 +254,10 @@ class _HeroSectionState extends State<HeroSection>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppConstants.accentColor,
-            Color(0xFF0097A7),
-          ],
+          colors: [AppConstants.accentColor, Color(0xFF0097A7)],
         ),
       ),
-      child: Icon(
-        Icons.person,
-        size: size * 0.6,
-        color: Colors.white,
-      ),
+      child: Icon(Icons.person, size: size * 0.6, color: Colors.white),
     );
   }
 
@@ -304,7 +288,7 @@ class _HeroSectionState extends State<HeroSection>
   /// Build role text
   Widget _buildRole(BuildContext context) {
     return Text(
-      'FLUTTER DEVELOPER',
+      'Software Engineer',
       style: GoogleFonts.inter(
         fontSize: context.responsiveValue(
           mobile: AppConstants.fontSizeBodyLarge,
@@ -355,10 +339,7 @@ class _HeroSectionState extends State<HeroSection>
     final buttons = [
       ElevatedButton.icon(
         onPressed: widget.onViewWork,
-        icon: const Icon(
-          Icons.work_outline,
-          size: AppConstants.iconSizeSM,
-        ),
+        icon: const Icon(Icons.work_outline, size: AppConstants.iconSizeSM),
         label: const Text('View My Work'),
         style: ElevatedButton.styleFrom(
           minimumSize: Size(
@@ -429,18 +410,22 @@ class BackgroundPainter extends CustomPainter {
     // Draw animated geometric shapes
     final centerX = size.width / 2;
     final centerY = size.height / 2;
-    
+
     // Rotating circles
     for (int i = 0; i < 3; i++) {
       final radius = 100.0 + (i * 50);
       final angle = (animationValue * 2 * 3.14159) + (i * 2);
-      final x = centerX + (radius * 0.5 * (1 + i * 0.3)) * 
-                 (1 + 0.2 * (animationValue - 0.5).abs()) * 
-                 (i.isEven ? 1 : -1);
-      final y = centerY + (radius * 0.3 * (1 + i * 0.2)) * 
-                 (1 + 0.1 * (animationValue - 0.5).abs()) * 
-                 (i.isOdd ? 1 : -1);
-      
+      final x =
+          centerX +
+          (radius * 0.5 * (1 + i * 0.3)) *
+              (1 + 0.2 * (animationValue - 0.5).abs()) *
+              (i.isEven ? 1 : -1);
+      final y =
+          centerY +
+          (radius * 0.3 * (1 + i * 0.2)) *
+              (1 + 0.1 * (animationValue - 0.5).abs()) *
+              (i.isOdd ? 1 : -1);
+
       canvas.drawCircle(
         Offset(x, y),
         20.0 + (10 * (animationValue - 0.5).abs()),

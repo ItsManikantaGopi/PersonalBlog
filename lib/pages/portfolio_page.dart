@@ -132,7 +132,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
                     onViewWork: () => _scrollToSection('projects'),
                     onDownloadResume: _downloadResume,
                     profileImageUrl:
-                        'https://avatars.githubusercontent.com/u/ItsManikantaGopi', // GitHub avatar
+                        'https://avatars.githubusercontent.com/u/58616351?v=4', // GitHub avatar
                   ),
                 ),
               ),
@@ -287,7 +287,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
         ),
         const SizedBox(height: AppConstants.spaceSM),
         Text(
-          'Flutter Developer',
+          'Software Engineer',
           style: TextStyle(
             fontSize: AppConstants.fontSizeBody,
             color: AppConstants.accentColor,
@@ -329,7 +329,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
               ),
               const SizedBox(height: AppConstants.spaceSM),
               Text(
-                'Flutter Developer',
+                'Software Engineer',
                 style: TextStyle(
                   fontSize: AppConstants.fontSizeBody,
                   color: AppConstants.accentColor,
