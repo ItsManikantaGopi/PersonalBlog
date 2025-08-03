@@ -3,14 +3,14 @@ import 'titles.dart';
 
 class BlogScreen extends StatelessWidget {
   final Titles titles;
-  const BlogScreen({Key? key, required this.titles}) : super(key: key);
+  const BlogScreen({super.key, required this.titles});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(titles.blogTitle),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.white,
       ),
       body: Center(
         child: Padding(

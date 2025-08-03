@@ -6,7 +6,7 @@ import 'other_options.dart';
 import 'titles.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -14,12 +14,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Titles titles = const Titles();
+  double get ProfileImageRadius => 80;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text(''),
+        title: Text(
+          titles.profileTitle,
+          style: const TextStyle(color: Colors.white),
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
       body: Container(
@@ -29,34 +33,42 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 20),
               // Show profile avatar and info
-              CircleAvatar(
-                radius: 50,
-                backgroundImage: NetworkImage(
-                  'https://avatars.githubusercontent.com/u/58616351?v=4',
-                ),
-                backgroundColor: Colors.grey[200],
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    margin: EdgeInsets.all(20),
+                    height:
+                        MediaQuery.of(context).size.width *
+                        (ProfileImageRadius / 1000),
+                    width:
+                        MediaQuery.of(context).size.width *
+                        (ProfileImageRadius / 1000),
+                    alignment: Alignment.centerRight,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage(
+                          'https://avatars.githubusercontent.com/u/58616351?v=4',
+                        ),
+                        fit: BoxFit.cover,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        ProfileImageRadius.toDouble(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Manikanta',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Flutter Developer | Blogger',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-              const SizedBox(height: 32),
+
               // Navigation buttons
               ElevatedButton.icon(
                 icon: const Icon(Icons.person),
-                label: Text(titles.profileTitle),
+                label: Text(
+                  titles.profileTitle,
+                  style: TextStyle(color: Colors.white),
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -67,7 +79,7 @@ class _HomePageState extends State<HomePage> {
                 },
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 48),
-                  backgroundColor: Colors.blueGrey,
+                  backgroundColor: Colors.transparent,
                 ),
               ),
               const SizedBox(height: 12),

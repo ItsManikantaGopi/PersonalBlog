@@ -3,7 +3,7 @@ import 'titles.dart';
 
 class OtherScreen extends StatelessWidget {
   final Titles titles;
-  const OtherScreen({Key? key, required this.titles}) : super(key: key);
+  const OtherScreen({super.key, required this.titles});
 
   @override
   Widget build(BuildContext context) {

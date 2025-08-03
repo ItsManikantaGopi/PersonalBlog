@@ -3,7 +3,7 @@ import 'titles.dart';
 
 class ProfileScreen extends StatelessWidget {
   final Titles titles;
-  const ProfileScreen({Key? key, required this.titles}) : super(key: key);
+  const ProfileScreen({super.key, required this.titles});
 
   @override
   Widget build(BuildContext context) {

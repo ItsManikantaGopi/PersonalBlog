@@ -5,7 +5,7 @@ class Titles {
   final String otherTitle;
 
   const Titles({
-    this.profileTitle = 'Profile',
+    this.profileTitle = 'Manikanta Gopi | Software Engineer',
     this.blogTitle = 'Blog',
     this.workExperienceTitle = 'Work Experience',
     this.otherTitle = 'Other',
