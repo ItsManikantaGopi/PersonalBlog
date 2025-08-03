@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'blog_options.dart';
-import 'work_experience.dart';
-import '../features/art/art.dart';
-import 'titles.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,181 +8,328 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final Titles titles = const Titles(); // Keep this line for context
-  double get ProfileImageRadius => 80;
-  @override
+  bool isDark = true;
+
+  void _toggleTheme() {
+    setState(() {
+      isDark = !isDark;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final accentColor = const Color(0xFF00BCD4);
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24.0,
-              vertical: 48.0,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isMobile = constraints.maxWidth < 800;
+            return Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 32.0,
+              ),
+              child: isMobile
+                  ? SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          _ThemeSwitchButton(
+                            isDark: isDark,
+                            onToggle: _toggleTheme,
+                            accentColor: accentColor,
+                          ),
+                          const SizedBox(height: 24),
+                          _ProfileSection(
+                            isDark: isDark,
+                            accentColor: accentColor,
+                          ),
+                          const SizedBox(height: 32),
+                          _DetailsSection(
+                            isDark: isDark,
+                            accentColor: accentColor,
+                          ),
+                        ],
+                      ),
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _ThemeSwitchButton(
+                                isDark: isDark,
+                                onToggle: _toggleTheme,
+                                accentColor: accentColor,
+                              ),
+                              const SizedBox(height: 32),
+                              _DetailsSection(
+                                isDark: isDark,
+                                accentColor: accentColor,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 48),
+                        Expanded(
+                          flex: 1,
+                          child: _ProfileSection(
+                            isDark: isDark,
+                            accentColor: accentColor,
+                          ),
+                        ),
+                      ],
+                    ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeSwitchButton extends StatelessWidget {
+  final bool isDark;
+  final VoidCallback onToggle;
+  final Color accentColor;
+  const _ThemeSwitchButton({
+    required this.isDark,
+    required this.onToggle,
+    required this.accentColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.topRight,
+      child: IconButton(
+        icon: Icon(
+          isDark ? Icons.dark_mode : Icons.light_mode,
+          color: accentColor,
+          size: 32,
+        ),
+        tooltip: isDark ? 'Switch to Light Theme' : 'Switch to Dark Theme',
+        onPressed: onToggle,
+      ),
+    );
+  }
+}
+
+class _ProfileSection extends StatelessWidget {
+  final bool isDark;
+  final Color accentColor;
+  const _ProfileSection({required this.isDark, required this.accentColor});
+
+  @override
+  Widget build(BuildContext context) {
+    final textColor = isDark ? Colors.white : Colors.black;
+    final subTextColor = isDark ? Colors.white70 : Colors.black87;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        CircleAvatar(
+          radius: 60,
+          backgroundImage: NetworkImage(
+            'https://avatars.githubusercontent.com/u/58616351?v=4',
+          ),
+          backgroundColor: isDark ? Colors.grey[900] : Colors.grey[300],
+        ),
+        const SizedBox(height: 24),
+        Text(
+          "Hi, I'm Manikanta",
+          style: TextStyle(
+            color: textColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 32,
+            fontFamily: 'Inter',
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Software Engineer | DevOps | Flutter Developer',
+          style: TextStyle(
+            color: accentColor,
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
+            fontFamily: 'Inter',
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          'I build scalable systems, mobile/web apps, and automate cloud infrastructure.',
+          style: TextStyle(
+            color: subTextColor,
+            fontSize: 18,
+            fontFamily: 'Inter',
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _DetailsSection extends StatelessWidget {
+  final bool isDark;
+  final Color accentColor;
+  const _DetailsSection({required this.isDark, required this.accentColor});
+
+  @override
+  Widget build(BuildContext context) {
+    final subTextColor = isDark ? Colors.white70 : Colors.black87;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ClickableDetailsTile(
+          icon: Icons.work,
+          title: 'Experience',
+          accentColor: accentColor,
+          children: [
+            Text(
+              'Software Engineer II at Circleapp Online Services',
+              style: TextStyle(color: subTextColor, fontSize: 16),
             ),
+            Text(
+              'Building scalable systems, real-time messaging, multi-cloud solutions',
+              style: TextStyle(color: subTextColor, fontSize: 16),
+            ),
+            Text(
+              'CI/CD, Kubernetes, Terraform, GitOps',
+              style: TextStyle(color: subTextColor, fontSize: 16),
+            ),
+          ],
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: Text('Experience'),
+                content: Text('More details coming soon.'),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+        _ClickableDetailsTile(
+          icon: Icons.star,
+          title: 'Skills',
+          accentColor: accentColor,
+          children: [
+            Text(
+              'Python, Ruby, NestJS, AWS, GCP, Azure, Docker, MongoDB, MySQL, Redis',
+              style: TextStyle(color: subTextColor, fontSize: 16),
+            ),
+            Text(
+              'Grafana, Prometheus, REST APIs, WebSockets',
+              style: TextStyle(color: subTextColor, fontSize: 16),
+            ),
+          ],
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: Text('Skills'),
+                content: Text('More details coming soon.'),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+        _ClickableDetailsTile(
+          icon: Icons.school,
+          title: 'Education',
+          accentColor: accentColor,
+          children: [
+            Text(
+              'B.Tech in Computer Science, RGUKT (2022), GPA: 9.3/10',
+              style: TextStyle(color: subTextColor, fontSize: 16),
+            ),
+            Text(
+              'Pre-University Course (MPC), RGUKT (2018), GPA: 8.4/10',
+              style: TextStyle(color: subTextColor, fontSize: 16),
+            ),
+          ],
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: Text('Education'),
+                content: Text('More details coming soon.'),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 24),
+        _ClickableDetailsTile(
+          icon: Icons.palette,
+          title: 'Art',
+          accentColor: accentColor,
+          children: [
+            Text(
+              'Digital art and creative coding projects',
+              style: TextStyle(color: subTextColor, fontSize: 16),
+            ),
+          ],
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: Text('Art'),
+                content: Text('More details coming soon.'),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _ClickableDetailsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final Color accentColor;
+  final List<Widget> children;
+  final VoidCallback onTap;
+  const _ClickableDetailsTile({
+    required this.icon,
+    required this.title,
+    required this.accentColor,
+    required this.children,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: accentColor, size: 28),
+          const SizedBox(width: 16),
+          Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 60,
-                  backgroundImage: NetworkImage(
-                    'https://avatars.githubusercontent.com/u/58616351?v=4',
-                  ),
-                  backgroundColor: Colors.grey[900],
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  "👋 Hey there! I'm Gopi Manikanta",
+                Text(
+                  title,
                   style: TextStyle(
-                    fontSize: 32,
+                    color: accentColor,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 8,
-                    horizontal: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blueGrey.shade800,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    'Software Engineer | DevOps Expert | Cloud Architecture Specialist | Real-time Systems Developer | Full-Stack Engineer',
-                    style: TextStyle(fontSize: 18, color: Colors.white70),
-                    textAlign: TextAlign.center,
+                    fontSize: 20,
+                    fontFamily: 'Inter',
                   ),
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.linked_camera,
-                        color: Colors.blueAccent,
-                      ),
-                      onPressed: () {},
-                      tooltip: 'LinkedIn',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.email, color: Colors.redAccent),
-                      onPressed: () {},
-                      tooltip: 'Gmail',
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.purpleAccent,
-                      ),
-                      onPressed: () {},
-                      tooltip: 'Instagram',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.facebook, color: Colors.blue),
-                      onPressed: () {},
-                      tooltip: 'Facebook',
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.code, color: Colors.white),
-                      onPressed: () {},
-                      tooltip: 'GitHub',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.blueGrey.shade900,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        '🚀 About Me',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Building scalable systems that handle high-volume traffic while optimizing for performance and reliability',
-                        style: TextStyle(fontSize: 16, color: Colors.white70),
-                      ),
-                      SizedBox(height: 12),
-                      Text(
-                        'Software Engineer II at Circleapp Online Services with 3+ years of hands-on experience',
-                        style: TextStyle(fontSize: 16, color: Colors.white70),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Performance Optimization: Reduced API response times by 200ms through CDN integration',
-                        style: TextStyle(fontSize: 16, color: Colors.white70),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Scale: Developed high-throughput real-time messaging systems',
-                        style: TextStyle(fontSize: 16, color: Colors.white70),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Multi-Cloud Expert: Proficient across AWS, GCP, and Azure platforms',
-                        style: TextStyle(fontSize: 16, color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.blueGrey.shade800,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        '🎯 Current Focus',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        '- Building robust CI/CD pipelines with GitOps, Kubernetes & Terraform',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      Text(
-                        '- Architecting microservices for high-scale social media platforms',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      Text(
-                        '- Flutter mobile development experience',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      Text(
-                        '- Implementing disaster recovery and high availability solutions',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
+                const SizedBox(height: 8),
+                ...children,
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

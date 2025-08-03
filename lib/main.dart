@@ -6,7 +6,6 @@ import 'features/experience/experience_page.dart';
 import 'features/skills/skills_page.dart';
 import 'features/projects/projects_page.dart';
 import 'features/education/education_page.dart';
-import 'features/github/github_analytics_page.dart';
 import 'features/art/art.dart';
 import 'components/footer_widget.dart';
 
@@ -25,36 +24,34 @@ class _MyAppState extends State<MyApp> {
   bool isDark = true;
 
   ThemeData get darkTheme => ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0A0E1A),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.black,
-          primary: Colors.black,
-          background: const Color(0xFF0A0E1A),
-          brightness: Brightness.dark,
-        ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.white),
-          bodyMedium: TextStyle(color: Colors.white70),
-        ),
-        useMaterial3: true,
-      );
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: const Color(0xFF0A0E1A),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.black,
+      primary: Colors.black,
+      brightness: Brightness.dark,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: Colors.white),
+    ),
+    useMaterial3: true,
+  );
 
   ThemeData get lightTheme => ThemeData(
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: Colors.white,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.white,
-          primary: Colors.white,
-          background: Colors.white,
-          brightness: Brightness.light,
-        ),
-        textTheme: const TextTheme(
-          bodyLarge: TextStyle(color: Colors.black),
-          bodyMedium: TextStyle(color: Colors.black87),
-        ),
-        useMaterial3: true,
-      );
+    brightness: Brightness.light,
+    scaffoldBackgroundColor: Colors.white,
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: Colors.white,
+      primary: Colors.white,
+      brightness: Brightness.light,
+    ),
+    textTheme: const TextTheme(
+      bodyLarge: TextStyle(color: Colors.black),
+      bodyMedium: TextStyle(color: Colors.black),
+    ),
+    useMaterial3: true,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +89,6 @@ class _PortfolioAppState extends State<PortfolioApp> {
     SkillsPage(),
     ProjectsPage(),
     EducationPage(),
-    GithubAnalyticsPage(),
     Art(titles: Titles()),
   ];
 
@@ -103,28 +99,17 @@ class _PortfolioAppState extends State<PortfolioApp> {
     'Skills',
     'Projects',
     'Education',
-    'GitHub Analytics',
     'Art',
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
       body: Column(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.background,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
+
             child: Row(
               children: [
                 Text(
@@ -132,7 +117,7 @@ class _PortfolioAppState extends State<PortfolioApp> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onBackground,
+                    color: Theme.of(context).colorScheme.inversePrimary,
                   ),
                 ),
                 const Spacer(),
