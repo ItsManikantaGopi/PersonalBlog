@@ -1,26 +1,39 @@
 import 'package:flutter/material.dart';
-import 'components/home_page.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'utils/theme.dart';
+import 'pages/portfolio_page.dart';
+import 'core/di/injection.dart';
 
 void main() {
-  runApp(const MyApp());
+  // Remove the # from URLs on web
+  usePathUrlStrategy();
+
+  // Initialize dependency injection
+  configureDependencies();
+
+  runApp(const PortfolioApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class PortfolioApp extends StatelessWidget {
+  const PortfolioApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Manikanta Gopi',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.black,
-          primary: Colors.black,
-        ),
-        useMaterial3: true,
-      ),
-      home: const HomePage(),
+      title: 'Manikanta Gopi - Software Engineer',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.darkTheme,
+      home: const PortfolioPage(),
+
+      // SEO and web configuration
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(1.0), // Prevent text scaling issues
+          ),
+          child: child!,
+        );
+      },
     );
   }
 }

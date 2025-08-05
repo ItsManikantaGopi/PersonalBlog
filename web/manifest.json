@@ -1,6 +1,6 @@
 {
-    "name": "manikanta_blog_web",
-    "short_name": "manikanta_blog_web",
+    "name": "Manikanta",
+    "short_name": "Manikanta",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
@@ -10,25 +10,25 @@
     "prefer_related_applications": false,
     "icons": [
         {
-            "src": "icons/Icon-192.png",
+            "src": "favicon.jpeg",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/jpeg"
         },
         {
-            "src": "icons/Icon-512.png",
+            "src": "favicon.jpeg",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/jpeg"
         },
         {
-            "src": "icons/Icon-maskable-192.png",
+            "src": "favicon.jpeg",
             "sizes": "192x192",
-            "type": "image/png",
+            "type": "image/jpeg",
             "purpose": "maskable"
         },
         {
-            "src": "icons/Icon-maskable-512.png",
+            "src": "favicon.jpeg",
             "sizes": "512x512",
-            "type": "image/png",
+            "type": "image/jpeg",
             "purpose": "maskable"
         }
     ]
