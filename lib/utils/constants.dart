@@ -16,7 +16,7 @@ class AppConstants {
   static const Color secondaryBackground = Color(0xFF121212);
 
   /// Accent color for CTAs, highlights, and interactive elements
-  static const Color accentColor = Color(0xFF00BCD4);
+  static const Color accentColor = Color.fromARGB(255, 255, 255, 255);
 
   /// Primary text color
   static const Color primaryText = Color(0xFFFFFFFF);

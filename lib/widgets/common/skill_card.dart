@@ -103,7 +103,7 @@ class _SkillCardState extends State<SkillCard>
                 children: [
                   _buildSkillHeader(context),
                   const SizedBox(height: AppConstants.spaceSM),
-                  _buildProficiencyIndicator(context),
+                  // _buildProficiencyIndicator(context),
                   if (widget.showDescription) ...[
                     const SizedBox(height: AppConstants.spaceSM),
                     _buildDescription(context),
@@ -226,33 +226,6 @@ class _SkillCardState extends State<SkillCard>
               ),
             ),
           ),
-        ),
-        const SizedBox(height: AppConstants.spaceXS),
-
-        // Star rating
-        Row(
-          children: [
-            ...List.generate(5, (index) {
-              return Icon(
-                index < widget.skill.level.stars
-                    ? Icons.star
-                    : Icons.star_border,
-                size: 12,
-                color: index < widget.skill.level.stars
-                    ? _getSkillColor()
-                    : AppConstants.mutedText,
-              );
-            }),
-            const SizedBox(width: AppConstants.spaceXS),
-            Text(
-              '${widget.skill.level.percentage}%',
-              style: GoogleFonts.inter(
-                fontSize: AppConstants.fontSizeCaption,
-                fontWeight: FontWeight.w500,
-                color: AppConstants.secondaryText,
-              ),
-            ),
-          ],
         ),
       ],
     );

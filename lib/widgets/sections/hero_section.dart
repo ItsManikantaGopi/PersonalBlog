@@ -266,7 +266,7 @@ class _HeroSectionState extends State<HeroSection>
     return AnimatedTextKit(
       animatedTexts: [
         TypewriterAnimatedText(
-          "Hi, I'm Manikanta!",
+          "Hi, I'm Manikanta Gopi!",
           textStyle: GoogleFonts.inter(
             fontSize: context.responsiveValue(
               mobile: AppConstants.fontSizeH2,
@@ -318,7 +318,14 @@ class _HeroSectionState extends State<HeroSection>
         ),
       ),
       child: Text(
-        'I build scalable mobile and web applications that solve real-world problems with clean, efficient code and exceptional user experiences.',
+        """DevOps | Backend Systems | Event Driven Systems |
+          CI/CD | Cloud(AWS,GCP,AZURE) | Kubernetes | Terraform | Docker |
+          GitOps | Prometheus | Grafana | Loki | Promtail | Thanos |
+          Redis | MySql | MongoDb | NestJS | Python | Ruby on Rails |
+          """
+            .replaceAll("\n", "")
+            .replaceAll(" ", "")
+            .replaceAll("|", "  |  "),
         style: GoogleFonts.inter(
           fontSize: context.responsiveValue(
             mobile: AppConstants.fontSizeBody,
@@ -414,7 +421,6 @@ class BackgroundPainter extends CustomPainter {
     // Rotating circles
     for (int i = 0; i < 3; i++) {
       final radius = 100.0 + (i * 50);
-      final angle = (animationValue * 2 * 3.14159) + (i * 2);
       final x =
           centerX +
           (radius * 0.5 * (1 + i * 0.3)) *

@@ -190,7 +190,7 @@ class _ProfessionalNavBarState extends State<ProfessionalNavBar>
           vertical: AppConstants.spaceSM,
         ),
         child: Text(
-          'MANIKANTA',
+          '',
           style: GoogleFonts.inter(
             fontSize: context.responsiveValue(
               mobile: 18.0,

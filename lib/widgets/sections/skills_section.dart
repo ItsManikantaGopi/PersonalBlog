@@ -11,10 +11,7 @@ import '../common/skill_card.dart';
 class SkillsSection extends StatefulWidget {
   final SkillCategory? selectedCategory;
 
-  const SkillsSection({
-    super.key,
-    this.selectedCategory,
-  });
+  const SkillsSection({super.key, this.selectedCategory});
 
   @override
   State<SkillsSection> createState() => _SkillsSectionState();
@@ -23,7 +20,7 @@ class SkillsSection extends StatefulWidget {
 class _SkillsSectionState extends State<SkillsSection>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  final Map<SkillCategory, List<Skill>> _skillsByCategory = 
+  final Map<SkillCategory, List<Skill>> _skillsByCategory =
       PortfolioData.getSkillsGroupedByCategory();
   late List<SkillCategory> _categories;
 
@@ -31,10 +28,7 @@ class _SkillsSectionState extends State<SkillsSection>
   void initState() {
     super.initState();
     _categories = _skillsByCategory.keys.toList();
-    _tabController = TabController(
-      length: _categories.length,
-      vsync: this,
-    );
+    _tabController = TabController(length: _categories.length, vsync: this);
 
     // Set initial tab if category is specified
     if (widget.selectedCategory != null) {
@@ -58,8 +52,8 @@ class _SkillsSectionState extends State<SkillsSection>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionHeader(context),
-          const SizedBox(height: AppConstants.spaceXL),
-          _buildSkillsStats(context),
+          // const SizedBox(height: AppConstants.spaceXL),
+          // _buildSkillsStats(context),
           const SizedBox(height: AppConstants.spaceXL),
           _buildCategoryTabs(context),
           const SizedBox(height: AppConstants.spaceLG),
@@ -116,109 +110,146 @@ class _SkillsSectionState extends State<SkillsSection>
   }
 
   /// Build skills statistics
-  Widget _buildSkillsStats(BuildContext context) {
-    final stats = PortfolioData.getTechnologyStats();
-    
-    return ResponsiveLayout(
-      mobile: _buildMobileStats(context, stats),
-      tablet: _buildTabletStats(context, stats),
-      desktop: _buildDesktopStats(context, stats),
-    );
-  }
+  // Widget _buildSkillsStats(BuildContext context) {
+  //   final stats = PortfolioData.getTechnologyStats();
 
-  Widget _buildMobileStats(BuildContext context, Map<String, dynamic> stats) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _buildStatCard(context, 'Total Skills', stats['totalSkills'])),
-            const SizedBox(width: AppConstants.spaceMD),
-            Expanded(child: _buildStatCard(context, 'Expert Level', stats['expertSkills'])),
-          ],
-        ),
-        const SizedBox(height: AppConstants.spaceMD),
-        Row(
-          children: [
-            Expanded(child: _buildStatCard(context, 'Advanced', stats['advancedSkills'])),
-            const SizedBox(width: AppConstants.spaceMD),
-            Expanded(child: _buildStatCard(context, 'Featured', stats['featuredSkills'])),
-          ],
-        ),
-      ],
-    );
-  }
+  //   return ResponsiveLayout(
+  //     mobile: _buildMobileStats(context, stats),
+  //     tablet: _buildTabletStats(context, stats),
+  //     desktop: _buildDesktopStats(context, stats),
+  //   );
+  // }
 
-  Widget _buildTabletStats(BuildContext context, Map<String, dynamic> stats) {
-    return Row(
-      children: [
-        Expanded(child: _buildStatCard(context, 'Total Skills', stats['totalSkills'])),
-        const SizedBox(width: AppConstants.spaceMD),
-        Expanded(child: _buildStatCard(context, 'Expert Level', stats['expertSkills'])),
-        const SizedBox(width: AppConstants.spaceMD),
-        Expanded(child: _buildStatCard(context, 'Advanced', stats['advancedSkills'])),
-        const SizedBox(width: AppConstants.spaceMD),
-        Expanded(child: _buildStatCard(context, 'Featured', stats['featuredSkills'])),
-      ],
-    );
-  }
+  // Widget _buildMobileStats(BuildContext context, Map<String, dynamic> stats) {
+  //   return Column(
+  //     children: [
+  //       Row(
+  //         children: [
+  //           Expanded(
+  //             child: _buildStatCard(
+  //               context,
+  //               'Total Skills',
+  //               stats['totalSkills'],
+  //             ),
+  //           ),
+  //           const SizedBox(width: AppConstants.spaceMD),
+  //           Expanded(
+  //             child: _buildStatCard(
+  //               context,
+  //               'Expert Level',
+  //               stats['expertSkills'],
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //       const SizedBox(height: AppConstants.spaceMD),
+  //       Row(
+  //         children: [
+  //           Expanded(
+  //             child: _buildStatCard(
+  //               context,
+  //               'Advanced',
+  //               stats['advancedSkills'],
+  //             ),
+  //           ),
+  //           const SizedBox(width: AppConstants.spaceMD),
+  //           Expanded(
+  //             child: _buildStatCard(
+  //               context,
+  //               'Featured',
+  //               stats['featuredSkills'],
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildDesktopStats(BuildContext context, Map<String, dynamic> stats) {
-    return Row(
-      children: [
-        Expanded(child: _buildStatCard(context, 'Total Skills', stats['totalSkills'])),
-        const SizedBox(width: AppConstants.spaceLG),
-        Expanded(child: _buildStatCard(context, 'Expert Level', stats['expertSkills'])),
-        const SizedBox(width: AppConstants.spaceLG),
-        Expanded(child: _buildStatCard(context, 'Advanced', stats['advancedSkills'])),
-        const SizedBox(width: AppConstants.spaceLG),
-        Expanded(child: _buildStatCard(context, 'Featured', stats['featuredSkills'])),
-      ],
-    );
-  }
+  // Widget _buildTabletStats(BuildContext context, Map<String, dynamic> stats) {
+  //   return Row(
+  //     children: [
+  //       Expanded(
+  //         child: _buildStatCard(context, 'Total Skills', stats['totalSkills']),
+  //       ),
+  //       const SizedBox(width: AppConstants.spaceMD),
+  //       Expanded(
+  //         child: _buildStatCard(context, 'Expert Level', stats['expertSkills']),
+  //       ),
+  //       const SizedBox(width: AppConstants.spaceMD),
+  //       Expanded(
+  //         child: _buildStatCard(context, 'Advanced', stats['advancedSkills']),
+  //       ),
+  //       const SizedBox(width: AppConstants.spaceMD),
+  //       Expanded(
+  //         child: _buildStatCard(context, 'Featured', stats['featuredSkills']),
+  //       ),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildStatCard(BuildContext context, String label, int value) {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.spaceMD),
-      decoration: BoxDecoration(
-        color: AppConstants.cardBackground,
-        borderRadius: BorderRadius.circular(AppConstants.radiusMD),
-        border: Border.all(
-          color: AppConstants.borderColor,
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value.toString(),
-            style: GoogleFonts.inter(
-              fontSize: context.responsiveValue(
-                mobile: AppConstants.fontSizeH3,
-                tablet: AppConstants.fontSizeH2,
-                desktop: AppConstants.fontSizeH2,
-              ),
-              fontWeight: FontWeight.w700,
-              color: AppConstants.accentColor,
-            ),
-          ),
-          const SizedBox(height: AppConstants.spaceXS),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: context.responsiveValue(
-                mobile: AppConstants.fontSizeBodySmall,
-                tablet: AppConstants.fontSizeBody,
-                desktop: AppConstants.fontSizeBody,
-              ),
-              fontWeight: FontWeight.w500,
-              color: AppConstants.secondaryText,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget _buildDesktopStats(BuildContext context, Map<String, dynamic> stats) {
+  //   return Row(
+  //     children: [
+  //       Expanded(
+  //         child: _buildStatCard(context, 'Total Skills', stats['totalSkills']),
+  //       ),
+  //       const SizedBox(width: AppConstants.spaceLG),
+  //       Expanded(
+  //         child: _buildStatCard(context, 'Expert Level', stats['expertSkills']),
+  //       ),
+  //       const SizedBox(width: AppConstants.spaceLG),
+  //       Expanded(
+  //         child: _buildStatCard(context, 'Advanced', stats['advancedSkills']),
+  //       ),
+  //       const SizedBox(width: AppConstants.spaceLG),
+  //       Expanded(
+  //         child: _buildStatCard(context, 'Featured', stats['featuredSkills']),
+  //       ),
+  //     ],
+  //   );
+  // }
+
+  // Widget _buildStatCard(BuildContext context, String label, int value) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(AppConstants.spaceMD),
+  //     decoration: BoxDecoration(
+  //       color: AppConstants.cardBackground,
+  //       borderRadius: BorderRadius.circular(AppConstants.radiusMD),
+  //       border: Border.all(color: AppConstants.borderColor, width: 1),
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         Text(
+  //           value.toString(),
+  //           style: GoogleFonts.inter(
+  //             fontSize: context.responsiveValue(
+  //               mobile: AppConstants.fontSizeH3,
+  //               tablet: AppConstants.fontSizeH2,
+  //               desktop: AppConstants.fontSizeH2,
+  //             ),
+  //             fontWeight: FontWeight.w700,
+  //             color: AppConstants.accentColor,
+  //           ),
+  //         ),
+  //         const SizedBox(height: AppConstants.spaceXS),
+  //         Text(
+  //           label,
+  //           style: GoogleFonts.inter(
+  //             fontSize: context.responsiveValue(
+  //               mobile: AppConstants.fontSizeBodySmall,
+  //               tablet: AppConstants.fontSizeBody,
+  //               desktop: AppConstants.fontSizeBody,
+  //             ),
+  //             fontWeight: FontWeight.w500,
+  //             color: AppConstants.secondaryText,
+  //           ),
+  //           textAlign: TextAlign.center,
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   /// Build category tabs
   Widget _buildCategoryTabs(BuildContext context) {
@@ -226,10 +257,7 @@ class _SkillsSectionState extends State<SkillsSection>
       decoration: BoxDecoration(
         color: AppConstants.cardBackground,
         borderRadius: BorderRadius.circular(AppConstants.radiusMD),
-        border: Border.all(
-          color: AppConstants.borderColor,
-          width: 1,
-        ),
+        border: Border.all(color: AppConstants.borderColor, width: 1),
       ),
       child: TabBar(
         controller: _tabController,
@@ -321,7 +349,7 @@ class _SkillsSectionState extends State<SkillsSection>
         children: skills.asMap().entries.map((entry) {
           final index = entry.key;
           final skill = entry.value;
-          
+
           return AnimationConfiguration.staggeredGrid(
             position: index,
             duration: const Duration(milliseconds: 400),
@@ -332,9 +360,7 @@ class _SkillsSectionState extends State<SkillsSection>
             ),
             child: SlideAnimation(
               verticalOffset: 30.0,
-              child: FadeInAnimation(
-                child: SkillCard(skill: skill),
-              ),
+              child: FadeInAnimation(child: SkillCard(skill: skill)),
             ),
           );
         }).toList(),
