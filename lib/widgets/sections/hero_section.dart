@@ -344,41 +344,41 @@ class _HeroSectionState extends State<HeroSection>
   /// Build CTA buttons
   Widget _buildCTAButtons(BuildContext context, {required bool isVertical}) {
     final buttons = [
-      ElevatedButton.icon(
-        onPressed: widget.onViewWork,
-        icon: const Icon(Icons.work_outline, size: AppConstants.iconSizeSM),
-        label: const Text('View My Work'),
-        style: ElevatedButton.styleFrom(
-          minimumSize: Size(
-            context.responsiveValue(
-              mobile: 200.0,
-              tablet: 180.0,
-              desktop: 200.0,
-            ),
-            AppConstants.buttonHeightLarge,
-          ),
-        ),
-      ),
-      OutlinedButton.icon(
-        onPressed: widget.onDownloadResume,
-        icon: const Icon(
-          Icons.download_outlined,
-          size: AppConstants.iconSizeSM,
-        ),
-        label: const Text('Download Resume'),
-        style: OutlinedButton.styleFrom(
-          minimumSize: Size(
-            context.responsiveValue(
-              mobile: 200.0,
-              tablet: 180.0,
-              desktop: 200.0,
-            ),
-            AppConstants.buttonHeightLarge,
-          ),
-        ),
-      ),
+      // ElevatedButton.icon(
+      //   onPressed: widget.onViewWork,
+      //   icon: const Icon(Icons.work_outline, size: AppConstants.iconSizeSM),
+      //   label: const Text('View My Work'),
+      //   style: ElevatedButton.styleFrom(
+      //     minimumSize: Size(
+      //       context.responsiveValue(
+      //         mobile: 200.0,
+      //         tablet: 180.0,
+      //         desktop: 200.0,
+      //       ),
+      //       AppConstants.buttonHeightLarge,
+      //     ),
+      //   ),
+      // ),
+      // OutlinedButton.icon(
+      //   onPressed: widget.onDownloadResume,
+      //   icon: const Icon(
+      //     Icons.download_outlined,
+      //     size: AppConstants.iconSizeSM,
+      //   ),
+      //   label: const Text('Download Resume'),
+      //   style: OutlinedButton.styleFrom(
+      //     minimumSize: Size(
+      //       context.responsiveValue(
+      //         mobile: 200.0,
+      //         tablet: 180.0,
+      //         desktop: 200.0,
+      //       ),
+      //       AppConstants.buttonHeightLarge,
+      //     ),
+      //   ),
+      // ),
     ];
-
+    return Container();
     if (isVertical) {
       return Column(
         children: [

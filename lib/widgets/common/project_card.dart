@@ -4,17 +4,14 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../models/project.dart';
 import '../../utils/constants.dart';
 import '../../utils/responsive.dart';
+import 'custom_icon.dart';
 
 /// Project card widget with hover effects and interactive elements
 class ProjectCard extends StatefulWidget {
   final Project project;
   final VoidCallback? onTap;
 
-  const ProjectCard({
-    super.key,
-    required this.project,
-    this.onTap,
-  });
+  const ProjectCard({super.key, required this.project, this.onTap});
 
   @override
   State<ProjectCard> createState() => _ProjectCardState();
@@ -35,21 +32,13 @@ class _ProjectCardState extends State<ProjectCard>
       vsync: this,
     );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.02,
-    ).animate(CurvedAnimation(
-      parent: _hoverController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.02).animate(
+      CurvedAnimation(parent: _hoverController, curve: Curves.easeInOut),
+    );
 
-    _elevationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 8.0,
-    ).animate(CurvedAnimation(
-      parent: _hoverController,
-      curve: Curves.easeInOut,
-    ));
+    _elevationAnimation = Tween<double>(begin: 0.0, end: 8.0).animate(
+      CurvedAnimation(parent: _hoverController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -184,11 +173,7 @@ class _ProjectCardState extends State<ProjectCard>
     return Stack(
       children: [
         // Background pattern
-        Positioned.fill(
-          child: CustomPaint(
-            painter: ProjectImagePainter(),
-          ),
-        ),
+        Positioned.fill(child: CustomPaint(painter: ProjectImagePainter())),
         // Project icon
         Center(
           child: Container(
@@ -197,8 +182,7 @@ class _ProjectCardState extends State<ProjectCard>
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(AppConstants.radiusMD),
             ),
-            child: Icon(
-              _getProjectIcon(),
+            child: CustomIcon(
               size: AppConstants.iconSizeXL,
               color: Colors.white,
             ),
@@ -275,8 +259,7 @@ class _ProjectCardState extends State<ProjectCard>
           const SizedBox(width: AppConstants.spaceSM),
           Row(
             children: [
-              Icon(
-                Icons.star_outline,
+              CustomIcon(
                 size: AppConstants.iconSizeSM,
                 color: AppConstants.mutedText,
               ),
@@ -352,17 +335,11 @@ class _ProjectCardState extends State<ProjectCard>
           Expanded(
             child: OutlinedButton.icon(
               onPressed: () => _launchUrl(widget.project.htmlUrl!),
-              icon: const Icon(
-                Icons.code,
-                size: AppConstants.iconSizeSM,
-              ),
+              icon: const CustomIcon(size: AppConstants.iconSizeSM),
               label: const Text('Code'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(0, AppConstants.buttonHeightSmall),
-                side: BorderSide(
-                  color: AppConstants.borderColor,
-                  width: 1,
-                ),
+                side: BorderSide(color: AppConstants.borderColor, width: 1),
               ),
             ),
           ),
@@ -372,10 +349,7 @@ class _ProjectCardState extends State<ProjectCard>
           Expanded(
             child: ElevatedButton.icon(
               onPressed: () => _launchUrl(widget.project.homepage!),
-              icon: const Icon(
-                Icons.launch,
-                size: AppConstants.iconSizeSM,
-              ),
+              icon: const CustomIcon(size: AppConstants.iconSizeSM),
               label: const Text('Demo'),
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(0, AppConstants.buttonHeightSmall),
@@ -407,18 +381,10 @@ class ProjectImagePainter extends CustomPainter {
     // Draw grid pattern
     const spacing = 20.0;
     for (double x = 0; x < size.width; x += spacing) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        paint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
     for (double y = 0; y < size.height; y += spacing) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        paint,
-      );
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
     }
   }
 

@@ -20,10 +20,10 @@ class PortfolioPage extends StatefulWidget {
 class _PortfolioPageState extends State<PortfolioPage> {
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _sectionKeys = {
-    'home': GlobalKey(),
-    'projects': GlobalKey(),
-    'skills': GlobalKey(),
-    'contact': GlobalKey(),
+    // 'home': GlobalKey(),
+    // 'projects': GlobalKey(),
+    // 'skills': GlobalKey(),
+    // 'contact': GlobalKey(),
   };
 
   String _activeSection = 'home';
@@ -138,69 +138,69 @@ class _PortfolioPageState extends State<PortfolioPage> {
               ),
 
               // Projects Section
-              SliverToBoxAdapter(
-                child: Container(
-                  key: _sectionKeys['projects'],
-                  padding: EdgeInsets.symmetric(
-                    vertical: context.responsiveValue(
-                      mobile: AppConstants.sectionPaddingMobile,
-                      tablet: AppConstants.sectionPaddingTablet,
-                      desktop: AppConstants.sectionPaddingDesktop,
-                    ),
-                  ),
-                  child: const ProjectsSection(),
-                ),
-              ),
+              // SliverToBoxAdapter(
+              //   child: Container(
+              //     key: _sectionKeys['projects'],
+              //     padding: EdgeInsets.symmetric(
+              //       vertical: context.responsiveValue(
+              //         mobile: AppConstants.sectionPaddingMobile,
+              //         tablet: AppConstants.sectionPaddingTablet,
+              //         desktop: AppConstants.sectionPaddingDesktop,
+              //       ),
+              //     ),
+              //     child: const ProjectsSection(),
+              //   ),
+              // ),
 
-              // Skills Section
-              SliverToBoxAdapter(
-                child: Container(
-                  key: _sectionKeys['skills'],
-                  padding: EdgeInsets.symmetric(
-                    vertical: context.responsiveValue(
-                      mobile: AppConstants.sectionPaddingMobile,
-                      tablet: AppConstants.sectionPaddingTablet,
-                      desktop: AppConstants.sectionPaddingDesktop,
-                    ),
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppConstants.cardBackground.withValues(alpha: 0.3),
-                  ),
-                  child: const SkillsSection(),
-                ),
-              ),
+              // // Skills Section
+              // SliverToBoxAdapter(
+              //   child: Container(
+              //     key: _sectionKeys['skills'],
+              //     padding: EdgeInsets.symmetric(
+              //       vertical: context.responsiveValue(
+              //         mobile: AppConstants.sectionPaddingMobile,
+              //         tablet: AppConstants.sectionPaddingTablet,
+              //         desktop: AppConstants.sectionPaddingDesktop,
+              //       ),
+              //     ),
+              //     decoration: BoxDecoration(
+              //       color: AppConstants.cardBackground.withValues(alpha: 0.3),
+              //     ),
+              //     child: const SkillsSection(),
+              //   ),
+              // ),
 
-              // Contact Section
-              SliverToBoxAdapter(
-                child: Container(
-                  key: _sectionKeys['contact'],
-                  padding: EdgeInsets.symmetric(
-                    vertical: context.responsiveValue(
-                      mobile: AppConstants.sectionPaddingMobile,
-                      tablet: AppConstants.sectionPaddingTablet,
-                      desktop: AppConstants.sectionPaddingDesktop,
-                    ),
-                  ),
-                  child: const ContactSection(),
-                ),
-              ),
+              // // Contact Section
+              // SliverToBoxAdapter(
+              //   child: Container(
+              //     key: _sectionKeys['contact'],
+              //     padding: EdgeInsets.symmetric(
+              //       vertical: context.responsiveValue(
+              //         mobile: AppConstants.sectionPaddingMobile,
+              //         tablet: AppConstants.sectionPaddingTablet,
+              //         desktop: AppConstants.sectionPaddingDesktop,
+              //       ),
+              //     ),
+              //     child: const ContactSection(),
+              //   ),
+              // ),
 
               // Footer
-              SliverToBoxAdapter(child: _buildFooter(context)),
+              // SliverToBoxAdapter(child: _buildFooter(context)),
             ],
           ),
 
           // Navigation Bar
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: ProfessionalNavBar(
-              activeSection: _activeSection,
-              onSectionTap: _scrollToSection,
-              onResumeDownload: _downloadResume,
-            ),
-          ),
+          // Positioned(
+          //   top: 0,
+          //   left: 0,
+          //   right: 0,
+          //   child: ProfessionalNavBar(
+          //     activeSection: _activeSection,
+          //     onSectionTap: _scrollToSection,
+          //     onResumeDownload: _downloadResume,
+          //   ),
+          // ),
         ],
       ),
     );
