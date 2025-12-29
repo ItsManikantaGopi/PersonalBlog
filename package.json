@@ -13,7 +13,12 @@
     "type": "git",
     "url": "git+https://github.com/ItsManikantaGopi/PersonalBlog.git"
   },
-  "keywords": ["portfolio", "nextjs", "typescript", "tailwindcss"],
+  "keywords": [
+    "portfolio",
+    "nextjs",
+    "typescript",
+    "tailwindcss"
+  ],
   "author": "Manikanta Gopi",
   "license": "ISC",
   "bugs": {
@@ -26,6 +31,7 @@
     "react-dom": "^19.2.3"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "autoprefixer": "^10.4.23",
