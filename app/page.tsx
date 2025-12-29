@@ -1,49 +1,46 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
+
+const skillConnections: Record<string, string[]> = {
+  'Kubernetes': ['Docker', 'Terraform', 'AWS', 'GCP', 'Azure', 'CI/CD'],
+  'Docker': ['Kubernetes', 'CI/CD', 'GitOps'],
+  'Terraform': ['Kubernetes', 'AWS', 'GCP', 'Azure'],
+  'AWS': ['Kubernetes', 'Terraform', 'GCP', 'Azure'],
+  'GCP': ['Kubernetes', 'Terraform', 'AWS', 'Azure'],
+  'Azure': ['Kubernetes', 'Terraform', 'AWS', 'GCP'],
+  'CI/CD': ['Kubernetes', 'Docker', 'GitOps'],
+  'GitOps': ['CI/CD', 'Docker', 'Kubernetes'],
+  'Prometheus': ['Grafana', 'Kubernetes'],
+  'Grafana': ['Prometheus', 'Loki'],
+  'Redis': ['MongoDB', 'MySQL'],
+  'MongoDB': ['Redis', 'MySQL', 'NestJS'],
+  'MySQL': ['Redis', 'MongoDB', 'Python'],
+  'Python': ['MySQL', 'NestJS', 'Ruby on Rails'],
+  'NestJS': ['MongoDB', 'Python', 'Redis'],
+  'Ruby on Rails': ['Python', 'MySQL'],
+}
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false)
-  const [typedText, setTypedText] = useState('')
-  const fullText = "Hi, I'm Manikanta"
-  const typingSpeed = 80
+  const [hoveredSkill, setHoveredSkill] = useState<string | null>(null)
 
   useEffect(() => {
     setIsLoaded(true)
-    
-    // Typewriter effect
-    let currentIndex = 0
-    const typeInterval = setInterval(() => {
-      if (currentIndex <= fullText.length) {
-        setTypedText(fullText.slice(0, currentIndex))
-        currentIndex++
-      } else {
-        clearInterval(typeInterval)
-      }
-    }, typingSpeed)
-
-    return () => clearInterval(typeInterval)
   }, [])
 
   const skills = [
-    { name: 'Kubernetes', category: 'infrastructure' },
-    { name: 'Terraform', category: 'infrastructure' },
-    { name: 'Docker', category: 'infrastructure' },
-    { name: 'AWS', category: 'cloud' },
-    { name: 'GCP', category: 'cloud' },
-    { name: 'Azure', category: 'cloud' },
-    { name: 'Python', category: 'languages' },
-    { name: 'NestJS', category: 'languages' },
-    { name: 'Ruby on Rails', category: 'languages' },
-    { name: 'CI/CD', category: 'devops' },
-    { name: 'GitOps', category: 'devops' },
-    { name: 'Prometheus', category: 'monitoring' },
-    { name: 'Grafana', category: 'monitoring' },
-    { name: 'Redis', category: 'databases' },
-    { name: 'MongoDB', category: 'databases' },
-    { name: 'MySQL', category: 'databases' },
+    'Kubernetes', 'Terraform', 'Docker', 'AWS', 'GCP', 'Azure',
+    'CI/CD', 'GitOps', 'Prometheus', 'Grafana',
+    'Redis', 'MongoDB', 'MySQL', 'Python', 'NestJS', 'Ruby on Rails'
   ]
+
+  const isConnected = (skill: string) => {
+    if (!hoveredSkill) return false
+    if (skill === hoveredSkill) return false
+    return skillConnections[hoveredSkill]?.includes(skill) || false
+  }
 
   const socialLinks = [
     {
@@ -78,184 +75,88 @@ export default function Home() {
       url: 'mailto:manikanta.gopi@example.com',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
         </svg>
       ),
     },
   ]
 
   return (
-    <main className="min-h-screen relative">
-      {/* Background effects */}
-      <div className="hero-gradient" />
-      <div className="grid-overlay" />
-      <div className="noise-overlay" />
-      
-      {/* Animated orbs */}
-      <div className="orb orb-1" />
-      <div className="orb orb-2" />
-      <div className="orb orb-3" />
+    <main className="min-h-screen bg-black text-white">
+      <div className="max-w-5xl mx-auto px-6 py-20 min-h-screen flex flex-col">
+        
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col justify-center">
+          
+          {/* Header Section - Name & Profession */}
+          <header className="mb-16">
+            <div className={`${isLoaded ? 'animate-fade-up' : 'opacity-0'}`}>
+              <h1 className="main-heading">
+                Manikanta Gopi
+              </h1>
+            </div>
+            <div className={`${isLoaded ? 'animate-fade-up delay-1' : 'opacity-0'}`}>
+              <h2 className="profession-heading">
+                Software Engineer
+              </h2>
+            </div>
+          </header>
 
-      {/* Main content */}
-      <div className="relative z-10">
-        {/* Hero Section */}
-        <section className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto w-full">
-            <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-              
-              {/* Left Column - Content */}
-              <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
-                {/* Greeting */}
-                <div className={`space-y-4 ${isLoaded ? 'animate-fade-up' : 'opacity-0'}`}>
-                  <p className="text-sm uppercase tracking-[0.3em] text-cyan-400 font-medium">
-                    Welcome to my portfolio
-                  </p>
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                    <span className="text-gradient-subtle">{typedText}</span>
-                    <span className="typewriter-cursor" />
-                  </h1>
-                </div>
-
-                {/* Role badge */}
-                <div className={`${isLoaded ? 'animate-fade-up stagger-2' : 'opacity-0'}`}>
-                  <div className="inline-flex items-center gap-3 glass-card px-5 py-3">
-                    <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-lg sm:text-xl font-semibold text-gradient">
-                      Software Engineer
-                    </span>
-                  </div>
-                </div>
-
-                {/* Description */}
-                <p className={`text-lg sm:text-xl text-gray-400 max-w-xl mx-auto lg:mx-0 leading-relaxed ${isLoaded ? 'animate-fade-up stagger-3' : 'opacity-0'}`}>
-                  Crafting scalable <span className="text-cyan-400">backend systems</span>, 
-                  orchestrating <span className="text-purple-400">cloud infrastructure</span>, 
-                  and building <span className="text-pink-400">event-driven architectures</span> that power modern applications.
-                </p>
-
-                {/* Skills grid */}
-                <div className={`${isLoaded ? 'animate-fade-up stagger-4' : 'opacity-0'}`}>
-                  <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-                    {skills.map((skill, index) => (
-                      <span
-                        key={skill.name}
-                        className="skill-pill"
-                        style={{ animationDelay: `${index * 50}ms` }}
-                      >
-                        {skill.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* CTA and Social */}
-                <div className={`flex flex-col sm:flex-row items-center gap-6 justify-center lg:justify-start ${isLoaded ? 'animate-fade-up stagger-5' : 'opacity-0'}`}>
-                  {/* Social links */}
-                  <div className="flex items-center gap-3">
-                    {socialLinks.map((link) => (
-                      <a
-                        key={link.name}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="social-btn"
-                        aria-label={link.name}
-                      >
-                        {link.icon}
-                      </a>
-                    ))}
-                  </div>
-
-                  {/* Resume button */}
-                  <a 
-                    href="#" 
-                    className="group relative inline-flex items-center gap-2 px-6 py-3 overflow-hidden rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_rgba(0,212,255,0.4)]"
-                  >
-                    <span className="relative z-10">View Resume</span>
-                    <svg className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                    </svg>
-                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </a>
-                </div>
-              </div>
-
-              {/* Right Column - Profile Image */}
-              <div className={`flex justify-center order-1 lg:order-2 ${isLoaded ? 'animate-fade-up' : 'opacity-0'}`}>
-                <div className="relative animate-floating">
-                  {/* Outer glow */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 rounded-full blur-3xl opacity-30 scale-110" />
-                  
-                  {/* Profile container */}
-                  <div className="profile-glow">
-                    <div className="relative w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 rounded-full overflow-hidden">
-                      <Image
-                        src="https://avatars.githubusercontent.com/u/58616351?v=4"
-                        alt="Manikanta Gopi"
-                        fill
-                        className="object-cover"
-                        priority
-                      />
-                    </div>
-                  </div>
-
-                  {/* Floating badges */}
-                  <div className="absolute -top-4 -right-4 glass-card glass-card-hover px-4 py-2 animate-bounce" style={{ animationDuration: '3s' }}>
-                    <span className="text-sm font-medium text-cyan-400">DevOps</span>
-                  </div>
-                  <div className="absolute -bottom-2 -left-4 glass-card glass-card-hover px-4 py-2 animate-bounce" style={{ animationDuration: '3.5s', animationDelay: '0.5s' }}>
-                    <span className="text-sm font-medium text-purple-400">Cloud</span>
-                  </div>
-                  <div className="absolute top-1/2 -right-8 glass-card glass-card-hover px-4 py-2 animate-bounce" style={{ animationDuration: '4s', animationDelay: '1s' }}>
-                    <span className="text-sm font-medium text-pink-400">Backend</span>
-                  </div>
-                </div>
+          {/* Profile Image - Centered */}
+          <div className={`flex justify-center mb-16 ${isLoaded ? 'animate-fade-up delay-2' : 'opacity-0'}`}>
+            <div className="profile-container">
+              <div className="profile-ring" />
+              <div className="relative w-32 h-32 rounded-full overflow-hidden">
+                <Image
+                  src="https://avatars.githubusercontent.com/u/58616351?v=4"
+                  alt="Manikanta Gopi"
+                  fill
+                  className="object-cover grayscale"
+                  priority
+                />
               </div>
             </div>
           </div>
-        </section>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gray-500">
-          <span className="text-xs uppercase tracking-wider">Scroll</span>
-          <div className="w-5 h-8 border-2 border-gray-600 rounded-full flex justify-center pt-1.5">
-            <div className="w-1 h-2 bg-cyan-400 rounded-full animate-bounce" />
-          </div>
+          {/* Skills - Connected Blocks */}
+          <section className={`mb-16 ${isLoaded ? 'animate-fade-up delay-3' : 'opacity-0'}`}>
+            <p className="text-xs uppercase tracking-[0.3em] text-gray-600 mb-6">
+              Technologies
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {skills.map((skill) => (
+                <button
+                  key={skill}
+                  className={`skill-block ${isConnected(skill) ? 'connected' : ''}`}
+                  onMouseEnter={() => setHoveredSkill(skill)}
+                  onMouseLeave={() => setHoveredSkill(null)}
+                >
+                  {skill}
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
 
-        {/* Footer */}
-        <footer className="relative z-10 border-t border-white/5 mt-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-600 flex items-center justify-center text-white font-bold">
-                  MG
-                </div>
-                <div>
-                  <p className="font-semibold text-white">Manikanta Gopi</p>
-                  <p className="text-sm text-gray-500">Software Engineer</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-6">
-                {socialLinks.map((link) => (
-                  <a
-                    key={link.name}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-gray-500 hover:text-cyan-400 transition-colors"
-                    aria-label={link.name}
-                  >
-                    {link.icon}
-                  </a>
-                ))}
-              </div>
-
-              <p className="text-sm text-gray-600">
-                © {new Date().getFullYear()} Built with{' '}
-                <span className="text-gradient">Next.js & Tailwind</span>
-              </p>
+        {/* Footer - Social Links at Bottom */}
+        <footer className={`pt-8 border-t border-gray-900 ${isLoaded ? 'animate-fade-up delay-4' : 'opacity-0'}`}>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-600">
+              © {new Date().getFullYear()}
+            </p>
+            <div className="flex items-center gap-2">
+              {socialLinks.map((link) => (
+                <a
+                  key={link.name}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-btn"
+                  aria-label={link.name}
+                >
+                  {link.icon}
+                </a>
+              ))}
             </div>
           </div>
         </footer>
