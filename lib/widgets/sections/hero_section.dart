@@ -66,7 +66,7 @@ class _HeroSectionState extends State<HeroSection>
   @override
   Widget build(BuildContext context) {
     return ResponsiveContainer(
-      child: Container(
+      child: SizedBox(
         height: context.responsiveValue(
           mobile: MediaQuery.of(context).size.height * 0.9,
           tablet: MediaQuery.of(context).size.height * 0.85,
@@ -318,13 +318,14 @@ class _HeroSectionState extends State<HeroSection>
         ),
       ),
       child: Text(
-        """DevOps | Backend Systems | Event Driven Systems |
+        """DevOps | Backend-Systems | Event-Driven-Systems |
           CI/CD | Cloud(AWS,GCP,AZURE) | Kubernetes | Terraform | Docker |
           GitOps | Prometheus | Grafana | Loki | Promtail | Thanos |
-          Redis | MySql | MongoDb | NestJS | Python | Ruby on Rails |
+          Redis | MySql | MongoDb | NestJS | Python | Ruby-on-Rails 
           """
             .replaceAll("\n", "")
             .replaceAll(" ", "")
+            .replaceAll("-", " ")
             .replaceAll("|", "  |  "),
         style: GoogleFonts.inter(
           fontSize: context.responsiveValue(

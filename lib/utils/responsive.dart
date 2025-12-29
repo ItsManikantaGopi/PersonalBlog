@@ -157,7 +157,7 @@ class Responsive {
 class ResponsiveBuilder extends StatelessWidget {
   final Widget Function(BuildContext context, DeviceType deviceType) builder;
 
-  const ResponsiveBuilder({Key? key, required this.builder}) : super(key: key);
+  const ResponsiveBuilder({super.key, required this.builder});
 
   @override
   Widget build(BuildContext context) {
@@ -174,12 +174,12 @@ class ResponsiveLayout extends StatelessWidget {
   final Widget? largeDesktop;
 
   const ResponsiveLayout({
-    Key? key,
+    super.key,
     required this.mobile,
     this.tablet,
     this.desktop,
     this.largeDesktop,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -207,11 +207,11 @@ class ResponsiveContainer extends StatelessWidget {
   final bool centerContent;
 
   const ResponsiveContainer({
-    Key? key,
+    super.key,
     required this.child,
     this.padding,
     this.centerContent = true,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -242,14 +242,14 @@ class ResponsiveGrid extends StatelessWidget {
   final int? desktopColumns;
 
   const ResponsiveGrid({
-    Key? key,
+    super.key,
     required this.children,
     this.spacing,
     this.runSpacing,
     this.mobileColumns,
     this.tabletColumns,
     this.desktopColumns,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

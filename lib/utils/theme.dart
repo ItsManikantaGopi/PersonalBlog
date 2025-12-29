@@ -230,13 +230,13 @@ class AppTheme {
               fontWeight: FontWeight.w600,
             ),
           ).copyWith(
-            overlayColor: MaterialStateProperty.resolveWith<Color?>((
-              Set<MaterialState> states,
+            overlayColor: WidgetStateProperty.resolveWith<Color?>((
+              Set<WidgetState> states,
             ) {
-              if (states.contains(MaterialState.hovered)) {
+              if (states.contains(WidgetState.hovered)) {
                 return Colors.white.withValues(alpha: 0.1);
               }
-              if (states.contains(MaterialState.pressed)) {
+              if (states.contains(WidgetState.pressed)) {
                 return Colors.white.withValues(alpha: 0.2);
               }
               return null;
@@ -261,13 +261,13 @@ class AppTheme {
               fontWeight: FontWeight.w600,
             ),
           ).copyWith(
-            overlayColor: MaterialStateProperty.resolveWith<Color?>((
-              Set<MaterialState> states,
+            overlayColor: WidgetStateProperty.resolveWith<Color?>((
+              Set<WidgetState> states,
             ) {
-              if (states.contains(MaterialState.hovered)) {
+              if (states.contains(WidgetState.hovered)) {
                 return AppConstants.accentColor.withValues(alpha: 0.1);
               }
-              if (states.contains(MaterialState.pressed)) {
+              if (states.contains(WidgetState.pressed)) {
                 return AppConstants.accentColor.withValues(alpha: 0.2);
               }
               return null;
@@ -291,13 +291,13 @@ class AppTheme {
               fontWeight: FontWeight.w600,
             ),
           ).copyWith(
-            overlayColor: MaterialStateProperty.resolveWith<Color?>((
-              Set<MaterialState> states,
+            overlayColor: WidgetStateProperty.resolveWith<Color?>((
+              Set<WidgetState> states,
             ) {
-              if (states.contains(MaterialState.hovered)) {
+              if (states.contains(WidgetState.hovered)) {
                 return AppConstants.accentColor.withOpacity(0.1);
               }
-              if (states.contains(MaterialState.pressed)) {
+              if (states.contains(WidgetState.pressed)) {
                 return AppConstants.accentColor.withOpacity(0.2);
               }
               return null;

@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../widgets/navigation/navbar.dart';
 import '../widgets/sections/hero_section.dart';
-import '../widgets/sections/projects_section.dart';
-import '../widgets/sections/skills_section.dart';
-import '../widgets/sections/contact_section.dart';
 import '../utils/constants.dart';
 import '../utils/responsive.dart';
 
