@@ -11,8 +11,8 @@ export const profile = {
     "I like the problems where the answer is a measurement rather than an opinion: which queue is actually the bottleneck, what the p90 really is, whether the new model is better or just different.",
   ],
   github: "https://github.com/ItsManikantaGopi",
-  linkedin: "https://www.linkedin.com/in/manikanta-gopi-549163190",
-  email: "manikantagopiw@gmail.com",
+  linkedin: "https://www.linkedin.com/in/gopimanikanta/",
+  email: "manikantagopi00@gmail.com",
   blog: "https://itsmanikantagopi.github.io/PersonalBlog",
 };
 
