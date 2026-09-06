@@ -7,22 +7,24 @@ import {
   skillGroups,
   education,
   writing,
+  serviceOffer,
+  problems,
 } from "@/data/portfolio";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Manikanta Gopi — Senior Backend & Platform Engineer" },
+      { title: "Manikanta Gopi — Backend & Platform Engineering" },
       {
         name: "description",
         content:
-          "Portfolio of Manikanta Gopi, Senior Software Engineer in Hyderabad — Rails, Go and NestJS services on a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
+          "Manikanta Gopi — backend, platform and infrastructure engineering, architecture reviews and system design mentoring.",
       },
-      { property: "og:title", content: "Manikanta Gopi — Senior Backend & Platform Engineer" },
+      { property: "og:title", content: "Manikanta Gopi — Backend & Platform Engineering" },
       {
         property: "og:description",
         content:
-          "Backend systems and the infrastructure they run on: a Rails monolith, Go and NestJS services, and a 24-service Kubernetes fleet.",
+          "Production backend systems, platform engineering, architecture thinking and focused technical consulting.",
       },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -32,9 +34,10 @@ export const Route = createFileRoute("/")({
 });
 
 const nav = [
+  { href: "#problems", label: "Problems" },
   { href: "#work", label: "Work" },
+  { href: "#consulting", label: "Consulting" },
   { href: "#experience", label: "Experience" },
-  { href: "#skills", label: "Skills" },
   { href: "#writing", label: "Writing" },
   { href: "#contact", label: "Contact" },
 ];
@@ -84,36 +87,33 @@ function Portfolio() {
           <a href="#top" className="font-mono text-sm font-medium tracking-tight">
             <span className="text-primary">~/</span>manikanta
           </a>
-          <nav className="hidden gap-6 md:flex">
+          <nav className="hidden gap-5 md:flex">
             {nav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
               >
                 {item.label}
               </a>
             ))}
           </nav>
           <a
-            href={profile.github}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-md border border-border px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            href="#consulting"
+            className="rounded-md bg-primary px-3 py-1.5 font-mono text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
-            GitHub
+            Work with me
           </a>
         </div>
       </header>
 
       <main id="top">
-        {/* Hero */}
         <section className="hero-glow">
           <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-20 md:pb-28 md:pt-28">
             <span className="rule-label">
               {profile.role} · {profile.location}
             </span>
-            <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
+            <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
               {profile.name}
               <span className="block text-primary">{profile.tagline}</span>
             </h1>
@@ -124,16 +124,16 @@ function Portfolio() {
             </div>
             <div className="mt-10 flex flex-wrap gap-3">
               <a
-                href="#work"
+                href="#consulting"
                 className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
               >
-                See selected work
+                Discuss a problem
               </a>
               <a
-                href={`mailto:${profile.email}`}
+                href="#work"
                 className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
               >
-                Get in touch
+                See the evidence
               </a>
             </div>
 
@@ -151,12 +151,31 @@ function Portfolio() {
           </div>
         </section>
 
-        {/* Work */}
+        <Section
+          id="problems"
+          index="01"
+          title="Problems I solve"
+          lead="The useful question is not which tools I know. It is which engineering problem I can help you make clearer."
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            {problems.map((problem) => (
+              <article key={problem.title} className="panel p-6">
+                <h3 className="text-lg font-semibold tracking-tight">{problem.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{problem.summary}</p>
+                <div className="mt-5 border-l border-primary/40 pl-4">
+                  <p className="text-xs font-mono uppercase tracking-widest text-primary">Proof</p>
+                  <p className="mt-2 text-sm leading-relaxed">{problem.evidence}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </Section>
+
         <Section
           id="work"
-          index="01"
-          title="Selected work"
-          lead="Systems I designed, owned or rebuilt — described at the architecture level."
+          index="02"
+          title="Evidence"
+          lead="Systems I designed, owned or rebuilt — described at the architecture level rather than as a list of technologies."
         >
           <div className="grid gap-4 md:grid-cols-2">
             {projects.map((p) => (
@@ -170,12 +189,8 @@ function Portfolio() {
                   </span>
                   <span className="font-mono text-[11px] text-muted-foreground">{p.period}</span>
                 </div>
-                <h3 className="mt-4 text-lg font-semibold leading-snug tracking-tight">
-                  {p.title}
-                </h3>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
-                  {p.summary}
-                </p>
+                <h3 className="mt-4 text-lg font-semibold leading-snug tracking-tight">{p.title}</h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">{p.summary}</p>
                 <div className="mt-5 flex flex-wrap gap-1.5">
                   {p.stack.map((s) => (
                     <Tag key={s}>{s}</Tag>
@@ -186,8 +201,41 @@ function Portfolio() {
           </div>
         </Section>
 
-        {/* Experience */}
-        <Section id="experience" index="02" title="Experience">
+        <Section
+          id="consulting"
+          index="03"
+          title="Consulting"
+          lead="A small, practical service layer around the areas where my production experience is most useful."
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            {serviceOffer.map((service) => (
+              <article key={service.title} className="panel flex flex-col p-6">
+                <h3 className="text-lg font-semibold tracking-tight">{service.title}</h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">{service.summary}</p>
+                <p className="mt-5 border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">
+                  {service.fit}
+                </p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-6 panel flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-widest text-primary">Start with the problem</p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">Bring the architecture, bottleneck or design question.</h3>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Send context before the call; the goal is a focused conversation, not a generic consulting deck.
+              </p>
+            </div>
+            <a
+              href={`mailto:${profile.email}?subject=Consulting%20request`}
+              className="shrink-0 rounded-md bg-primary px-5 py-2.5 text-center font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Start a conversation →
+            </a>
+          </div>
+        </Section>
+
+        <Section id="experience" index="04" title="Experience">
           <ol className="space-y-10">
             {roles.map((r) => (
               <li
@@ -220,8 +268,7 @@ function Portfolio() {
           </ol>
         </Section>
 
-        {/* Skills */}
-        <Section id="skills" index="03" title="Toolkit">
+        <Section id="skills" index="05" title="Toolkit" lead="The current stack is the result of solving the problems above, not the product itself.">
           <div className="grid gap-4 md:grid-cols-3">
             {skillGroups.map((g) => (
               <div key={g.name} className="panel p-5">
@@ -239,21 +286,13 @@ function Portfolio() {
             {education.map((e) => (
               <div key={e.institution} className="mt-4">
                 <p className="text-sm font-medium">{e.qualification}</p>
-                <p className="text-sm text-muted-foreground">
-                  {e.institution} · {e.year} · {e.detail}
-                </p>
+                <p className="text-sm text-muted-foreground">{e.institution} · {e.year} · {e.detail}</p>
               </div>
             ))}
           </div>
         </Section>
 
-        {/* Writing */}
-        <Section
-          id="writing"
-          index="04"
-          title="Writing"
-          lead="Notes from the work, published on the blog."
-        >
+        <Section id="writing" index="06" title="Writing" lead="Notes from the work: systems, tradeoffs, failures and what changed afterward.">
           <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
             {writing.map((w) => (
               <li key={w.slug}>
@@ -271,19 +310,18 @@ function Portfolio() {
           </ul>
         </Section>
 
-        {/* Contact */}
         <Section
           id="contact"
-          index="05"
+          index="07"
           title="Contact"
-          lead="Open to conversations about backend, platform and infrastructure work."
+          lead="For backend, platform, infrastructure and focused technical consulting conversations."
         >
           <div className="flex flex-wrap gap-3">
             <a
               href={`mailto:${profile.email}`}
               className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
             >
-              {profile.email}
+              Email me
             </a>
             <a
               href={profile.linkedin}
@@ -307,9 +345,7 @@ function Portfolio() {
 
       <footer className="border-t border-border py-8">
         <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-6">
-          <p className="font-mono text-xs text-muted-foreground">
-            © {new Date().getFullYear()} {profile.name}
-          </p>
+          <p className="font-mono text-xs text-muted-foreground">© {new Date().getFullYear()} {profile.name}</p>
           <a
             href={profile.blog}
             target="_blank"
