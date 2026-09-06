@@ -182,15 +182,6 @@ export const projects: Project[] = [
     kind: "Open source",
   },
   {
-    slug: "rails2x",
-    title: "rails2x: translating Rails to Go through an AST",
-    summary:
-      "A migration engine that parses Ruby with tree-sitter, lifts it into a typed IR, and scaffolds Goravel code — with static gates that refuse to publish a partial tree.",
-    period: "2026",
-    stack: ["Go", "tree-sitter", "Ruby", "Goravel"],
-    kind: "Open source",
-  },
-  {
     slug: "sidekiq-assured-jobs",
     title: "sidekiq-assured-jobs: not losing the job when the worker dies",
     summary:
