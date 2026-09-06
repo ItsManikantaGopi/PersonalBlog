@@ -1,14 +1,14 @@
 export const profile = {
   name: "Manikanta Gopi",
   role: "Senior Software Engineer",
-  tagline: "Backend, platform and infrastructure engineering.",
+  tagline: "I build backend systems that have to stay up.",
   location: "Hyderabad, India",
   description:
-    "Backend systems and the infrastructure they run on — a Rails monolith, Go and NestJS services, and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
+    "Backend, platform and infrastructure engineering — with a focus on systems that need to remain understandable, measurable and reliable in production.",
   intro: [
-    "I build the parts of a product that have to stay up.",
-    "For the last four years that has meant Praja — a regional social platform — where I've worked across a Ruby on Rails monolith, a set of Go and NestJS services around it, and the Kubernetes fleet all of it runs on. Along the way I've owned migrations, designed the release path, and shipped the infrastructure a paid tier depends on.",
-    "I like the problems where the answer is a measurement rather than an opinion: which queue is actually the bottleneck, what the p90 really is, whether the new model is better or just different.",
+    "I help teams reason about backend architecture, production bottlenecks and the infrastructure underneath their products.",
+    "For the last four years that has meant Praja — a regional social platform — where I've worked across a Ruby on Rails monolith, Go and NestJS services, real-time systems, media processing and the Kubernetes fleet everything runs on.",
+    "I prefer evidence over architecture theatre: find the real bottleneck, measure it, make the smallest useful change, and understand what moved next.",
   ],
   github: "https://github.com/ItsManikantaGopi",
   linkedin: "https://www.linkedin.com/in/gopimanikanta/",
@@ -21,6 +21,73 @@ export const stats = [
   { value: "24", label: "services on the fleet", detail: "GitOps-managed on AWS EKS" },
   { value: "3", label: "clouds worked across", detail: "AWS primary, GCP and Azure" },
   { value: "1", label: "zero-downtime migration", detail: "Azure AKS → AWS EKS, live cutover" },
+];
+
+export const serviceOffer = [
+  {
+    title: "Architecture review",
+    summary:
+      "A focused review of your current backend or platform design, the assumptions behind it, and the tradeoffs worth revisiting.",
+    fit: "Useful before a major build, migration or scaling decision.",
+  },
+  {
+    title: "Production bottleneck review",
+    summary:
+      "Trace a slow or unreliable workflow through queues, services, storage and infrastructure to identify the constraint that actually matters.",
+    fit: "Useful when dashboards show symptoms but not the root cause.",
+  },
+  {
+    title: "System design mentoring",
+    summary:
+      "Work through a real system design problem with an emphasis on tradeoffs, failure modes, data flow and operational reality.",
+    fit: "Useful for engineers who want depth rather than interview-template answers.",
+  },
+];
+
+export type Problem = {
+  title: string;
+  summary: string;
+  evidence: string;
+  href?: string;
+};
+
+export const problems: Problem[] = [
+  {
+    title: "Scaling backend workloads",
+    summary: "Move capacity decisions from guesswork to the signal that actually represents work in the system.",
+    evidence: "KEDA-scaled media workers driven by queue depth, plus seasonal capacity planning for festival-day peaks.",
+    href: "#work",
+  },
+  {
+    title: "Distributed systems",
+    summary: "Design boundaries, fan-out paths and asynchronous workflows without hiding the operational cost.",
+    evidence: "Real-time messaging with Socket.IO and Redis pub/sub, plus separate Go and NestJS services around the core platform.",
+    href: "#work",
+  },
+  {
+    title: "Infrastructure and migrations",
+    summary: "Change the underlying platform while keeping the product moving and the blast radius controlled.",
+    evidence: "Production migration from Azure AKS to AWS EKS with Terraform, service-by-service cutover, DNS/CDN moves and deliberate decommissioning.",
+    href: "#work",
+  },
+  {
+    title: "Performance and observability",
+    summary: "Measure the slow path, make it legible, and verify that the fix improved the right thing.",
+    evidence: "Rails and Sidekiq workload tuning, OpenSearch-backed systems, CI timing splits, and New Relic / Prometheus / Grafana / Loki instrumentation.",
+    href: "#work",
+  },
+  {
+    title: "Applied ML infrastructure",
+    summary: "Take an ML capability from an external black box to an operationally owned service when the economics or control justify it.",
+    evidence: "Background removal moved from a hosted vision API to a self-hosted ONNX GPU service in the Kubernetes cluster.",
+    href: "#work",
+  },
+  {
+    title: "Search systems from first principles",
+    summary: "Understand the index, ranking and storage layers instead of treating search as a single API call.",
+    evidence: "Seeker: inverted index, BM25, Levenshtein automata, FSTs, BKD trees and a byte-level segment format.",
+    href: "#work",
+  },
 ];
 
 export type Project = {
