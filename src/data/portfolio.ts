@@ -1,19 +1,19 @@
 export const profile = {
   name: "Manikanta Gopi",
-  role: "Senior Software Engineer",
-  tagline: "I build backend systems that have to stay up.",
+  role: "Senior Backend & Platform Engineer",
+  tagline: "I build backend systems that stay reliable as they scale.",
   location: "Hyderabad, India",
   description:
-    "Backend, platform and infrastructure engineering — with a focus on systems that need to remain understandable, measurable and reliable in production.",
+    "Backend, platform and infrastructure engineering focused on cost, performance, reliability and systems that remain understandable in production.",
   photo: "/images/gopi-linkedin-professional.jpg",
   intro: [
     "I help teams reason about backend architecture, production bottlenecks and the infrastructure underneath their products.",
-    "For the last four years that has meant Praja — a regional social platform — where I've worked across a Ruby on Rails monolith, Go and NestJS services, real-time systems, media processing and the Kubernetes fleet everything runs on.",
-    "I prefer evidence over architecture theatre: find the real bottleneck, measure it, make the smallest useful change, and understand what moved next.",
+    "My work spans a large Rails platform, Go and NestJS services, real-time systems, media processing, cloud migrations and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
+    "I prefer evidence over architecture theatre: find the real constraint, measure it, make the smallest useful change, and verify what moved.",
   ],
   github: "https://github.com/ItsManikantaGopi",
   linkedin: "https://www.linkedin.com/in/gopimanikanta/",
-  email: "manikantagopi00@gmail.com",
+  email: "gopimanikant50@gmail.com",
   blog: "https://itsmanikantagopi.github.io/PersonalBlog",
 };
 
@@ -24,24 +24,47 @@ export const stats = [
   { value: "1", label: "zero-downtime migration", detail: "Azure AKS → AWS EKS, live cutover" },
 ];
 
+export const results = [
+  {
+    value: "~$18k → ~$1.8k/mo",
+    label: "video processing infrastructure",
+    detail: "Moved the workload from Lambda + FFmpeg to in-house Kubernetes workers.",
+  },
+  {
+    value: "~$500/mo",
+    label: "database savings",
+    detail: "Identified resource-intensive queries and changed the surrounding systems.",
+  },
+  {
+    value: "~$400/mo",
+    label: "Kubernetes capacity savings",
+    detail: "Used Karpenter with Spot + On-Demand capacity for resource-intensive workloads.",
+  },
+  {
+    value: "~$800 saved",
+    label: "S3 storage in May",
+    detail: "Added expiry for ephemeral media and prevented storage from growing unchecked.",
+  },
+];
+
 export const serviceOffer = [
   {
-    title: "Architecture review",
+    title: "Infrastructure cost review",
     summary:
-      "A focused review of your current backend or platform design, the assumptions behind it, and the tradeoffs worth revisiting.",
-    fit: "Useful before a major build, migration or scaling decision.",
+      "Find the workloads, storage, database usage and capacity decisions driving an unexpectedly high infrastructure bill.",
+    fit: "Useful when cloud spend is growing faster than traffic or product usage.",
   },
   {
-    title: "Production bottleneck review",
+    title: "Architecture & bottleneck review",
     summary:
-      "Trace a slow or unreliable workflow through queues, services, storage and infrastructure to identify the constraint that actually matters.",
-    fit: "Useful when dashboards show symptoms but not the root cause.",
+      "Trace a slow or unreliable workflow through services, queues, storage and infrastructure to identify the constraint that actually matters.",
+    fit: "Useful before a major build, migration or scaling decision — or when dashboards show symptoms but not the root cause.",
   },
   {
-    title: "System design mentoring",
+    title: "Cloud & Kubernetes review",
     summary:
-      "Work through a real system design problem with an emphasis on tradeoffs, failure modes, data flow and operational reality.",
-    fit: "Useful for engineers who want depth rather than interview-template answers.",
+      "Review deployment, capacity, autoscaling, observability and operational boundaries in an existing cloud or Kubernetes setup.",
+    fit: "Useful for teams that have grown quickly and want a more reliable, understandable platform without a rewrite.",
   },
 ];
 
@@ -53,6 +76,12 @@ export type Problem = {
 };
 
 export const problems: Problem[] = [
+  {
+    title: "Infrastructure costs are too high",
+    summary: "Find the expensive workload, storage lifecycle or capacity decision instead of cutting infrastructure blindly.",
+    evidence: "Reduced video-processing infrastructure from roughly $18k/month to ~$1.8k/month and delivered additional DB, S3 and Kubernetes savings.",
+    href: "#results",
+  },
   {
     title: "Scaling backend workloads",
     summary: "Move capacity decisions from guesswork to the signal that actually represents work in the system.",
@@ -81,12 +110,6 @@ export const problems: Problem[] = [
     title: "Applied ML infrastructure",
     summary: "Take an ML capability from an external black box to an operationally owned service when the economics or control justify it.",
     evidence: "Background removal moved from a hosted vision API to a self-hosted ONNX GPU service in the Kubernetes cluster.",
-    href: "#work",
-  },
-  {
-    title: "Search systems from first principles",
-    summary: "Understand the index, ranking and storage layers instead of treating search as a single API call.",
-    evidence: "Seeker: inverted index, BM25, Levenshtein automata, FSTs, BKD trees and a byte-level segment format.",
     href: "#work",
   },
 ];
@@ -202,9 +225,10 @@ export const roles = [
       "Platform and infrastructure ownership alongside product work: the Kubernetes fleet, the media generation pipeline, and the release path everything ships through.",
     highlights: [
       "Own the GitOps repository describing ~24 services on the production AWS cluster — Helm charts, per-environment values, automated image bumps on merge.",
-      "Built the in-cluster video poster pipeline that replaced a Lambda + FFmpeg design with KEDA-scaled workers driven by Redis queue depth.",
-      "Moved CI to CircleCI with timing-based test splitting across parallel containers, and moved API, web and admin deploys onto the same path.",
-      "Ran seasonal capacity planning for sharp, predictable festival-day traffic peaks.",
+      "Reduced video-processing infrastructure from roughly $18k/month to ~$1.8k/month by moving Lambda + FFmpeg workloads to in-house Kubernetes workers.",
+      "Optimized database workloads and storage lifecycle, contributing roughly $500/month in DB savings and ~$800 saved in May from S3 expiry policies.",
+      "Enabled Karpenter with Spot + On-Demand capacity for resource-intensive workloads, reducing costs by roughly $400/month.",
+      "Migrated queueing infrastructure from Redis to Dragonfly without downtime.",
       "Took background removal from a hosted vendor API to a self-hosted ONNX GPU service in-cluster.",
     ],
     stack: ["Kubernetes", "Helm", "Terraform", "AWS", "KEDA", "Karpenter", "CircleCI", "Rails", "NestJS", "Go"],
