@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   profile,
   stats,
+  results,
   projects,
   roles,
   skillGroups,
@@ -14,17 +15,17 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Manikanta Gopi — Backend & Platform Engineering" },
+      { title: "Manikanta Gopi — Senior Backend & Platform Engineer" },
       {
         name: "description",
         content:
-          "Manikanta Gopi — backend, platform and infrastructure engineering, architecture reviews and system design mentoring.",
+          "Senior backend and platform engineering across architecture, infrastructure cost, Kubernetes, cloud migrations and production reliability.",
       },
-      { property: "og:title", content: "Manikanta Gopi — Backend & Platform Engineering" },
+      { property: "og:title", content: "Manikanta Gopi — Senior Backend & Platform Engineer" },
       {
         property: "og:description",
         content:
-          "Production backend systems, platform engineering, architecture thinking and focused technical consulting.",
+          "Production backend systems, infrastructure cost optimization, cloud migrations and focused technical consulting.",
       },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/")({
 
 const nav = [
   { href: "#problems", label: "Problems" },
+  { href: "#results", label: "Results" },
   { href: "#work", label: "Work" },
   { href: "#consulting", label: "Consulting" },
   { href: "#experience", label: "Experience" },
@@ -99,7 +101,7 @@ function Portfolio() {
             ))}
           </nav>
           <a
-            href="#consulting"
+            href={`mailto:${profile.email}?subject=Consulting%20request`}
             className="rounded-md bg-primary px-3 py-1.5 font-mono text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
             Work with me
@@ -109,9 +111,33 @@ function Portfolio() {
 
       <main id="top">
         <section className="hero-glow">
-          <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-20 md:pb-28 md:pt-28">
-            <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_280px] lg:grid-cols-[minmax(0,1fr)_320px]">
-              <div>
+          <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-16 md:pb-28 md:pt-24">
+            <div className="grid items-center gap-10 md:grid-cols-[250px_minmax(0,1fr)] lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-16">
+              <div className="order-2 mx-auto w-full max-w-[280px] md:order-1 md:max-w-none">
+                <div className="relative mx-auto w-full max-w-[280px]">
+                  <div
+                    className="absolute -inset-3 rounded-full border border-primary/20 bg-primary/5 blur-sm"
+                    aria-hidden="true"
+                  />
+                  <div className="relative aspect-square overflow-hidden rounded-full border-2 border-border bg-surface shadow-xl">
+                    <img
+                      src={profile.photo}
+                      alt={profile.name}
+                      className="h-full w-full object-cover object-center"
+                      loading="eager"
+                      fetchPriority="high"
+                    />
+                  </div>
+                  <div className="mt-5 text-center">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-primary">
+                      Backend · Platform · Infrastructure
+                    </p>
+                    <p className="mt-1 text-xs text-muted-foreground">Production systems, cost and reliability.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="order-1 md:order-2">
                 <span className="rule-label">
                   {profile.role} · {profile.location}
                 </span>
@@ -119,42 +145,28 @@ function Portfolio() {
                   {profile.name}
                   <span className="block text-primary">{profile.tagline}</span>
                 </h1>
-                <div className="mt-8 max-w-2xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
                   {profile.intro.map((p) => (
                     <p key={p.slice(0, 24)}>{p}</p>
                   ))}
                 </div>
                 <div className="mt-10 flex flex-wrap gap-3">
                   <a
-                    href="#consulting"
+                    href={`mailto:${profile.email}?subject=Consulting%20request`}
                     className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
                   >
-                    Discuss a problem
+                    Discuss a problem →
                   </a>
                   <a
-                    href="#work"
+                    href="#results"
                     className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
                   >
-                    See the evidence
+                    See the results
                   </a>
                 </div>
-              </div>
-
-              <div className="relative mx-auto w-full max-w-[320px] md:mx-0 md:ml-auto">
-                <div className="absolute -inset-3 rounded-2xl border border-primary/15 bg-primary/5 blur-sm" aria-hidden="true" />
-                <div className="relative overflow-hidden rounded-2xl border border-border bg-surface shadow-xl">
-                  <img
-                    src={profile.photo}
-                    alt={`${profile.name} — ${profile.role}`}
-                    className="aspect-square w-full object-cover object-center"
-                    loading="eager"
-                    fetchPriority="high"
-                  />
-                  <div className="border-t border-border px-4 py-3">
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-primary">Backend · Platform · Infrastructure</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Production systems, cost and reliability.</p>
-                  </div>
-                </div>
+                <p className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                  Available for focused consulting conversations · Mon–Fri · 10:30–19:30 IST
+                </p>
               </div>
             </div>
 
@@ -184,7 +196,7 @@ function Portfolio() {
                 <h3 className="text-lg font-semibold tracking-tight">{problem.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{problem.summary}</p>
                 <div className="mt-5 border-l border-primary/40 pl-4">
-                  <p className="text-xs font-mono uppercase tracking-widest text-primary">Proof</p>
+                  <p className="font-mono text-xs uppercase tracking-widest text-primary">Proof</p>
                   <p className="mt-2 text-sm leading-relaxed">{problem.evidence}</p>
                 </div>
               </article>
@@ -193,8 +205,25 @@ function Portfolio() {
         </Section>
 
         <Section
-          id="work"
+          id="results"
           index="02"
+          title="Results"
+          lead="The strongest proof is what changed after the engineering work — cost, reliability, capacity or operational control."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            {results.map((result) => (
+              <article key={result.label} className="panel p-6">
+                <p className="font-mono text-2xl font-semibold tracking-tight text-primary md:text-3xl">{result.value}</p>
+                <h3 className="mt-3 text-base font-semibold">{result.label}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{result.detail}</p>
+              </article>
+            ))}
+          </div>
+        </Section>
+
+        <Section
+          id="work"
+          index="03"
           title="Evidence"
           lead="Systems I designed, owned or rebuilt — described at the architecture level rather than as a list of technologies."
         >
@@ -224,9 +253,9 @@ function Portfolio() {
 
         <Section
           id="consulting"
-          index="03"
+          index="04"
           title="Consulting"
-          lead="A small, practical service layer around the areas where my production experience is most useful."
+          lead="A focused service layer for teams that need help understanding an expensive, unreliable or difficult-to-scale backend system."
         >
           <div className="grid gap-4 md:grid-cols-3">
             {serviceOffer.map((service) => (
@@ -242,9 +271,9 @@ function Portfolio() {
           <div className="mt-6 panel flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="font-mono text-xs uppercase tracking-widest text-primary">Start with the problem</p>
-              <h3 className="mt-2 text-xl font-semibold tracking-tight">Bring the architecture, bottleneck or design question.</h3>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">Bring the architecture, bottleneck or infrastructure bill.</h3>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-                Send context before the call; the goal is a focused conversation, not a generic consulting deck.
+                Send the context you already have. I will use it to decide whether a focused review is useful before proposing any larger work.
               </p>
             </div>
             <a
@@ -256,7 +285,7 @@ function Portfolio() {
           </div>
         </Section>
 
-        <Section id="experience" index="04" title="Experience">
+        <Section id="experience" index="05" title="Experience">
           <ol className="space-y-10">
             {roles.map((r) => (
               <li
@@ -273,7 +302,7 @@ function Portfolio() {
                   <ul className="mt-4 space-y-2">
                     {r.highlights.map((h) => (
                       <li key={h} className="flex gap-3 text-sm leading-relaxed">
-                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" aria-hidden="true" />
                         <span className="text-muted-foreground">{h}</span>
                       </li>
                     ))}
@@ -289,7 +318,7 @@ function Portfolio() {
           </ol>
         </Section>
 
-        <Section id="skills" index="05" title="Toolkit" lead="The current stack is the result of solving the problems above, not the product itself.">
+        <Section id="skills" index="06" title="Toolkit" lead="The current stack is the result of solving the problems above, not the product itself.">
           <div className="grid gap-4 md:grid-cols-3">
             {skillGroups.map((g) => (
               <div key={g.name} className="panel p-5">
@@ -313,7 +342,7 @@ function Portfolio() {
           </div>
         </Section>
 
-        <Section id="writing" index="06" title="Writing" lead="Notes from the work: systems, tradeoffs, failures and what changed afterward.">
+        <Section id="writing" index="07" title="Writing" lead="Notes from the work: systems, tradeoffs, failures and what changed afterward.">
           <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
             {writing.map((w) => (
               <li key={w.slug}>
@@ -333,17 +362,26 @@ function Portfolio() {
 
         <Section
           id="contact"
-          index="07"
+          index="08"
           title="Contact"
           lead="For backend, platform, infrastructure and focused technical consulting conversations."
         >
-          <div className="flex flex-wrap gap-3">
+          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+            <div className="panel p-6">
+              <p className="font-mono text-xs uppercase tracking-widest text-primary">Office hours</p>
+              <h3 className="mt-2 text-xl font-semibold">Monday–Friday · 10:30–19:30 IST</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                I keep consulting conversations within this window alongside my regular work schedule. Email is the best first step; I will reply during office hours.
+              </p>
+            </div>
             <a
-              href={`mailto:${profile.email}`}
-              className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              href={`mailto:${profile.email}?subject=Consulting%20request`}
+              className="rounded-md bg-primary px-6 py-3 text-center font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
             >
-              Email me
+              Email me →
             </a>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
             <a
               href={profile.linkedin}
               target="_blank"
@@ -366,15 +404,25 @@ function Portfolio() {
 
       <footer className="border-t border-border py-8">
         <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-6">
-          <p className="font-mono text-xs text-muted-foreground">© {new Date().getFullYear()} {profile.name}</p>
-          <a
-            href={profile.blog}
-            target="_blank"
-            rel="noreferrer"
-            className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
-          >
-            Blog & case studies →
-          </a>
+          <p className="font-mono text-xs text-muted-foreground">
+            © {new Date().getFullYear()} {profile.name}
+          </p>
+          <div className="flex items-center gap-4">
+            <a
+              href={`mailto:${profile.email}`}
+              className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+            >
+              {profile.email}
+            </a>
+            <a
+              href={profile.blog}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+            >
+              Blog
+            </a>
+          </div>
         </div>
       </footer>
     </div>
