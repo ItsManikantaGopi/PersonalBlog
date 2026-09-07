@@ -44,6 +44,18 @@ const nav = [
   { href: "#contact", label: "Contact" },
 ];
 
+const consultingHref = `mailto:${profile.email}?subject=${encodeURIComponent(
+  "Consulting request",
+)}&body=${encodeURIComponent(
+  "Hi Gopi,\n\nI'd like to discuss a backend or infrastructure problem.\n\nContext:\n\n",
+)}`;
+
+const primaryCtaClass =
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+const secondaryCtaClass =
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md border border-border bg-background/50 px-5 py-2.5 font-mono text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-surface hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
 function Section({
   id,
   index,
@@ -58,7 +70,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="border-t border-border py-20 md:py-28">
+    <section id={id} className="scroll-mt-20 border-t border-border py-20 md:py-28">
       <div className="mx-auto w-full max-w-5xl px-6">
         <div className="mb-10 flex flex-col gap-3 md:mb-14">
           <span className="rule-label">
@@ -85,8 +97,8 @@ function Portfolio() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
-          <a href="#top" className="font-mono text-sm font-medium tracking-tight">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
+          <a href="#top" className="shrink-0 font-mono text-sm font-medium tracking-tight">
             <span className="text-primary">~/</span>manikanta
           </a>
           <nav className="hidden gap-5 md:flex">
@@ -100,11 +112,8 @@ function Portfolio() {
               </a>
             ))}
           </nav>
-          <a
-            href={`mailto:${profile.email}?subject=Consulting%20request`}
-            className="rounded-md bg-primary px-3 py-1.5 font-mono text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Work with me
+          <a href={consultingHref} className={`${primaryCtaClass} min-h-9 px-3 py-1.5 text-xs`}>
+            Discuss a problem
           </a>
         </div>
       </header>
@@ -151,17 +160,11 @@ function Portfolio() {
                   ))}
                 </div>
                 <div className="mt-10 flex flex-wrap gap-3">
-                  <a
-                    href={`mailto:${profile.email}?subject=Consulting%20request`}
-                    className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-                  >
-                    Discuss a problem →
+                  <a href={consultingHref} className={primaryCtaClass}>
+                    Discuss a problem <span aria-hidden="true">→</span>
                   </a>
-                  <a
-                    href="#results"
-                    className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
-                  >
-                    See the results
+                  <a href="#results" className={secondaryCtaClass}>
+                    See the results <span className="ml-1" aria-hidden="true">↓</span>
                   </a>
                 </div>
                 <p className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
@@ -276,11 +279,8 @@ function Portfolio() {
                 Send the context you already have. I will use it to decide whether a focused review is useful before proposing any larger work.
               </p>
             </div>
-            <a
-              href={`mailto:${profile.email}?subject=Consulting%20request`}
-              className="shrink-0 rounded-md bg-primary px-5 py-2.5 text-center font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              Start a conversation →
+            <a href={consultingHref} className={`${primaryCtaClass} shrink-0`}>
+              Discuss this with me <span aria-hidden="true">→</span>
             </a>
           </div>
         </Section>
@@ -374,11 +374,8 @@ function Portfolio() {
                 I keep consulting conversations within this window alongside my regular work schedule. Email is the best first step; I will reply during office hours.
               </p>
             </div>
-            <a
-              href={`mailto:${profile.email}?subject=Consulting%20request`}
-              className="rounded-md bg-primary px-6 py-3 text-center font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              Email me →
+            <a href={consultingHref} className={`${primaryCtaClass} px-6`}>
+              Email me <span aria-hidden="true">→</span>
             </a>
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
@@ -386,7 +383,7 @@ function Portfolio() {
               href={profile.linkedin}
               target="_blank"
               rel="noreferrer"
-              className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
+              className={secondaryCtaClass}
             >
               LinkedIn
             </a>
@@ -394,7 +391,7 @@ function Portfolio() {
               href={profile.github}
               target="_blank"
               rel="noreferrer"
-              className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
+              className={secondaryCtaClass}
             >
               GitHub
             </a>
