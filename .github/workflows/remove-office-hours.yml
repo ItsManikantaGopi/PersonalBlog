@@ -1,0 +1,53 @@
+name: Remove office hours
+
+on:
+  push:
+    branches:
+      - cleanup-office-hours
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove office-hours UI
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('src/routes/index.tsx')
+          s = p.read_text()
+
+          s, n1 = re.subn(
+              r'\n\s*<p className="mt-5 font-mono text-\[11px\] uppercase tracking-widest text-muted-foreground">\s*Available for focused consulting conversations · Mon–Fri · 10:30–19:30 IST\s*</p>',
+              '', s, count=1
+          )
+
+          s, n2 = re.subn(
+              r'\n\s*<div className="panel p-6">\s*<p className="font-mono text-xs uppercase tracking-widest text-primary">Office hours</p>\s*<h3 className="mt-2 text-xl font-semibold">Monday–Friday · 10:30–19:30 IST</h3>\s*<p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">\s*I keep consulting conversations within this window alongside my regular work schedule\. Email is the best first step; I will reply during office hours\.\s*</p>\s*</div>',
+              '', s, count=1
+          )
+
+          if n1 != 1 or n2 != 1 or 'Office hours' in s or '10:30–19:30' in s:
+              raise SystemExit(f'Expected office-hours content not removed: hero={n1}, contact={n2}')
+
+          p.write_text(s)
+          PY
+
+      - name: Commit cleanup
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/routes/index.tsx
+          git commit -m 'fix: remove office hours section [skip ci]'
+          git push
+
+      - name: Remove temporary workflow
+        run: |
+          git rm .github/workflows/remove-office-hours.yml
+          git commit -m 'chore: remove temporary cleanup workflow [skip ci]'
+          git push
