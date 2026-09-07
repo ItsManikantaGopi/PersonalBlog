@@ -111,6 +111,14 @@ function Portfolio() {
                 {item.label}
               </a>
             ))}
+            <a
+              href="/resume.pdf"
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Resume
+            </a>
           </nav>
           <a href={consultingHref} className={`${primaryCtaClass} min-h-9 px-3 py-1.5 text-xs`}>
             Discuss a problem
@@ -354,6 +362,14 @@ function Portfolio() {
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
             <a
+              href="/resume.pdf"
+              target="_blank"
+              rel="noreferrer"
+              className={secondaryCtaClass}
+            >
+              View resume
+            </a>
+            <a
               href={profile.linkedin}
               target="_blank"
               rel="noreferrer"
@@ -392,6 +408,14 @@ function Portfolio() {
               className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
             >
               Blog
+            </a>
+            <a
+              href="/resume.pdf"
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+            >
+              Resume
             </a>
           </div>
         </div>
