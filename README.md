@@ -1,24 +1,33 @@
-# Portfolio Polish
+# Manikanta Gopi — Backend & Platform Engineering
 
-check the https://github.com/ItsManikantaGopi/PersonalBlog blog and update my portfolio properly, it is looking like a blog instead of some portfolio
+Professional portfolio and engineering writing site for Manikanta Gopi.
 
-This project was built with [Lovable](https://lovable.dev).
-
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/c26bd54c-687a-461d-b3cb-7bf706dbb077).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
+The site is positioned around production backend systems, platform engineering, infrastructure cost optimization, Kubernetes, cloud migrations, reliability, and focused technical consulting.
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Requirements: Node.js and npm.
 
 ```sh
-git clone <this-repository-url>
-cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Production build
+
+```sh
+npm run build
+```
+
+## Content
+
+Portfolio content is centralized in `src/data/portfolio.ts`.
+
+- Profile and contact details
+- Consulting services
+- Engineering problems and evidence
+- Results and production outcomes
+- Experience and skills
+- Writing links
+
+Professional static assets live under `public/`.
