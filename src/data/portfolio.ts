@@ -5,6 +5,7 @@ export const profile = {
   location: "Hyderabad, India",
   description:
     "Backend, platform and infrastructure engineering — with a focus on systems that need to remain understandable, measurable and reliable in production.",
+  photo: "/images/gopi-linkedin-professional.jpg",
   intro: [
     "I help teams reason about backend architecture, production bottlenecks and the infrastructure underneath their products.",
     "For the last four years that has meant Praja — a regional social platform — where I've worked across a Ruby on Rails monolith, Go and NestJS services, real-time systems, media processing and the Kubernetes fleet everything runs on.",
