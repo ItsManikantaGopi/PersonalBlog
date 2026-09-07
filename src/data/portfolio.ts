@@ -1,18 +1,19 @@
 export const profile = {
   name: "Manikanta Gopi",
-  role: "Senior Software Engineer",
-  tagline: "Backend, platform and infrastructure engineering.",
+  role: "Senior Backend & Platform Engineer",
+  tagline: "I build backend systems that stay reliable as they scale.",
   location: "Hyderabad, India",
   description:
-    "Backend systems and the infrastructure they run on — a Rails monolith, Go and NestJS services, and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
+    "Backend, platform and infrastructure engineering focused on cost, performance, reliability and systems that remain understandable in production.",
+  photo: "/images/gopi-linkedin-professional.jpg",
   intro: [
-    "I build the parts of a product that have to stay up.",
-    "For the last four years that has meant Praja — a regional social platform — where I've worked across a Ruby on Rails monolith, a set of Go and NestJS services around it, and the Kubernetes fleet all of it runs on. Along the way I've owned migrations, designed the release path, and shipped the infrastructure a paid tier depends on.",
-    "I like the problems where the answer is a measurement rather than an opinion: which queue is actually the bottleneck, what the p90 really is, whether the new model is better or just different.",
+    "I help teams reason about backend architecture, production bottlenecks and the infrastructure underneath their products.",
+    "My work spans a large Rails platform, Go and NestJS services, real-time systems, media processing, cloud migrations and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
+    "I prefer evidence over architecture theatre: find the real constraint, measure it, make the smallest useful change, and verify what moved.",
   ],
   github: "https://github.com/ItsManikantaGopi",
   linkedin: "https://www.linkedin.com/in/gopimanikanta/",
-  email: "manikantagopi00@gmail.com",
+  email: "gopimanikant50@gmail.com",
   blog: "https://itsmanikantagopi.github.io/PersonalBlog",
 };
 
@@ -21,6 +22,96 @@ export const stats = [
   { value: "24", label: "services on the fleet", detail: "GitOps-managed on AWS EKS" },
   { value: "3", label: "clouds worked across", detail: "AWS primary, GCP and Azure" },
   { value: "1", label: "zero-downtime migration", detail: "Azure AKS → AWS EKS, live cutover" },
+];
+
+export const results = [
+  {
+    value: "~$18k → ~$1.8k/mo",
+    label: "video processing infrastructure",
+    detail: "Moved the workload from Lambda + FFmpeg to in-house Kubernetes workers.",
+  },
+  {
+    value: "~$500/mo",
+    label: "database savings",
+    detail: "Identified resource-intensive queries and changed the surrounding systems.",
+  },
+  {
+    value: "~$400/mo",
+    label: "Kubernetes capacity savings",
+    detail: "Used Karpenter with Spot + On-Demand capacity for resource-intensive workloads.",
+  },
+  {
+    value: "~$800 saved",
+    label: "S3 storage in May",
+    detail: "Added expiry for ephemeral media and prevented storage from growing unchecked.",
+  },
+];
+
+export const serviceOffer = [
+  {
+    title: "Infrastructure cost review",
+    summary:
+      "Find the workloads, storage, database usage and capacity decisions driving an unexpectedly high infrastructure bill.",
+    fit: "Useful when cloud spend is growing faster than traffic or product usage.",
+  },
+  {
+    title: "Architecture & bottleneck review",
+    summary:
+      "Trace a slow or unreliable workflow through services, queues, storage and infrastructure to identify the constraint that actually matters.",
+    fit: "Useful before a major build, migration or scaling decision — or when dashboards show symptoms but not the root cause.",
+  },
+  {
+    title: "Cloud & Kubernetes review",
+    summary:
+      "Review deployment, capacity, autoscaling, observability and operational boundaries in an existing cloud or Kubernetes setup.",
+    fit: "Useful for teams that have grown quickly and want a more reliable, understandable platform without a rewrite.",
+  },
+];
+
+export type Problem = {
+  title: string;
+  summary: string;
+  evidence: string;
+  href?: string;
+};
+
+export const problems: Problem[] = [
+  {
+    title: "Infrastructure costs are too high",
+    summary: "Find the expensive workload, storage lifecycle or capacity decision instead of cutting infrastructure blindly.",
+    evidence: "Reduced video-processing infrastructure from roughly $18k/month to ~$1.8k/month and delivered additional DB, S3 and Kubernetes savings.",
+    href: "#results",
+  },
+  {
+    title: "Scaling backend workloads",
+    summary: "Move capacity decisions from guesswork to the signal that actually represents work in the system.",
+    evidence: "KEDA-scaled media workers driven by queue depth, plus seasonal capacity planning for festival-day peaks.",
+    href: "#work",
+  },
+  {
+    title: "Distributed systems",
+    summary: "Design boundaries, fan-out paths and asynchronous workflows without hiding the operational cost.",
+    evidence: "Real-time messaging with Socket.IO and Redis pub/sub, plus separate Go and NestJS services around the core platform.",
+    href: "#work",
+  },
+  {
+    title: "Infrastructure and migrations",
+    summary: "Change the underlying platform while keeping the product moving and the blast radius controlled.",
+    evidence: "Production migration from Azure AKS to AWS EKS with Terraform, service-by-service cutover, DNS/CDN moves and deliberate decommissioning.",
+    href: "#work",
+  },
+  {
+    title: "Performance and observability",
+    summary: "Measure the slow path, make it legible, and verify that the fix improved the right thing.",
+    evidence: "Rails and Sidekiq workload tuning, OpenSearch-backed systems, CI timing splits, and New Relic / Prometheus / Grafana / Loki instrumentation.",
+    href: "#work",
+  },
+  {
+    title: "Applied ML infrastructure",
+    summary: "Take an ML capability from an external black box to an operationally owned service when the economics or control justify it.",
+    evidence: "Background removal moved from a hosted vision API to a self-hosted ONNX GPU service in the Kubernetes cluster.",
+    href: "#work",
+  },
 ];
 
 export type Project = {
@@ -115,15 +206,6 @@ export const projects: Project[] = [
     kind: "Open source",
   },
   {
-    slug: "rails2x",
-    title: "rails2x: translating Rails to Go through an AST",
-    summary:
-      "A migration engine that parses Ruby with tree-sitter, lifts it into a typed IR, and scaffolds Goravel code — with static gates that refuse to publish a partial tree.",
-    period: "2026",
-    stack: ["Go", "tree-sitter", "Ruby", "Goravel"],
-    kind: "Open source",
-  },
-  {
     slug: "sidekiq-assured-jobs",
     title: "sidekiq-assured-jobs: not losing the job when the worker dies",
     summary:
@@ -143,9 +225,10 @@ export const roles = [
       "Platform and infrastructure ownership alongside product work: the Kubernetes fleet, the media generation pipeline, and the release path everything ships through.",
     highlights: [
       "Own the GitOps repository describing ~24 services on the production AWS cluster — Helm charts, per-environment values, automated image bumps on merge.",
-      "Built the in-cluster video poster pipeline that replaced a Lambda + FFmpeg design with KEDA-scaled workers driven by Redis queue depth.",
-      "Moved CI to CircleCI with timing-based test splitting across parallel containers, and moved API, web and admin deploys onto the same path.",
-      "Ran seasonal capacity planning for sharp, predictable festival-day traffic peaks.",
+      "Reduced video-processing infrastructure from roughly $18k/month to ~$1.8k/month by moving Lambda + FFmpeg workloads to in-house Kubernetes workers.",
+      "Optimized database workloads and storage lifecycle, contributing roughly $500/month in DB savings and ~$800 saved in May from S3 expiry policies.",
+      "Enabled Karpenter with Spot + On-Demand capacity for resource-intensive workloads, reducing costs by roughly $400/month.",
+      "Migrated queueing infrastructure from Redis to Dragonfly without downtime.",
       "Took background removal from a hosted vendor API to a self-hosted ONNX GPU service in-cluster.",
     ],
     stack: ["Kubernetes", "Helm", "Terraform", "AWS", "KEDA", "Karpenter", "CircleCI", "Rails", "NestJS", "Go"],

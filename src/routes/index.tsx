@@ -2,11 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   profile,
   stats,
+  results,
   projects,
   roles,
   skillGroups,
   education,
   writing,
+  serviceOffer,
+  problems,
 } from "@/data/portfolio";
 
 export const Route = createFileRoute("/")({
@@ -16,13 +19,13 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Portfolio of Manikanta Gopi, Senior Software Engineer in Hyderabad — Rails, Go and NestJS services on a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
+          "Senior backend and platform engineering across architecture, infrastructure cost, Kubernetes, cloud migrations and production reliability.",
       },
       { property: "og:title", content: "Manikanta Gopi — Senior Backend & Platform Engineer" },
       {
         property: "og:description",
         content:
-          "Backend systems and the infrastructure they run on: a Rails monolith, Go and NestJS services, and a 24-service Kubernetes fleet.",
+          "Production backend systems, infrastructure cost optimization, cloud migrations and focused technical consulting.",
       },
       { property: "og:type", content: "profile" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -32,12 +35,26 @@ export const Route = createFileRoute("/")({
 });
 
 const nav = [
+  { href: "#problems", label: "Problems" },
+  { href: "#results", label: "Results" },
   { href: "#work", label: "Work" },
+  { href: "#consulting", label: "Consulting" },
   { href: "#experience", label: "Experience" },
-  { href: "#skills", label: "Skills" },
   { href: "#writing", label: "Writing" },
   { href: "#contact", label: "Contact" },
 ];
+
+const consultingHref = `mailto:${profile.email}?subject=${encodeURIComponent(
+  "Consulting request",
+)}&body=${encodeURIComponent(
+  "Hi Gopi,\n\nI'd like to discuss a backend or infrastructure problem.\n\nContext:\n\n",
+)}`;
+
+const primaryCtaClass =
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+const secondaryCtaClass =
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md border border-border bg-background/50 px-5 py-2.5 font-mono text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-surface hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 function Section({
   id,
@@ -53,7 +70,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="border-t border-border py-20 md:py-28">
+    <section id={id} className="scroll-mt-20 border-t border-border py-20 md:py-28">
       <div className="mx-auto w-full max-w-5xl px-6">
         <div className="mb-10 flex flex-col gap-3 md:mb-14">
           <span className="rule-label">
@@ -80,61 +97,54 @@ function Portfolio() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
-          <a href="#top" className="font-mono text-sm font-medium tracking-tight">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
+          <a href="#top" className="shrink-0 font-mono text-sm font-medium tracking-tight">
             <span className="text-primary">~/</span>manikanta
           </a>
-          <nav className="hidden gap-6 md:flex">
+          <nav className="hidden gap-5 md:flex">
             {nav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="font-mono text-xs uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
+                className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
               >
                 {item.label}
               </a>
             ))}
           </nav>
-          <a
-            href={profile.github}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-md border border-border px-3 py-1.5 font-mono text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-          >
-            GitHub
+          <a href={consultingHref} className={`${primaryCtaClass} min-h-9 px-3 py-1.5 text-xs`}>
+            Discuss a problem
           </a>
         </div>
       </header>
 
       <main id="top">
-        {/* Hero */}
         <section className="hero-glow">
-          <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-20 md:pb-28 md:pt-28">
-            <span className="rule-label">
-              {profile.role} · {profile.location}
-            </span>
-            <h1 className="mt-5 max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight md:text-6xl">
-              {profile.name}
-              <span className="block text-primary">{profile.tagline}</span>
-            </h1>
-            <div className="mt-8 max-w-2xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-              {profile.intro.map((p) => (
-                <p key={p.slice(0, 24)}>{p}</p>
-              ))}
-            </div>
-            <div className="mt-10 flex flex-wrap gap-3">
-              <a
-                href="#work"
-                className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                See selected work
-              </a>
-              <a
-                href={`mailto:${profile.email}`}
-                className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
-              >
-                Get in touch
-              </a>
+          <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-16 md:pb-28 md:pt-24">
+            <div className="max-w-4xl">
+              <span className="rule-label">
+                {profile.role} · {profile.location}
+              </span>
+              <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
+                {profile.name}
+                <span className="block text-primary">{profile.tagline}</span>
+              </h1>
+              <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                {profile.intro.map((p) => (
+                  <p key={p.slice(0, 24)}>{p}</p>
+                ))}
+              </div>
+              <div className="mt-10 flex flex-wrap gap-3">
+                <a href={consultingHref} className={primaryCtaClass}>
+                  Discuss a problem <span aria-hidden="true">→</span>
+                </a>
+                <a href="#results" className={secondaryCtaClass}>
+                  See the results <span className="ml-1" aria-hidden="true">↓</span>
+                </a>
+              </div>
+              <p className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                Available for focused consulting conversations · Mon–Fri · 10:30–19:30 IST
+              </p>
             </div>
 
             <dl className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">
@@ -151,12 +161,48 @@ function Portfolio() {
           </div>
         </section>
 
-        {/* Work */}
+        <Section
+          id="problems"
+          index="01"
+          title="Problems I solve"
+          lead="The useful question is not which tools I know. It is which engineering problem I can help you make clearer."
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            {problems.map((problem) => (
+              <article key={problem.title} className="panel p-6">
+                <h3 className="text-lg font-semibold tracking-tight">{problem.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{problem.summary}</p>
+                <div className="mt-5 border-l border-primary/40 pl-4">
+                  <p className="font-mono text-xs uppercase tracking-widest text-primary">Proof</p>
+                  <p className="mt-2 text-sm leading-relaxed">{problem.evidence}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </Section>
+
+        <Section
+          id="results"
+          index="02"
+          title="Results"
+          lead="The strongest proof is what changed after the engineering work — cost, reliability, capacity or operational control."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            {results.map((result) => (
+              <article key={result.label} className="panel p-6">
+                <p className="font-mono text-2xl font-semibold tracking-tight text-primary md:text-3xl">{result.value}</p>
+                <h3 className="mt-3 text-base font-semibold">{result.label}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{result.detail}</p>
+              </article>
+            ))}
+          </div>
+        </Section>
+
         <Section
           id="work"
-          index="01"
-          title="Selected work"
-          lead="Systems I designed, owned or rebuilt — described at the architecture level."
+          index="03"
+          title="Evidence"
+          lead="Systems I designed, owned or rebuilt — described at the architecture level rather than as a list of technologies."
         >
           <div className="grid gap-4 md:grid-cols-2">
             {projects.map((p) => (
@@ -170,12 +216,8 @@ function Portfolio() {
                   </span>
                   <span className="font-mono text-[11px] text-muted-foreground">{p.period}</span>
                 </div>
-                <h3 className="mt-4 text-lg font-semibold leading-snug tracking-tight">
-                  {p.title}
-                </h3>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">
-                  {p.summary}
-                </p>
+                <h3 className="mt-4 text-lg font-semibold leading-snug tracking-tight">{p.title}</h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">{p.summary}</p>
                 <div className="mt-5 flex flex-wrap gap-1.5">
                   {p.stack.map((s) => (
                     <Tag key={s}>{s}</Tag>
@@ -186,8 +228,38 @@ function Portfolio() {
           </div>
         </Section>
 
-        {/* Experience */}
-        <Section id="experience" index="02" title="Experience">
+        <Section
+          id="consulting"
+          index="04"
+          title="Consulting"
+          lead="A focused service layer for teams that need help understanding an expensive, unreliable or difficult-to-scale backend system."
+        >
+          <div className="grid gap-4 md:grid-cols-3">
+            {serviceOffer.map((service) => (
+              <article key={service.title} className="panel flex flex-col p-6">
+                <h3 className="text-lg font-semibold tracking-tight">{service.title}</h3>
+                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">{service.summary}</p>
+                <p className="mt-5 border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">
+                  {service.fit}
+                </p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-6 panel flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-widest text-primary">Start with the problem</p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">Bring the architecture, bottleneck or infrastructure bill.</h3>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                Send the context you already have. I will use it to decide whether a focused review is useful before proposing any larger work.
+              </p>
+            </div>
+            <a href={consultingHref} className={`${primaryCtaClass} shrink-0`}>
+              Discuss this with me <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </Section>
+
+        <Section id="experience" index="05" title="Experience">
           <ol className="space-y-10">
             {roles.map((r) => (
               <li
@@ -204,7 +276,7 @@ function Portfolio() {
                   <ul className="mt-4 space-y-2">
                     {r.highlights.map((h) => (
                       <li key={h} className="flex gap-3 text-sm leading-relaxed">
-                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                        <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" aria-hidden="true" />
                         <span className="text-muted-foreground">{h}</span>
                       </li>
                     ))}
@@ -220,8 +292,7 @@ function Portfolio() {
           </ol>
         </Section>
 
-        {/* Skills */}
-        <Section id="skills" index="03" title="Toolkit">
+        <Section id="skills" index="06" title="Toolkit" lead="The current stack is the result of solving the problems above, not the product itself.">
           <div className="grid gap-4 md:grid-cols-3">
             {skillGroups.map((g) => (
               <div key={g.name} className="panel p-5">
@@ -239,21 +310,13 @@ function Portfolio() {
             {education.map((e) => (
               <div key={e.institution} className="mt-4">
                 <p className="text-sm font-medium">{e.qualification}</p>
-                <p className="text-sm text-muted-foreground">
-                  {e.institution} · {e.year} · {e.detail}
-                </p>
+                <p className="text-sm text-muted-foreground">{e.institution} · {e.year} · {e.detail}</p>
               </div>
             ))}
           </div>
         </Section>
 
-        {/* Writing */}
-        <Section
-          id="writing"
-          index="04"
-          title="Writing"
-          lead="Notes from the work, published on the blog."
-        >
+        <Section id="writing" index="07" title="Writing" lead="Notes from the work: systems, tradeoffs, failures and what changed afterward.">
           <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
             {writing.map((w) => (
               <li key={w.slug}>
@@ -271,25 +334,30 @@ function Portfolio() {
           </ul>
         </Section>
 
-        {/* Contact */}
         <Section
           id="contact"
-          index="05"
+          index="08"
           title="Contact"
-          lead="Open to conversations about backend, platform and infrastructure work."
+          lead="For backend, platform, infrastructure and focused technical consulting conversations."
         >
-          <div className="flex flex-wrap gap-3">
-            <a
-              href={`mailto:${profile.email}`}
-              className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              {profile.email}
+          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+            <div className="panel p-6">
+              <p className="font-mono text-xs uppercase tracking-widest text-primary">Office hours</p>
+              <h3 className="mt-2 text-xl font-semibold">Monday–Friday · 10:30–19:30 IST</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                I keep consulting conversations within this window alongside my regular work schedule. Email is the best first step; I will reply during office hours.
+              </p>
+            </div>
+            <a href={consultingHref} className={`${primaryCtaClass} px-6`}>
+              Email me <span aria-hidden="true">→</span>
             </a>
+          </div>
+          <div className="mt-5 flex flex-wrap gap-3">
             <a
               href={profile.linkedin}
               target="_blank"
               rel="noreferrer"
-              className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
+              className={secondaryCtaClass}
             >
               LinkedIn
             </a>
@@ -297,7 +365,7 @@ function Portfolio() {
               href={profile.github}
               target="_blank"
               rel="noreferrer"
-              className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
+              className={secondaryCtaClass}
             >
               GitHub
             </a>
@@ -310,14 +378,22 @@ function Portfolio() {
           <p className="font-mono text-xs text-muted-foreground">
             © {new Date().getFullYear()} {profile.name}
           </p>
-          <a
-            href={profile.blog}
-            target="_blank"
-            rel="noreferrer"
-            className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
-          >
-            Blog & case studies →
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href={`mailto:${profile.email}`}
+              className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+            >
+              {profile.email}
+            </a>
+            <a
+              href={profile.blog}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+            >
+              Blog
+            </a>
+          </div>
         </div>
       </footer>
     </div>
