@@ -150,9 +150,6 @@ function Portfolio() {
                   See the results <span className="ml-1" aria-hidden="true">↓</span>
                 </a>
               </div>
-              <p className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                Available for focused consulting conversations · Mon–Fri · 10:30–19:30 IST
-              </p>
             </div>
 
             <dl className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">
@@ -349,13 +346,6 @@ function Portfolio() {
           lead="For backend, platform, infrastructure and focused technical consulting conversations."
         >
           <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-            <div className="panel p-6">
-              <p className="font-mono text-xs uppercase tracking-widest text-primary">Office hours</p>
-              <h3 className="mt-2 text-xl font-semibold">Monday–Friday · 10:30–19:30 IST</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                I keep consulting conversations within this window alongside my regular work schedule. Email is the best first step; I will reply during office hours.
-              </p>
-            </div>
             <a href={consultingHref} className={`${primaryCtaClass} px-6`}>
               Email me <span aria-hidden="true">→</span>
             </a>
