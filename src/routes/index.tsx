@@ -121,56 +121,30 @@ function Portfolio() {
       <main id="top">
         <section className="hero-glow">
           <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-16 md:pb-28 md:pt-24">
-            <div className="grid items-center gap-10 md:grid-cols-[250px_minmax(0,1fr)] lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-16">
-              <div className="order-2 mx-auto w-full max-w-[280px] md:order-1 md:max-w-none">
-                <div className="relative mx-auto w-full max-w-[280px]">
-                  <div
-                    className="absolute -inset-3 rounded-full border border-primary/20 bg-primary/5 blur-sm"
-                    aria-hidden="true"
-                  />
-                  <div className="relative aspect-square overflow-hidden rounded-full border-2 border-border bg-surface shadow-xl">
-                    <img
-                      src={profile.photo}
-                      alt={profile.name}
-                      className="h-full w-full object-cover object-center"
-                      loading="eager"
-                      fetchPriority="high"
-                    />
-                  </div>
-                  <div className="mt-5 text-center">
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-primary">
-                      Backend · Platform · Infrastructure
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">Production systems, cost and reliability.</p>
-                  </div>
-                </div>
+            <div className="max-w-4xl">
+              <span className="rule-label">
+                {profile.role} · {profile.location}
+              </span>
+              <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
+                {profile.name}
+                <span className="block text-primary">{profile.tagline}</span>
+              </h1>
+              <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                {profile.intro.map((p) => (
+                  <p key={p.slice(0, 24)}>{p}</p>
+                ))}
               </div>
-
-              <div className="order-1 md:order-2">
-                <span className="rule-label">
-                  {profile.role} · {profile.location}
-                </span>
-                <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
-                  {profile.name}
-                  <span className="block text-primary">{profile.tagline}</span>
-                </h1>
-                <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                  {profile.intro.map((p) => (
-                    <p key={p.slice(0, 24)}>{p}</p>
-                  ))}
-                </div>
-                <div className="mt-10 flex flex-wrap gap-3">
-                  <a href={consultingHref} className={primaryCtaClass}>
-                    Discuss a problem <span aria-hidden="true">→</span>
-                  </a>
-                  <a href="#results" className={secondaryCtaClass}>
-                    See the results <span className="ml-1" aria-hidden="true">↓</span>
-                  </a>
-                </div>
-                <p className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                  Available for focused consulting conversations · Mon–Fri · 10:30–19:30 IST
-                </p>
+              <div className="mt-10 flex flex-wrap gap-3">
+                <a href={consultingHref} className={primaryCtaClass}>
+                  Discuss a problem <span aria-hidden="true">→</span>
+                </a>
+                <a href="#results" className={secondaryCtaClass}>
+                  See the results <span className="ml-1" aria-hidden="true">↓</span>
+                </a>
               </div>
+              <p className="mt-5 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                Available for focused consulting conversations · Mon–Fri · 10:30–19:30 IST
+              </p>
             </div>
 
             <dl className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">
