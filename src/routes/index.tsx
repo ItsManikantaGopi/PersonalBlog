@@ -110,31 +110,52 @@ function Portfolio() {
       <main id="top">
         <section className="hero-glow">
           <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-20 md:pb-28 md:pt-28">
-            <span className="rule-label">
-              {profile.role} · {profile.location}
-            </span>
-            <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
-              {profile.name}
-              <span className="block text-primary">{profile.tagline}</span>
-            </h1>
-            <div className="mt-8 max-w-2xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-              {profile.intro.map((p) => (
-                <p key={p.slice(0, 24)}>{p}</p>
-              ))}
-            </div>
-            <div className="mt-10 flex flex-wrap gap-3">
-              <a
-                href="#consulting"
-                className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-              >
-                Discuss a problem
-              </a>
-              <a
-                href="#work"
-                className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
-              >
-                See the evidence
-              </a>
+            <div className="grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_280px] lg:grid-cols-[minmax(0,1fr)_320px]">
+              <div>
+                <span className="rule-label">
+                  {profile.role} · {profile.location}
+                </span>
+                <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
+                  {profile.name}
+                  <span className="block text-primary">{profile.tagline}</span>
+                </h1>
+                <div className="mt-8 max-w-2xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  {profile.intro.map((p) => (
+                    <p key={p.slice(0, 24)}>{p}</p>
+                  ))}
+                </div>
+                <div className="mt-10 flex flex-wrap gap-3">
+                  <a
+                    href="#consulting"
+                    className="rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    Discuss a problem
+                  </a>
+                  <a
+                    href="#work"
+                    className="rounded-md border border-border px-5 py-2.5 font-mono text-sm transition-colors hover:border-primary hover:text-primary"
+                  >
+                    See the evidence
+                  </a>
+                </div>
+              </div>
+
+              <div className="relative mx-auto w-full max-w-[320px] md:mx-0 md:ml-auto">
+                <div className="absolute -inset-3 rounded-2xl border border-primary/15 bg-primary/5 blur-sm" aria-hidden="true" />
+                <div className="relative overflow-hidden rounded-2xl border border-border bg-surface shadow-xl">
+                  <img
+                    src={profile.photo}
+                    alt={`${profile.name} — ${profile.role}`}
+                    className="aspect-square w-full object-cover object-center"
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                  <div className="border-t border-border px-4 py-3">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-primary">Backend · Platform · Infrastructure</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Production systems, cost and reliability.</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <dl className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">
