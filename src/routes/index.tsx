@@ -7,7 +7,6 @@ import {
   roles,
   skillGroups,
   education,
-  writing,
   serviceOffer,
   problems,
 } from "@/data/portfolio";
@@ -40,7 +39,6 @@ const nav = [
   { href: "#work", label: "Work" },
   { href: "#consulting", label: "Consulting" },
   { href: "#experience", label: "Experience" },
-  { href: "#writing", label: "Writing" },
   { href: "#contact", label: "Contact" },
 ];
 
@@ -321,27 +319,9 @@ function Portfolio() {
           </div>
         </Section>
 
-        <Section id="writing" index="07" title="Writing" lead="Notes from the work: systems, tradeoffs, failures and what changed afterward.">
-          <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border">
-            {writing.map((w) => (
-              <li key={w.slug}>
-                <a
-                  href={`${profile.blog}/writing/${w.slug}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-between gap-4 bg-surface px-5 py-4 transition-colors hover:bg-surface-raised"
-                >
-                  <span className="text-sm font-medium">{w.title}</span>
-                  <span className="font-mono text-xs text-muted-foreground">read →</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </Section>
-
         <Section
           id="contact"
-          index="08"
+          index="07"
           title="Contact"
           lead="For backend, platform, infrastructure and focused technical consulting conversations."
         >
