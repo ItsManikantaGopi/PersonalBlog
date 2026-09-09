@@ -307,12 +307,3 @@ export const education = [
     detail: "GPA 9.3 / 10",
   },
 ];
-
-export const writing = [
-  { title: "Keeping a large monolith habitable", slug: "what-1700-pull-requests-look-like" },
-  { title: "Scale on the queue, not the CPU", slug: "scale-on-the-queue-not-the-cpu" },
-  { title: "A better model made the product worse", slug: "a-better-model-made-the-product-worse" },
-  { title: "Scaling, and the bottleneck you moved", slug: "scaling-and-the-bottleneck-you-moved" },
-  { title: "Services in Kubernetes", slug: "services-in-kubernetes" },
-  { title: "Lessons from the first few years", slug: "lessons-from-the-first-few-years" },
-];
