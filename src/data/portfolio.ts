@@ -5,7 +5,6 @@ export const profile = {
   location: "Hyderabad, India",
   description:
     "Backend, platform and infrastructure engineering focused on cost, performance, reliability and systems that remain understandable in production.",
-  photo: "/images/gopi-linkedin-professional.jpg",
   intro: [
     "I help teams reason about backend architecture, production bottlenecks and the infrastructure underneath their products.",
     "My work spans a large Rails platform, Go and NestJS services, real-time systems, media processing, cloud migrations and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
