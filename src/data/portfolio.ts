@@ -5,7 +5,6 @@ export const profile = {
   location: "Hyderabad, India",
   description:
     "Backend, platform and infrastructure engineering focused on cost, performance, reliability and systems that remain understandable in production.",
-  photo: "/images/gopi-linkedin-professional.jpg",
   intro: [
     "I help teams reason about backend architecture, production bottlenecks and the infrastructure underneath their products.",
     "My work spans a large Rails platform, Go and NestJS services, real-time systems, media processing, cloud migrations and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
@@ -306,13 +305,4 @@ export const education = [
     year: "2022",
     detail: "GPA 9.3 / 10",
   },
-];
-
-export const writing = [
-  { title: "Keeping a large monolith habitable", slug: "what-1700-pull-requests-look-like" },
-  { title: "Scale on the queue, not the CPU", slug: "scale-on-the-queue-not-the-cpu" },
-  { title: "A better model made the product worse", slug: "a-better-model-made-the-product-worse" },
-  { title: "Scaling, and the bottleneck you moved", slug: "scaling-and-the-bottleneck-you-moved" },
-  { title: "Services in Kubernetes", slug: "services-in-kubernetes" },
-  { title: "Lessons from the first few years", slug: "lessons-from-the-first-few-years" },
 ];
