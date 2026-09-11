@@ -127,38 +127,26 @@ function Portfolio() {
       <main id="top">
         <section className="hero-glow">
           <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-14 md:pb-24 md:pt-20">
-            <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-14">
-              <div className="max-w-4xl">
-                <span className="rule-label">
-                  {profile.role} · {profile.location}
-                </span>
-                <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
-                  {profile.name}
-                  <span className="block text-primary">{profile.tagline}</span>
-                </h1>
-                <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                  {profile.intro.map((p) => (
-                    <p key={p.slice(0, 24)}>{p}</p>
-                  ))}
-                </div>
-                <div className="mt-9 flex flex-wrap gap-3">
-                  <a href={consultingHref} className={primaryCtaClass}>
-                    Discuss a problem <span aria-hidden="true">→</span>
-                  </a>
-                  <a href="#results" className={secondaryCtaClass}>
-                    See the results <span className="ml-1" aria-hidden="true">↓</span>
-                  </a>
-                </div>
+            <div className="max-w-4xl">
+              <span className="rule-label">
+                {profile.role} · {profile.location}
+              </span>
+              <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
+                {profile.name}
+                <span className="block text-primary">{profile.tagline}</span>
+              </h1>
+              <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                {profile.intro.map((p) => (
+                  <p key={p.slice(0, 24)}>{p}</p>
+                ))}
               </div>
-
-              <div className="hidden justify-self-center lg:block">
-                <div className="profile-photo-frame">
-                  <img
-                    src={profile.photo}
-                    alt="Manikanta Gopi"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
+              <div className="mt-9 flex flex-wrap gap-3">
+                <a href={consultingHref} className={primaryCtaClass}>
+                  Discuss a problem <span aria-hidden="true">→</span>
+                </a>
+                <a href="#results" className={secondaryCtaClass}>
+                  See the results <span className="ml-1" aria-hidden="true">↓</span>
+                </a>
               </div>
             </div>
 
