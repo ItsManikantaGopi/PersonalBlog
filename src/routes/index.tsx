@@ -68,9 +68,9 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-20 border-t border-border py-20 md:py-28">
+    <section id={id} className="scroll-mt-20 border-t border-border py-16 md:py-24">
       <div className="mx-auto w-full max-w-5xl px-6">
-        <div className="mb-10 flex flex-col gap-3 md:mb-14">
+        <div className="mb-9 flex flex-col gap-3 md:mb-12">
           <span className="rule-label">
             {index} / {title}
           </span>
@@ -94,7 +94,7 @@ function Tag({ children }: { children: React.ReactNode }) {
 function Portfolio() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur">
+      <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
           <a href="#top" className="shrink-0 font-mono text-sm font-medium tracking-tight">
             <span className="text-primary">~/</span>manikanta
@@ -126,31 +126,43 @@ function Portfolio() {
 
       <main id="top">
         <section className="hero-glow">
-          <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-16 md:pb-28 md:pt-24">
-            <div className="max-w-4xl">
-              <span className="rule-label">
-                {profile.role} · {profile.location}
-              </span>
-              <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
-                {profile.name}
-                <span className="block text-primary">{profile.tagline}</span>
-              </h1>
-              <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
-                {profile.intro.map((p) => (
-                  <p key={p.slice(0, 24)}>{p}</p>
-                ))}
+          <div className="mx-auto w-full max-w-5xl px-6 pb-20 pt-14 md:pb-24 md:pt-20">
+            <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_220px] lg:gap-14">
+              <div className="max-w-4xl">
+                <span className="rule-label">
+                  {profile.role} · {profile.location}
+                </span>
+                <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.04] tracking-tight md:text-6xl">
+                  {profile.name}
+                  <span className="block text-primary">{profile.tagline}</span>
+                </h1>
+                <div className="mt-8 max-w-3xl space-y-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+                  {profile.intro.map((p) => (
+                    <p key={p.slice(0, 24)}>{p}</p>
+                  ))}
+                </div>
+                <div className="mt-9 flex flex-wrap gap-3">
+                  <a href={consultingHref} className={primaryCtaClass}>
+                    Discuss a problem <span aria-hidden="true">→</span>
+                  </a>
+                  <a href="#results" className={secondaryCtaClass}>
+                    See the results <span className="ml-1" aria-hidden="true">↓</span>
+                  </a>
+                </div>
               </div>
-              <div className="mt-10 flex flex-wrap gap-3">
-                <a href={consultingHref} className={primaryCtaClass}>
-                  Discuss a problem <span aria-hidden="true">→</span>
-                </a>
-                <a href="#results" className={secondaryCtaClass}>
-                  See the results <span className="ml-1" aria-hidden="true">↓</span>
-                </a>
+
+              <div className="hidden justify-self-center lg:block">
+                <div className="profile-photo-frame">
+                  <img
+                    src={profile.photo}
+                    alt="Manikanta Gopi"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
               </div>
             </div>
 
-            <dl className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">
+            <dl className="mt-14 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-4">
               {stats.map((s) => (
                 <div key={s.label} className="bg-surface p-5">
                   <dt className="font-mono text-2xl font-semibold text-primary md:text-3xl">
@@ -172,7 +184,7 @@ function Portfolio() {
         >
           <div className="grid gap-4 md:grid-cols-2">
             {problems.map((problem) => (
-              <article key={problem.title} className="panel p-6">
+              <article key={problem.title} className="panel p-6 transition-colors hover:border-primary/50">
                 <h3 className="text-lg font-semibold tracking-tight">{problem.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{problem.summary}</p>
                 <div className="mt-5 border-l border-primary/40 pl-4">
@@ -192,7 +204,7 @@ function Portfolio() {
         >
           <div className="grid gap-4 sm:grid-cols-2">
             {results.map((result) => (
-              <article key={result.label} className="panel p-6">
+              <article key={result.label} className="panel p-6 transition-colors hover:border-primary/50">
                 <p className="font-mono text-2xl font-semibold tracking-tight text-primary md:text-3xl">{result.value}</p>
                 <h3 className="mt-3 text-base font-semibold">{result.label}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{result.detail}</p>
@@ -214,9 +226,7 @@ function Portfolio() {
                 className="panel group flex flex-col p-6 transition-colors hover:border-primary/60"
               >
                 <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[11px] uppercase tracking-widest text-accent">
-                    {p.kind}
-                  </span>
+                  <span className="font-mono text-[11px] uppercase tracking-widest text-accent">{p.kind}</span>
                   <span className="font-mono text-[11px] text-muted-foreground">{p.period}</span>
                 </div>
                 <h3 className="mt-4 text-lg font-semibold leading-snug tracking-tight">{p.title}</h3>
@@ -239,12 +249,10 @@ function Portfolio() {
         >
           <div className="grid gap-4 md:grid-cols-3">
             {serviceOffer.map((service) => (
-              <article key={service.title} className="panel flex flex-col p-6">
+              <article key={service.title} className="panel flex flex-col p-6 transition-colors hover:border-primary/50">
                 <h3 className="text-lg font-semibold tracking-tight">{service.title}</h3>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">{service.summary}</p>
-                <p className="mt-5 border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">
-                  {service.fit}
-                </p>
+                <p className="mt-5 border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">{service.fit}</p>
               </article>
             ))}
           </div>
@@ -265,10 +273,7 @@ function Portfolio() {
         <Section id="experience" index="05" title="Experience">
           <ol className="space-y-10">
             {roles.map((r) => (
-              <li
-                key={r.title + r.period}
-                className="grid gap-4 border-l border-border pl-6 md:grid-cols-[200px_1fr] md:gap-8"
-              >
+              <li key={r.title + r.period} className="grid gap-4 border-l border-border pl-6 md:grid-cols-[200px_1fr] md:gap-8">
                 <div>
                   <p className="font-mono text-xs text-primary">{r.period}</p>
                   <p className="mt-2 text-sm text-muted-foreground">{r.company}</p>
@@ -298,7 +303,7 @@ function Portfolio() {
         <Section id="skills" index="06" title="Toolkit" lead="The current stack is the result of solving the problems above, not the product itself.">
           <div className="grid gap-4 md:grid-cols-3">
             {skillGroups.map((g) => (
-              <div key={g.name} className="panel p-5">
+              <div key={g.name} className="panel p-5 transition-colors hover:border-primary/50">
                 <h3 className="rule-label">{g.name}</h3>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {g.items.map((i) => (
@@ -322,72 +327,65 @@ function Portfolio() {
         <Section
           id="contact"
           index="07"
-          title="Contact"
+          title="Let's work together"
           lead="For backend, platform, infrastructure and focused technical consulting conversations."
         >
-          <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
-            <a href={consultingHref} className={`${primaryCtaClass} px-6`}>
-              Email me <span aria-hidden="true">→</span>
-            </a>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+            <div className="panel p-6 md:p-7">
+              <div className="flex items-start gap-4">
+                <div className="contact-icon" aria-hidden="true">@</div>
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-widest text-primary">Direct contact</p>
+                  <h3 className="mt-2 text-xl font-semibold tracking-tight">Drop me an email</h3>
+                  <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                    Tell me what is expensive, slow, unreliable or difficult to reason about. A short description is enough to start.
+                  </p>
+                </div>
+              </div>
+              <a href={consultingHref} className={`${primaryCtaClass} mt-6 w-full`}>
+                Email me <span aria-hidden="true">→</span>
+              </a>
+            </div>
+
+            <div className="panel p-6 md:p-7">
+              <p className="font-mono text-xs uppercase tracking-widest text-primary">Good fit</p>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">Bring a real engineering problem.</h3>
+              <ul className="mt-5 space-y-3 text-sm text-muted-foreground">
+                <li className="flex gap-3"><span className="text-primary" aria-hidden="true">✓</span> Infrastructure cost or capacity</li>
+                <li className="flex gap-3"><span className="text-primary" aria-hidden="true">✓</span> Backend bottlenecks and scaling</li>
+                <li className="flex gap-3"><span className="text-primary" aria-hidden="true">✓</span> Kubernetes and cloud decisions</li>
+                <li className="flex gap-3"><span className="text-primary" aria-hidden="true">✓</span> Architecture and reliability reviews</li>
+              </ul>
+            </div>
           </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <a
-              href="/resume.pdf"
-              target="_blank"
-              rel="noreferrer"
-              className={secondaryCtaClass}
-            >
-              View resume
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <a href="/resume.pdf" target="_blank" rel="noreferrer" className={`${secondaryCtaClass} justify-start`}>
+              View resume <span className="ml-auto" aria-hidden="true">↗</span>
             </a>
-            <a
-              href={profile.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className={secondaryCtaClass}
-            >
-              LinkedIn
+            <a href={profile.linkedin} target="_blank" rel="noreferrer" className={`${secondaryCtaClass} justify-start`}>
+              LinkedIn <span className="ml-auto" aria-hidden="true">↗</span>
             </a>
-            <a
-              href={profile.github}
-              target="_blank"
-              rel="noreferrer"
-              className={secondaryCtaClass}
-            >
-              GitHub
+            <a href={profile.github} target="_blank" rel="noreferrer" className={`${secondaryCtaClass} justify-start`}>
+              GitHub <span className="ml-auto" aria-hidden="true">↗</span>
             </a>
           </div>
         </Section>
       </main>
 
       <footer className="border-t border-border py-8">
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-6">
-          <p className="font-mono text-xs text-muted-foreground">
-            © {new Date().getFullYear()} {profile.name}
-          </p>
-          <div className="flex items-center gap-4">
-            <a
-              href={`mailto:${profile.email}`}
-              className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
-            >
-              {profile.email}
-            </a>
-            <a
-              href={profile.blog}
-              target="_blank"
-              rel="noreferrer"
-              className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
-            >
-              Blog
-            </a>
-            <a
-              href="/resume.pdf"
-              target="_blank"
-              rel="noreferrer"
-              className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
-            >
-              Resume
-            </a>
+        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-4 px-6">
+          <div>
+            <p className="font-mono text-sm font-medium"><span className="text-primary">~/</span>{profile.name}</p>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">Backend systems · Cloud infrastructure · Scalable platforms</p>
           </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <a href={`mailto:${profile.email}`} className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary">{profile.email}</a>
+            <a href="/resume.pdf" target="_blank" rel="noreferrer" className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary">Resume</a>
+          </div>
+        </div>
+        <div className="mx-auto mt-5 w-full max-w-5xl px-6">
+          <p className="font-mono text-[11px] text-muted-foreground">© {new Date().getFullYear()} {profile.name}. All rights reserved.</p>
         </div>
       </footer>
     </div>
