@@ -6,18 +6,19 @@ export const profile = {
   description:
     "Backend, platform and infrastructure engineering focused on cost, performance, reliability and systems that remain understandable in production.",
   intro: [
-    "I help teams reason about backend architecture, production bottlenecks and the infrastructure underneath their products.",
+    "I help startups cut cloud spend, fix backend bottlenecks and ship production-ready products — from a fixed-scope review to an end-to-end build.",
     "My work spans a large Rails platform, Go and NestJS services, real-time systems, media processing, cloud migrations and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
     "I prefer evidence over architecture theatre: find the real constraint, measure it, make the smallest useful change, and verify what moved.",
   ],
   github: "https://github.com/ItsManikantaGopi",
   linkedin: "https://www.linkedin.com/in/gopimanikanta/",
-  email: "gopimanikant50@gmail.com",
-  blog: "https://itsmanikantagopi.github.io/PersonalBlog",
+  email: "gopimanikanta50@gmail.com",
+  site: "https://manikantagopi.com",
+  medium: "https://medium.com/@gopimanikanta",
 };
 
 export const stats = [
-  { value: "4 yrs", label: "back-end engineering", detail: "Dec 2021 → present" },
+  { value: "~5 yrs", label: "backend engineering", detail: "Dec 2021 → present" },
   { value: "24", label: "services on the fleet", detail: "GitOps-managed on AWS EKS" },
   { value: "3", label: "clouds worked across", detail: "AWS primary, GCP and Azure" },
   { value: "1", label: "zero-downtime migration", detail: "Azure AKS → AWS EKS, live cutover" },
@@ -48,22 +49,96 @@ export const results = [
 
 export const serviceOffer = [
   {
-    title: "Infrastructure cost review",
+    title: "Cloud & infrastructure cost review",
     summary:
-      "Find the workloads, storage, database usage and capacity decisions driving an unexpectedly high infrastructure bill.",
-    fit: "Useful when cloud spend is growing faster than traffic or product usage.",
+      "Find the workloads, storage, database usage and capacity decisions driving an unexpectedly high AWS, GCP or Azure bill — then fix the ones that matter.",
+    fit: "For startups whose cloud spend is growing faster than traffic or revenue.",
+    deliverable: "Written findings, a ranked savings plan with estimates, and hands-on fixes if you want them.",
   },
   {
-    title: "Architecture & bottleneck review",
+    title: "Backend architecture & bottleneck review",
     summary:
       "Trace a slow or unreliable workflow through services, queues, storage and infrastructure to identify the constraint that actually matters.",
-    fit: "Useful before a major build, migration or scaling decision — or when dashboards show symptoms but not the root cause.",
+    fit: "Before a major build, migration or scaling decision — or when dashboards show symptoms but not the root cause.",
+    deliverable: "Architecture notes, the root cause with evidence, and a prioritised remediation plan.",
   },
   {
-    title: "Cloud & Kubernetes review",
+    title: "Kubernetes, AWS & migrations",
     summary:
-      "Review deployment, capacity, autoscaling, observability and operational boundaries in an existing cloud or Kubernetes setup.",
-    fit: "Useful for teams that have grown quickly and want a more reliable, understandable platform without a rewrite.",
+      "Review or set up deployment, autoscaling (KEDA, Karpenter), GitOps, observability and cloud migrations without a maintenance window.",
+    fit: "For teams that grew quickly and want a reliable, understandable platform without a rewrite.",
+    deliverable: "A working, documented setup in your repositories — Terraform, Helm and runbooks your team can own.",
+  },
+  {
+    title: "MVP & product builds",
+    summary:
+      "Design and ship a production-ready product end to end: mobile or web client, API, data model, background jobs, infrastructure and launch.",
+    fit: "For founders who need a working product — not a prototype that has to be rebuilt after the first customers arrive.",
+    deliverable: "A deployed product, source code you own, and a handover so your next engineer can take it forward.",
+  },
+  {
+    title: "WhatsApp API integrations",
+    summary:
+      "Connect WhatsApp Business messaging to your product — notifications, conversational flows, queues and delivery tracking — built on the same stack as SoloSync.",
+    fit: "For businesses that want reliable WhatsApp messaging without building the plumbing themselves.",
+    deliverable: "A production integration, or onboarding onto SoloSync's developer platform.",
+  },
+];
+
+export const engagementSteps = [
+  {
+    step: "01",
+    title: "Free 30-minute call",
+    detail: "You describe the problem. I tell you honestly whether I can help and what a first step would look like.",
+  },
+  {
+    step: "02",
+    title: "Fixed-scope proposal",
+    detail: "A written scope, timeline and fixed price before any work starts — no open-ended hourly billing surprises.",
+  },
+  {
+    step: "03",
+    title: "Delivery & handover",
+    detail: "Regular written updates, work in your repositories, and documentation so your team owns the result.",
+  },
+];
+
+export type Product = {
+  name: string;
+  company: string;
+  summary: string;
+  status: string;
+  href: string;
+  stack: string[];
+};
+
+export const products: Product[] = [
+  {
+    name: "Manvori",
+    company: "Chithraguptha",
+    summary:
+      "A Telugu-first reflection companion combining Panchanga, a South Indian Kundali, grounded AI conversation and a curated Indian-wisdom corpus. Founder-led, self-funded, Udyam-registered MSME.",
+    status: "Founder · live",
+    href: "https://chithraguptha.site",
+    stack: ["Flutter", "Go", "MongoDB", "Redis", "Multi-provider AI"],
+  },
+  {
+    name: "SoloSync",
+    company: "SoloSyncTech",
+    summary:
+      "A developer platform for the WhatsApp messaging APIs — connection management, wallet, API keys and production messaging from one workspace.",
+    status: "Founder · early access",
+    href: "https://app.solosync.live",
+    stack: ["APIs", "Queues", "Background jobs", "WhatsApp Business"],
+  },
+  {
+    name: "Nivaro Recruiter",
+    company: "SoloSyncTech",
+    summary:
+      "An AI hiring-operations workspace: resume intelligence, job-specific matching, technical assessments and one structured candidate pipeline.",
+    status: "Founder · MVP",
+    href: "https://screen.solosync.live",
+    stack: ["AI screening", "Multi-tenant workspaces", "Assessments"],
   },
 ];
 
@@ -120,6 +195,7 @@ export type Project = {
   period: string;
   stack: string[];
   kind: "Platform" | "Infrastructure" | "Backend" | "ML" | "Open source";
+  href?: string;
 };
 
 export const projects: Project[] = [
@@ -205,6 +281,16 @@ export const projects: Project[] = [
     kind: "Open source",
   },
   {
+    slug: "rails2x",
+    title: "rails2x: an AST-based Rails → Go migration engine",
+    summary:
+      "Parses a Rails codebase with tree-sitter and generates Goravel Go code for models, CRUD controllers, Sidekiq workers, Pundit policies and RSpec scaffolds — automating the bulk of the structural work, with a strict mode that refuses partial output.",
+    period: "2026",
+    stack: ["Go", "tree-sitter", "Goravel", "GORM"],
+    kind: "Open source",
+    href: "https://github.com/ItsManikantaGopi/rails2x",
+  },
+  {
     slug: "sidekiq-assured-jobs",
     title: "sidekiq-assured-jobs: not losing the job when the worker dies",
     summary:
@@ -212,6 +298,7 @@ export const projects: Project[] = [
     period: "2025",
     stack: ["Ruby", "Sidekiq", "Redis", "RSpec"],
     kind: "Open source",
+    href: "https://github.com/praja/sidekiq-assured-jobs",
   },
 ];
 
