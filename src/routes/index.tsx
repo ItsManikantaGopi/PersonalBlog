@@ -433,7 +433,7 @@ function Portfolio() {
                 </div>
               </div>
               <a {...bookingProps} className={`${primaryCtaClass} mt-6 w-full`}>
-                Book a free intro call on Topmate <span aria-hidden="true">↗</span>
+                Book a free call <span aria-hidden="true">↗</span>
               </a>
               <a href={consultingHref} className={`${secondaryCtaClass} mt-3 w-full`}>
                 Email me <span aria-hidden="true">→</span>
