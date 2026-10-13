@@ -115,15 +115,6 @@ export type Product = {
 
 export const products: Product[] = [
   {
-    name: "Manvori",
-    company: "Chithraguptha",
-    summary:
-      "A Telugu-first reflection companion combining Panchanga, a South Indian Kundali, grounded AI conversation and a curated Indian-wisdom corpus. Founder-led, self-funded, Udyam-registered MSME.",
-    status: "Founder · live",
-    href: "https://chithraguptha.site",
-    stack: ["Flutter", "Go", "MongoDB", "Redis", "Multi-provider AI"],
-  },
-  {
     name: "SoloSync",
     company: "SoloSyncTech",
     summary:
