@@ -14,6 +14,7 @@ export const profile = {
   linkedin: "https://www.linkedin.com/in/gopimanikanta/",
   email: "gopimanikanta50@gmail.com",
   site: "https://manikantagopi.com",
+  booking: "https://topmate.io/gopi_manikanta",
   medium: "https://medium.com/@gopimanikanta",
 };
 
@@ -88,8 +89,8 @@ export const serviceOffer = [
 export const engagementSteps = [
   {
     step: "01",
-    title: "Free 30-minute call",
-    detail: "You describe the problem. I tell you honestly whether I can help and what a first step would look like.",
+    title: "Free 15-minute intro call",
+    detail: "Book a slot on Topmate and describe the problem. I tell you honestly whether I can help and what a first step would look like.",
   },
   {
     step: "02",
