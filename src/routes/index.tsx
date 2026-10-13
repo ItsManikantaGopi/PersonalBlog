@@ -29,7 +29,7 @@ const jsonLd = {
       url: siteUrl,
       email: `mailto:${profile.email}`,
       address: { "@type": "PostalAddress", addressLocality: "Hyderabad", addressCountry: "IN" },
-      sameAs: [profile.github, profile.linkedin, profile.medium, "https://chithraguptha.site"],
+      sameAs: [profile.github, profile.linkedin, profile.medium, profile.booking],
       knowsAbout: ["Backend engineering", "Kubernetes", "AWS", "Cloud cost optimization", "Distributed systems"],
     },
     {
@@ -81,6 +81,8 @@ const consultingHref = `mailto:${profile.email}?subject=${encodeURIComponent(
 )}&body=${encodeURIComponent(
   "Hi Gopi,\n\nI'd like to discuss a project.\n\nCompany / product:\nWhat's expensive, slow or blocked:\nTimeline:\n\n",
 )}`;
+
+const bookingProps = { href: profile.booking, target: "_blank", rel: "noreferrer" } as const;
 
 const primaryCtaClass =
   "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
@@ -152,8 +154,8 @@ function Portfolio() {
               Resume
             </a>
           </nav>
-          <a href={consultingHref} className={`${primaryCtaClass} min-h-9 px-3 py-1.5 text-xs`}>
-            Discuss a problem
+          <a {...bookingProps} className={`${primaryCtaClass} min-h-9 px-3 py-1.5 text-xs`}>
+            Book a free call
           </a>
         </div>
       </header>
@@ -175,8 +177,8 @@ function Portfolio() {
                 ))}
               </div>
               <div className="mt-9 flex flex-wrap gap-3">
-                <a href={consultingHref} className={primaryCtaClass}>
-                  Book a free 30-min call <span aria-hidden="true">→</span>
+                <a {...bookingProps} className={primaryCtaClass}>
+                  Book a free intro call <span aria-hidden="true">→</span>
                 </a>
                 <a href="#results" className={secondaryCtaClass}>
                   See the results <span className="ml-1" aria-hidden="true">↓</span>
@@ -347,9 +349,14 @@ function Portfolio() {
                 Send the context you already have. I reply within one working day and tell you whether a focused engagement makes sense before proposing any larger work.
               </p>
             </div>
-            <a href={consultingHref} className={`${primaryCtaClass} shrink-0`}>
-              Book a free call <span aria-hidden="true">→</span>
-            </a>
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+              <a {...bookingProps} className={primaryCtaClass}>
+                Book a free call <span aria-hidden="true">→</span>
+              </a>
+              <a href={consultingHref} className={secondaryCtaClass}>
+                Email instead
+              </a>
+            </div>
           </div>
         </Section>
 
@@ -419,13 +426,16 @@ function Portfolio() {
                 <div className="contact-icon" aria-hidden="true">@</div>
                 <div>
                   <p className="font-mono text-xs uppercase tracking-widest text-primary">Direct contact</p>
-                  <h3 className="mt-2 text-xl font-semibold tracking-tight">Drop me an email</h3>
+                  <h3 className="mt-2 text-xl font-semibold tracking-tight">Book a call or drop me an email</h3>
                   <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
                     Tell me what is expensive, slow, unreliable or difficult to reason about. A short description is enough to start.
                   </p>
                 </div>
               </div>
-              <a href={consultingHref} className={`${primaryCtaClass} mt-6 w-full`}>
+              <a {...bookingProps} className={`${primaryCtaClass} mt-6 w-full`}>
+                Book a free intro call on Topmate <span aria-hidden="true">↗</span>
+              </a>
+              <a href={consultingHref} className={`${secondaryCtaClass} mt-3 w-full`}>
                 Email me <span aria-hidden="true">→</span>
               </a>
             </div>
