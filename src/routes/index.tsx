@@ -281,7 +281,7 @@ function Portfolio() {
           title="Products I've built"
           lead="Alongside client and employer work, I design, build and run my own products end to end — client, API, data, infrastructure and launch."
         >
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {products.map((product) => (
               <a
                 key={product.name}
