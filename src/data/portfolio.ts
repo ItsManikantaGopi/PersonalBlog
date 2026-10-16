@@ -19,7 +19,7 @@ export const profile = {
 };
 
 export const stats = [
-  { value: "~5 yrs", label: "backend engineering", detail: "Dec 2021 → present" },
+  { value: "~5 yrs", label: "backend engineering", detail: "Nov 2021 → present" },
   { value: "24", label: "services on the fleet", detail: "GitOps-managed on AWS EKS" },
   { value: "3", label: "clouds worked across", detail: "AWS primary, GCP and Azure" },
   { value: "1", label: "zero-downtime migration", detail: "Azure AKS → AWS EKS, live cutover" },
@@ -329,7 +329,7 @@ export const roles = [
   {
     company: "Circleapp Online Services (Praja)",
     title: "Software Engineer Intern",
-    period: "Dec 2021 – Apr 2022",
+    period: "Nov 2021 – Apr 2022",
     summary: "Started on the Flutter client, then moved toward the API that fed it.",
     highlights: [
       "Shipped chat features in the Flutter app — conversation types, message deletion, link and post previews, member lists.",
