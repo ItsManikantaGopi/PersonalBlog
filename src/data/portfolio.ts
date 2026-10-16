@@ -43,7 +43,7 @@ export const results = [
   },
   {
     value: "~$800 saved",
-    label: "S3 storage in May",
+    label: "S3 storage, first month",
     detail: "Added expiry for ephemeral media and prevented storage from growing unchecked.",
   },
 ];
@@ -304,7 +304,7 @@ export const roles = [
     highlights: [
       "Own the GitOps repository describing ~24 services on the production AWS cluster — Helm charts, per-environment values, automated image bumps on merge.",
       "Reduced video-processing infrastructure from roughly $18k/month to ~$1.8k/month by moving Lambda + FFmpeg workloads to in-house Kubernetes workers.",
-      "Optimized database workloads and storage lifecycle, contributing roughly $500/month in DB savings and ~$800 saved in May from S3 expiry policies.",
+      "Optimized database workloads and storage lifecycle, contributing roughly $500/month in DB savings and ~$800 saved in the first month from S3 expiry policies.",
       "Enabled Karpenter with Spot + On-Demand capacity for resource-intensive workloads, reducing costs by roughly $400/month.",
       "Migrated queueing infrastructure from Redis to Dragonfly without downtime.",
       "Took background removal from a hosted vendor API to a self-hosted ONNX GPU service in-cluster.",
