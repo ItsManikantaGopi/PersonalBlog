@@ -74,6 +74,7 @@ const nav = [
   { href: "#consulting", label: "Services" },
   { href: "#experience", label: "Experience" },
   { href: "#contact", label: "Contact" },
+  { href: "/learnings", label: "Learnings" },
 ];
 
 const consultingHref = `mailto:${profile.email}?subject=${encodeURIComponent(
