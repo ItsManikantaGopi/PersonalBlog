@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { MobileNav } from "@/components/mobile-nav";
 import {
   profile,
   stats,
@@ -74,6 +75,7 @@ const nav = [
   { href: "#consulting", label: "Services" },
   { href: "#experience", label: "Experience" },
   { href: "#contact", label: "Contact" },
+  { href: "/learnings", label: "Learnings" },
 ];
 
 const consultingHref = `mailto:${profile.email}?subject=${encodeURIComponent(
@@ -154,9 +156,12 @@ function Portfolio() {
               Resume
             </a>
           </nav>
-          <a {...bookingProps} className={`${primaryCtaClass} min-h-9 px-3 py-1.5 text-xs`}>
-            Book a free call
-          </a>
+          <div className="flex items-center gap-2">
+            <a {...bookingProps} className={`${primaryCtaClass} min-h-9 px-3 py-1.5 text-xs`}>
+              Book a free call
+            </a>
+            <MobileNav items={[...nav, { href: "/resume.pdf", label: "Resume" }]} />
+          </div>
         </div>
       </header>
 
