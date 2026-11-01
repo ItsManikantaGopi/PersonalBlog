@@ -1220,6 +1220,19 @@ html[data-site] .scene-t{min-height:4.5em}
 .sheet-h{font-weight:500}
 .sheet-c .linklike{align-self:flex-start;margin-top:4px}
 @media (max-width:600px){.lld li{grid-template-columns:1fr;gap:2px}}
+
+.site-menu{display:none}
+@media (max-width:860px){
+  .site-nav{display:none}
+  .site-menu{display:block}
+  .site-menu summary{list-style:none;cursor:pointer;width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:6px;color:var(--ink)}
+  .site-menu summary::-webkit-details-marker{display:none}
+  .site-menu[open] summary{border-color:var(--ink)}
+  .site-menu nav{position:absolute;left:0;right:0;top:100%;height:calc(100dvh - 57px);z-index:30;background:var(--bg);border-top:1px solid var(--line);padding:16px 24px;overflow-y:auto;display:flex;flex-direction:column}
+  .site-menu nav a{display:flex;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--line);font:500 13px var(--mono);letter-spacing:.15em;text-transform:uppercase;color:var(--muted);text-decoration:none}
+  .site-menu nav a::after{content:"→"}
+  .site-menu nav a[aria-current]{color:var(--ink)}
+}
 </style>
 </head>
 <body>
@@ -1228,6 +1241,9 @@ html[data-site] .scene-t{min-height:4.5em}
   <nav class="site-nav" aria-label="Site">
     <a class="opt" href="/#work">Work</a><a class="opt" href="/#products">Products</a><a class="opt" href="/#consulting">Services</a><a class="opt" href="/#experience">Experience</a><a href="/learnings" aria-current="page">Learnings</a><a class="opt" href="/#contact">Contact</a>
   </nav>
+  <details class="site-menu"><summary aria-label="Open menu"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2 5h14M2 9h14M2 13h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary>
+    <nav aria-label="Site"><a href="/">Home</a><a href="/#work">Work</a><a href="/#products">Products</a><a href="/#consulting">Services</a><a href="/#experience">Experience</a><a href="/learnings" aria-current="page">Learnings</a><a href="/#contact">Contact</a><a href="/resume.pdf">Resume</a></nav>
+  </details>
 </div></header>
 <header class="wrap hero" id="hero"></header>
 <nav class="tabs" aria-label="Sections"><div class="wrap" role="tablist" id="tabs"></div></nav>
