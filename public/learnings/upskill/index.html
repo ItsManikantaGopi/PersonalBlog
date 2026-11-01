@@ -13578,6 +13578,162 @@ const langSeg = () => `<span class="seg langseg" role="group" aria-label="Code l
   v = v.replace("<h3>Solution</h3>", `<div class="h3row"><h3>Solution</h3>${langSeg()}</div>`);
   return v; }; })();
 
+/* ===================== Python batch 2 (line-aligned) ===================== */
+const PYC2 = {
+16: [
+`def write(k: str, v: str) -> None:
+    primary.set(k, v)
+    threading.Thread(  # copy in the background
+        target=lambda: [r.set(k, v) for r in replicas]).start()
+
+    return  # acknowledged before replicas have it
+`,
+`def write(k: str, v: str) -> None:
+    primary.set(k, v)
+    replicas[0].set(k, v)  # wait for one replica (raises on failure)
+
+
+    threading.Thread(target=replicas[1].set, args=(k, v)).start()  # the rest can lag
+    return
+`,
+`N, W, R = 3, 2, 2
+
+def write(k: str, v: Versioned) -> None:
+    acks = send_to_all(k, v)  # queue of replies
+    for _ in range(W): acks.get()
+    return
+
+
+def read(k: str) -> Versioned:
+    replies = ask_all(k)
+    best = replies.get()
+    for _ in range(1, R):
+        if (r := replies.get()).version > best.version: best = r
+
+    return best  # newest of R answers
+`],
+17: [
+`def on_election_timeout(self) -> None:
+    self.term += 1
+    self.voted_for = self.id
+    votes = 1
+    for p in self.peers:
+        if p.request_vote(self.term, self.last_log_index): votes += 1
+
+    if votes > len(self.peers) // 2:  # majority of the whole cluster
+        self.become_leader()
+`,
+`def campaign(r: redis.Redis, me: str) -> None:
+    while True:
+        ok = r.set("leader", me, nx=True, ex=10)
+        if ok or r.get("leader") == me.encode():
+            r.expire("leader", 10)  # renew
+            do_leader_work()
+
+        time.sleep(3)
+`],
+18: [
+`def search(node: Node, key: int):
+    i = bisect.bisect_left(node.keys, key)
+    if node.leaf:
+        if i < len(node.keys) and node.keys[i] == key: return node.vals[i]
+        return None
+
+    return search(node.children[i], key)  # one level down
+`,
+`def put(self, k: str, v: str) -> None:
+    self.wal.append(k, v)  # durability first
+    self.mem[k] = v  # sorted in memory (e.g. a SortedDict)
+    if len(self.mem) > LIMIT:
+        self.sstables.insert(0, flush_sorted(self.mem))
+        self.mem = SortedDict()
+
+
+
+def get(self, k: str):
+    if k in self.mem: return self.mem[k]
+    for t in self.sstables:  # newest first
+        if t.bloom.maybe_has(k) and (v := t.get(k)) is not None: return v
+
+    return None
+`],
+19: [
+`while True:
+    msg = consumer.poll()
+    consumer.commit(msg)  # mark as done first
+    process(msg)  # a crash here loses the message
+`,
+`while True:
+    msg = consumer.poll()
+    process(msg)  # must be idempotent
+    consumer.commit(msg)  # a crash before this = redelivery
+`,
+`def handle(msg: Msg) -> None:
+    with db.transaction() as tx:
+        if tx.exists("processed", msg.id):
+            return  # already applied: skip
+
+        tx.apply_charge(msg.order)
+        tx.insert("processed", msg.id)  # same transaction
+`],
+21: [
+`def next_id(conn) -> int:
+    cur = conn.cursor()
+    cur.execute("INSERT INTO ids DEFAULT VALUES RETURNING id")
+    return cur.fetchone()[0]
+`,
+`import uuid  # uuid7 is in the standard library from Python 3.14 (else: pip install uuid6)
+
+def new_ids() -> tuple[str, str]:
+    a = uuid.uuid4()  # v4: fully random
+    b = uuid.uuid7()  # v7: 48-bit timestamp + random
+    return str(a), str(b)
+`,
+`def next(self) -> int:
+    with self.lock:
+        now = int(time.time() * 1000) - EPOCH
+        if now == self.last:
+            self.seq = (self.seq + 1) & 4095  # same ms: bump sequence
+            if self.seq == 0: now = self.wait_next_ms()
+        else:
+            self.seq = 0
+
+        self.last = now
+        return now << 22 | self.machine << 12 | self.seq
+`],
+2: [
+`ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+def encode(id: int) -> str:
+    if id == 0: return "0"
+    out = []
+    while id > 0:
+        out.append(ALPHABET[id % 62])  # last digit first
+        id //= 62
+
+    out.reverse()
+    return "".join(out)
+`,
+`def short_code(long: str) -> str:
+    for salt in itertools.count():
+        digest = hashlib.md5((long + str(salt)).encode()).digest()
+        code = base62(digest)[:7]
+        existing = db.get(code)
+        if existing is None or existing == long:
+            db.put(code, long)
+            return code
+
+        # collision: another URL owns this code, try the next salt
+`,
+`def short_code(long: str) -> str:
+    while True:
+        code = random_base62(7)  # 62^7 ≈ 3.5 trillion options
+        if db.put_if_absent(code, long):  # atomic insert
+            return code
+`],
+};
+Object.entries(PYC2).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
+
 /* ---------- boot ---------- */
 load();
 if (state.lastVisit && state.onboarded){ const gap = daysBetween(state.lastVisit, today()); if (gap >= 4 && dayNum() >= 1) WB = gap; }
