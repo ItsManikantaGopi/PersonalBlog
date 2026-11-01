@@ -1255,6 +1255,20 @@ html[data-site] .scene-t{min-height:4.5em}
   .jump{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
 }
 .alg-grid .vz-ctl{flex-wrap:wrap}
+
+/* language switch + calmer problem pages */
+.langseg{display:inline-flex}
+.langseg button{font:500 12px var(--mono);padding:3px 10px}
+.codex-h{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.codex-note{margin:8px 16px 0}
+.h3row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.h3row h3{margin:0}
+.fold summary{cursor:pointer;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:14px;list-style:none}
+.fold summary::-webkit-details-marker{display:none}
+.fold summary::before{content:"▸"}
+.fold[open] summary::before{content:"▾"}
+.fold[open] summary{margin-bottom:12px}
+details.legend-d{display:none}
 </style>
 </head>
 <body>
@@ -11953,7 +11967,7 @@ func (c *FIFO) Put(k string, v int) {
 ];
 /* code panel next to the player, highlighted per step */
 (function(){ const base = sdAlgosHTML; sdAlgosHTML = function(i){ let h = base(i); const a = SDA[i] && SDA[i][SV.k]; if (!h || !a || !a.code) return h;
-  const code = `<div class="codex-w"><div class="codex-h"><span class="plain-l">Go code · lines light up as each step runs</span></div><pre class="codex" id="svCode">${a.code.split("\n").map((l,n)=>`<span class="cxl" data-n="${n+1}"><i>${n+1}</i>${esc(l)||" "}</span>`).join("")}</pre></div>`;
+  const code = `<div class="codex-w"><div class="codex-h"><span class="plain-l">${isPy()&&a.py?"Python":"Go"} code · lines light up as each step runs</span>${langSeg()}</div>${isPy()&&!a.py?`<p class="note codex-note">Python version for this one is coming; showing Go.</p>`:""}<pre class="codex" id="svCode">${(isPy()&&a.py?a.py:a.code).split("\n").map((l,n)=>`<span class="cxl" data-n="${n+1}"><i>${n+1}</i>${esc(l)||" "}</span>`).join("")}</pre></div>`;
   return h.replace(playerHTML(SV), `<div class="alg-grid">${playerHTML(SV)}${code}</div>`); }; })();
 (function(){ const base = pDraw; pDraw = function(P){ base(P); if (P!==SV) return; const box = document.getElementById("svCode"); if (!box) return;
   const ln = (P.frames.lines||[])[P.i] || []; let first = null;
@@ -13317,6 +13331,252 @@ func ShouldPage(err1h, err5m float64) bool {
 document.addEventListener("click", e=>{ const a = e.target.closest(".jump a"); if (!a) return; e.preventDefault();
   const el = document.getElementById(a.getAttribute("href").slice(1)); if (!el) return;
   const top = el.getBoundingClientRect().top + scrollY - (document.querySelector(".tabs")?.offsetHeight||0) - 70; scrollTo({top, behavior:"smooth"}); });
+
+/* ===================== Python versions (line-aligned with the Go code, so highlights match) ===================== */
+const PYC = {
+3: [
+`class Bucket:
+    tokens: float = 4.0
+    last: float = 0.0  # seconds
+
+    CAPACITY, RATE = 4.0, 1.0  # tokens, tokens per second
+
+    def allow(self, now: float) -> bool:
+        elapsed = now - self.last
+        self.tokens = min(self.CAPACITY, self.tokens + elapsed * self.RATE)  # refill
+        self.last = now
+        if self.tokens >= 1:
+            self.tokens -= 1  # spend one token
+            return True  # 200 OK
+
+        return False  # 429 Too Many Requests
+`,
+`class Leaky:
+    queue = asyncio.Queue(maxsize=4)  # capacity 4
+
+
+    def add(self, r) -> bool:
+        try:
+            self.queue.put_nowait(r)  # room in the queue
+            return True
+        except asyncio.QueueFull:  # queue full: drop it
+            return False
+
+
+
+    async def run(self):
+        while True:  # 1 per second
+            await asyncio.sleep(1)
+            r = await self.queue.get()
+            handle(r)  # steady output
+
+`,
+`def allow(r: redis.Redis, user: str, now: float) -> bool:
+    key = f"rl:{user}:{int(now) // 60}"  # one key per minute
+    n = r.incr(key)
+    if n == 1:
+        r.expire(key, 60)
+
+    return n <= 3
+`,
+`def allow(log: list[int], now: int) -> tuple[list[int], bool]:
+    keep = []
+    for t in log:
+        if t > now - 60:  # still inside the last 60s
+            keep.append(t)
+
+
+    if len(keep) < 3:
+        return keep + [now], True
+
+    return keep, False
+`,
+`def allow(prev: int, curr: int, elapsed: float) -> bool:
+    overlap = 1 - elapsed / 60  # share of last window still inside
+    estimate = curr + prev * overlap
+    return estimate < 10
+`],
+15: [
+`class LRU:
+    def __init__(self, cap: int):
+        self.cap = cap
+        self.items = OrderedDict()  # last = most recently used
+
+
+    def get(self, k):
+        if k in self.items:
+            self.items.move_to_end(k)  # mark as recently used
+            return self.items[k]
+
+        return None
+
+
+    def put(self, k, v):
+        if k in self.items: self.items[k] = v; self.items.move_to_end(k); return
+        if len(self.items) == self.cap:
+            old = next(iter(self.items))  # least recently used
+            del self.items[old]
+
+        self.items[k] = v  # newest goes to the end
+`,
+`class LFU:
+    def __init__(self, cap: int):
+        self.cap, self.val = cap, {}
+        self.freq = Counter()
+
+
+    def get(self, k):
+        v = self.val.get(k)
+        if v is not None: self.freq[k] += 1  # used once more
+        return v
+
+
+    def put(self, k, v):
+        if k not in self.val and len(self.val) == self.cap:
+            victim = min(self.val, key=lambda key: self.freq[key])
+            # min() scans every key to find the least used
+            # (production LFU keeps one list per count instead)
+
+            del self.val[victim]; del self.freq[victim]
+
+        self.val[k] = v; self.freq[k] += 1
+`,
+`class FIFO:
+    def __init__(self, cap: int):
+        self.cap, self.order = cap, deque()  # oldest first
+        self.val = {}
+
+
+    def put(self, k, v):
+        if k not in self.val:
+            if len(self.order) == self.cap:
+                oldest = self.order[0]  # first in
+                self.order.popleft()
+                del self.val[oldest]  # first out
+
+            self.order.append(k)
+
+        self.val[k] = v
+`,
+`def get_user(id: str) -> User:
+    if (u := cache.get(f"user:{id}")) is not None:
+        return u  # hit: fast path
+
+    u = db.find_user(id)  # miss: go to the database
+    if u is None:
+        raise NotFound(id)
+
+    cache.set(f"user:{id}", u, ex=300)  # fill for next time
+    return u
+
+
+def update_user(u: User) -> None:
+    db.save_user(u)
+    cache.delete(f"user:{u.id}")  # next read reloads fresh data
+`,
+`def save_balance(id: str, amount: int) -> None:
+    db.save(id, amount)  # 1. the source of truth (raises on failure)
+
+
+    cache.set(f"bal:{id}", amount)  # 2. cache updated in the same call
+    return  # only now report success
+
+
+def get_balance(id: str) -> int:
+    return int(cache.get(f"bal:{id}"))  # always up to date
+    # no miss after a write: the cache was set in save_balance
+`,
+`dirty: dict[str, int] = {}  # changed but not yet in the DB
+
+def incr_views(id: str) -> None:
+    cache.incr(f"views:{id}")  # instant
+    dirty[id] = int(cache.get(f"views:{id}"))
+
+
+def flusher() -> None:  # run in a background thread
+    while True:
+        db.batch_save(dirty)  # one write for many changes
+        dirty.clear()
+        time.sleep(10)
+`],
+1: [
+`class RoundRobin:
+    def __init__(self, servers):
+        self.servers, self.next = servers, itertools.count()
+
+
+    def pick(self) -> str:
+        i = next(self.next)
+        return self.servers[i % len(self.servers)]
+`,
+`def pick(servers):
+    best = None
+    for s in servers:
+        if best is None or s.active < best.active:
+            best = s
+
+
+    best.active += 1  # decremented when the response finishes
+    return best
+`,
+`def get(self, key: str) -> str:
+    h = zlib.crc32(key.encode())
+    i = bisect.bisect_left(self.hashes, h)
+    # i = first ring position >= h
+
+    if i == len(self.hashes):
+        i = 0  # wrap around the ring
+
+    return self.nodes[self.hashes[i]]
+`],
+5: [
+`def on_post(p: Post) -> None:
+    followers = graph.followers(p.author_id)
+    for f in followers:
+        r.lpush(f"feed:{f}", p.id)  # put it in each feed
+        r.ltrim(f"feed:{f}", 0, 499)  # keep the newest 500
+
+
+
+def read_feed(user: str) -> list[Post]:
+    ids = r.lrange(f"feed:{user}", 0, 19)
+    return posts.get_many(ids)
+`,
+`def read_feed(user: str) -> list[Post]:
+    all_posts = []
+    for a in graph.following(user):
+        all_posts += posts.recent(a, 20)
+
+    all_posts.sort(key=lambda p: p.at, reverse=True)
+    all_posts = all_posts[:20]
+    return all_posts
+`,
+`CELEBRITY_THRESHOLD = 100_000
+
+def on_post(p: Post) -> None:
+    if graph.follower_count(p.author_id) >= CELEBRITY_THRESHOLD:
+        return  # celebrities are pulled at read time
+
+    push_to_followers(p)
+
+
+def read_feed(user: str) -> list[str]:
+    feed = r.lrange(f"feed:{user}", 0, 19)
+    for c in graph.celebrities_followed(user):
+        feed += posts.recent_ids(c, 5)
+
+    return merge_newest_first(feed, 20)
+`],
+};
+Object.entries(PYC).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
+const langSeg = () => `<span class="seg langseg" role="group" aria-label="Code language"><button class="${!isPy()?"on":""}" data-act="lang" data-v="go">Go</button><button class="${isPy()?"on":""}" data-act="lang" data-v="py">Python</button></span>`;
+/* problem pages: calmer layout for beginners, language switch next to the code */
+(function(){ const base = viewViz; viewViz = function(){ let v = base();
+  v = v.replace(/<li class="ls"><span class="ls-n">[^<]*<\/span><div class="ls-b"><h3>Best solution: try your own input<\/h3>([\s\S]*?)<\/div><\/li>\s*(?=<li class="ls"><span class="ls-n">[^<]*<\/span><div class="ls-b"><h3>Your code)/,
+    (m, inner)=>`<li class="ls"><span class="ls-n">4</span><div class="ls-b"><h3>Run the best solution on your own input</h3><details class="fold"><summary>Open the player</summary>${inner}</details></div></li>`);
+  v = v.replace("<h3>Your code</h3>", `<div class="h3row"><h3>Write it yourself</h3>${langSeg()}</div>`);
+  v = v.replace("<h3>Solution</h3>", `<div class="h3row"><h3>Solution</h3>${langSeg()}</div>`);
+  return v; }; })();
 
 /* ---------- boot ---------- */
 load();
