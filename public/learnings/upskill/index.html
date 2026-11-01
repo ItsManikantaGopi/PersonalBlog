@@ -12453,6 +12453,187 @@ SDA[17] = [
    f([3,4,5],'B\'s SetNX succeeds: B is leader. Use a fencing token so a waking A cannot write stale data.',V({leader:'B',fence:2})); return f.out; }},
 ];
 
+/* ===================== Algorithm sets: retries, search ranking, distributed transactions, real-time delivery ===================== */
+SDA[4] = [
+ {n:"Fixed-interval retry", when:"Rare, short failures. Simple, but retrying everyone at the same moment can hammer a recovering provider.", cost:"Predictable delay",
+  story:{t:"Knocking Every Minute",cast:[["🚪","Nobody answers","provider failure"],["⏲️","Knock again every 60 seconds","fixed delay"],["🛑","Give up after 3 tries","max attempts"]],
+   sc:[["🚪 ✗","You knock; no answer."],["⏲️ 60s","Wait a minute, knock again."],["⏲️ 60s","And again, every minute."],["🛑","After 3 tries, leave a note instead."]],hook:"Same wait every time; simple but crowd-prone."},
+  code:`func Send(n Notification) error {
+    for attempt := 1; attempt <= 3; attempt++ {
+        if err := provider.Send(n); err == nil {
+            return nil
+        }
+        time.Sleep(60 * time.Second) // same wait every time
+    }
+    return dlq.Push(n) // give up: dead-letter queue
+}`,
+  gen(){ const f=rec2(); for(let a=1;a<=3;a++) f([2,3,6],`Attempt ${a} fails. Wait 60 seconds.`,A([60,60,60].slice(0,a),{title:'waits (s)'}),V({attempt:a}));
+   f([8],'3 attempts used: push to the dead-letter queue for a human or later job.',V({result:'DLQ'})); return f.out; }},
+ {n:"Exponential backoff", when:"Provider outages. Wait 1s, 2s, 4s, 8s… so a struggling service gets room to recover.", cost:"Growing delay",
+  story:{t:"Giving Them More Time",cast:[["🚪","No answer","failure"],["⏲️×2","Double the wait each time","exponential"],["🧢","But never longer than 1 minute","cap"]],
+   sc:[["🚪 ✗","No answer. Wait 1 second."],["✗","Still no answer. Wait 2."],["✗","Then 4, then 8."],["🧢","Never more than a minute between knocks."]],hook:"Double the wait each time, up to a cap."},
+  code:`func backoff(attempt int) time.Duration {
+    d := time.Second << attempt // 1s, 2s, 4s, 8s...
+    if d > time.Minute {
+        d = time.Minute // cap
+    }
+    return d
+}`,
+  gen(){ const f=rec2(); const w=[]; for(let a=0;a<5;a++){ w.push(Math.min(60,1<<a)); f([2],`Attempt ${a+1} failed: wait ${w[a]}s.`,A(w.slice(),{title:'waits (s)',bars:1})); }
+   w.push(60); f([3,4],'2^6 = 64s would exceed the cap, so wait 60s.',A(w.slice(),{title:'waits (s)',bars:1,c:{5:'a'}})); return f.out; }},
+ {n:"Exponential backoff + jitter", when:"Many clients failing together. Random spread stops them all retrying at the same instant (thundering herd).", cost:"Growing, randomised delay",
+  story:{t:"The Crowd at the Door",cast:[["👥","100 people knocked at once","many clients"],["🎲","Each waits a random time up to the backoff","jitter"],["🌊","Retries arrive as a trickle, not a wave","spread load"]],
+   sc:[["👥 🚪","The shop reopens; 100 people were waiting."],["🌊 ✗","If all knock at second 4, the door breaks again."],["🎲","Each picks a random wait between 0 and 4 seconds."],["🚶🚶","They arrive spread out; the shop copes."]],hook:"Random wait up to the backoff: no stampede."},
+  code:`func backoffJitter(attempt int) time.Duration {
+    max := time.Second << attempt
+    if max > time.Minute { max = time.Minute }
+    return time.Duration(rand.Int63n(int64(max))) // "full jitter"
+}`,
+  gen(){ const f=rec2(); f([2,3],'Attempt 3: the backoff ceiling is 4 seconds for everyone.',V({ceiling:'4s'}));
+   f([4],'Without jitter, all clients retry at exactly 4s: a spike.',A([0,0,0,0,100],{bars:1,lab:['0s','1s','2s','3s','4s'],title:'retries per second'}));
+   f([4],'With full jitter each picks a random delay in [0, 4s): the load spreads out.',A([20,21,19,20,20],{bars:1,lab:['0s','1s','2s','3s','4s'],title:'retries per second',c:{0:'ok',1:'ok',2:'ok',3:'ok',4:'ok'}})); return f.out; }},
+];
+SDA[12] = [
+ {n:"Inverted index + BM25", when:"Keyword search where exact words matter (product names, logs, docs). Fast, explainable, no ML needed.", cost:"O(postings of query terms)",
+  story:{t:"The Book's Index Pages",cast:[["📇","Word → page numbers","inverted index"],["⚖️","Rare words matter more","IDF"],["📏","Short pages with the word rank higher","length normalisation"]],
+   sc:[["📇 'goroutine'","Look up 'goroutine' in the index: pages 4 and 9."],["⚖️","'the' is everywhere so it counts for little; 'goroutine' is rare so it counts a lot."],["📏","A short page mentioning it twice beats a huge page mentioning it twice."],["🏆","Add the scores per page and sort."]],hook:"Look words up, weight rare ones, favour focused pages."},
+  code:`func Score(q []string, doc Doc, idx *Index) float64 {
+    const k1, b = 1.2, 0.75
+    score := 0.0
+    for _, term := range q {
+        tf := float64(doc.Count(term))
+        idf := math.Log(1 + (idx.N-idx.DF(term)+0.5)/(idx.DF(term)+0.5))
+        norm := tf * (k1 + 1) / (tf + k1*(1-b+b*doc.Len/idx.AvgLen))
+        score += idf * norm
+    }
+    return score
+}`,
+  gen(){ const f=rec2(); f([4],'Query: "go channels". Fetch the postings list of each word from the inverted index.',M([['go','[d1, d2, d3]'],['channels','[d2]']],{title:'index'}));
+   f([5,6],'"go" appears in 3 of 3 docs: low IDF. "channels" appears in 1: high IDF.',V({'idf(go)':0.13,'idf(channels)':0.98}));
+   f([7,8],'d2 contains both words and is short: highest score.',A([0.2,1.4,0.1],{bars:1,lab:['d1','d2','d3'],title:'BM25 score',c:{1:'ok'}}));
+   f([10],'Return documents sorted by score: d2, d1, d3.',R(['d2','d1','d3'])); return f.out; }},
+ {n:"Vector (semantic) search", when:"Meaning matters more than exact words ('cheap flight' ≈ 'low-cost airfare'). Needs an embedding model and an ANN index.", cost:"O(log n) approx with HNSW",
+  story:{t:"The Map of Meanings",cast:[["🗺️","Every text gets a point on a map","embedding vector"],["📍","Similar meanings sit close together","cosine similarity"],["🔭","Find the nearest points","k nearest neighbours"]],
+   sc:[["📝 → 📍","Each document is placed on a map by its meaning."],["❓ → 📍","Your question is placed on the same map."],["🔭","Look for the closest points."],["🏆","They match in meaning even with different words."]],hook:"Same meaning, nearby points; search by distance."},
+  code:`func Search(q string, k int) []Doc {
+    qv := embed(q) // e.g. 768 numbers
+    return index.Nearest(qv, k, cosine)
+}
+
+func cosine(a, b []float32) float32 {
+    var dot, na, nb float32
+    for i := range a { dot += a[i]*b[i]; na += a[i]*a[i]; nb += b[i]*b[i] }
+    return dot / float32(math.Sqrt(float64(na*nb)))
+}`,
+  gen(){ const f=rec2(); f([1,2],'Embed the query "cheap flight" into a vector.',V({query:'cheap flight',vector:'[0.12, -0.4, …]'}));
+   f([3,6,7,8],'Compare with document vectors by cosine similarity (1 = same direction).',A([0.91,0.12,0.88],{bars:1,lab:['low-cost airfare','go channels','budget airlines'],title:'similarity'}));
+   f([3],'Return the nearest: "low-cost airfare" and "budget airlines", though neither says "cheap flight".',R(['low-cost airfare','budget airlines']));
+   f([3],'Real systems combine both: BM25 for exact terms + vectors for meaning (hybrid search), then rerank.',V({hybrid:'BM25 + vector'})); return f.out; }},
+];
+SDA[26] = [
+ {n:"Two-phase commit (2PC)", when:"Several databases must commit atomically and you control them all. Blocks if the coordinator dies mid-way.", cost:"2 round trips, locks held during both",
+  story:{t:"The Wedding Ceremony",cast:[["🧑‍⚖️","The officiant","coordinator"],["❓","Do you both agree?","prepare / vote"],["💍","Then pronounce them married","commit"]],
+   sc:[["🧑‍⚖️ ❓","The officiant asks each person: do you?"],["✅ ✅","Both say yes and are now bound to wait."],["💍","The officiant pronounces: commit everywhere."],["😶 ⏳","If the officiant faints between the two steps, everyone is stuck waiting."]],hook:"Everyone votes yes, then everyone commits; a lost coordinator blocks."},
+  code:`func TwoPhase(parts []Participant, tx Tx) error {
+    for _, p := range parts { // phase 1: prepare (lock + vote)
+        if !p.Prepare(tx) {
+            for _, q := range parts { q.Abort(tx) }
+            return ErrAborted
+        }
+    }
+    for _, p := range parts { // phase 2: commit
+        p.Commit(tx)
+    }
+    return nil
+}`,
+  gen(){ const f=rec2(); f([2,3],'Phase 1: ask inventory and payments to prepare. Both lock their rows and vote yes.',V({inventory:'prepared',payment:'prepared'}));
+   f([8,9],'Phase 2: tell both to commit. The order is atomic across both databases.',V({inventory:'committed',payment:'committed'}));
+   f([3,4,5],'If any vote is no, everyone aborts.',V({inventory:'aborted',payment:'aborted'}));
+   f([8],'Danger: if the coordinator crashes after prepare, participants hold locks until it returns.',V({locks:'held, waiting'})); return f.out; }},
+ {n:"Saga (with compensations)", when:"Microservices, each with its own DB. No global locks; each step commits locally and failures are undone by compensating steps.", cost:"Eventually consistent",
+  story:{t:"The Travel Booking",cast:[["✈️🏨🚗","Book flight, hotel, car one by one","local transactions"],["❌","The car is unavailable","a step fails"],["↩️","Cancel the hotel, refund the flight","compensations"]],
+   sc:[["✈️ ✓","Book the flight."],["🏨 ✓","Book the hotel."],["🚗 ✗","No cars left."],["↩️🏨 ↩️✈️","Cancel the hotel, then cancel the flight, in reverse order."]],hook:"Do each step; on failure, undo the done ones in reverse."},
+  code:`type Step struct{ Do, Undo func() error }
+
+func RunSaga(steps []Step) error {
+    for i, s := range steps {
+        if err := s.Do(); err != nil {
+            for j := i - 1; j >= 0; j-- { // compensate in reverse
+                steps[j].Undo()
+            }
+            return err
+        }
+    }
+    return nil
+}`,
+  gen(){ const f=rec2(); const S=(c)=>A(['reserve stock','charge card','create shipment'],{title:'saga steps',c});
+   f([4,5],'Step 1: reserve stock. Committed in the inventory service.',S({0:'ok'}));
+   f([4,5],'Step 2: charge the card. Committed in the payment service.',S({0:'ok',1:'ok'}));
+   f([5],'Step 3: create shipment fails (address invalid).',S({0:'ok',1:'ok',2:'bad'}));
+   f([6,7],'Compensate in reverse: refund the card, then release the stock.',S({0:'a',1:'a',2:'bad'}));
+   f([9],'The system ends consistent, without holding locks across services.',S({0:'x',1:'x',2:'x'})); return f.out; }},
+];
+SDA[6] = [
+ {n:"Short polling", when:"Low-frequency updates and simplest clients. Wasteful: most requests return nothing.", cost:"1 request per interval per client",
+  story:{t:"Are We There Yet?",cast:[["🧒","Asking every few seconds","client polls"],["🚗","The driver answers 'not yet'","empty responses"],["🏁","Eventually 'yes'","new data"]],
+   sc:[["🧒 ❓","Are we there yet?"],["🚗 no","Not yet."],["🧒 ❓ ❓","Asks again. And again."],["🏁 yes","Finally yes, but after many wasted questions."]],hook:"Ask on a timer; simple but wasteful."},
+  code:`func Poll(c *http.Client, since int64) {
+    for {
+        msgs := fetch(c, "/messages?since="+strconv.FormatInt(since, 10))
+        for _, m := range msgs { show(m); since = m.ID }
+        time.Sleep(3 * time.Second) // ask again later
+    }
+}`,
+  gen(){ const f=rec2(); for(let i=1;i<=3;i++) f([3,5],`Poll ${i}: no new messages. Wait 3 seconds.`,A(Array(i).fill('∅'),{title:'responses'}));
+   f([3,4],'Poll 4: one new message, shown up to 3 seconds late.',A(['∅','∅','∅','msg'],{title:'responses',c:{3:'ok'}})); return f.out; }},
+ {n:"Long polling", when:"Works everywhere HTTP works, near real time. The server holds the request until there is data or a timeout.", cost:"1 open request per client",
+  story:{t:"Waiting at the Counter",cast:[["🧍","You wait at the counter","request held open"],["📦","The clerk hands it over the moment it arrives","respond on data"],["🔁","Then you queue again","re-request"]],
+   sc:[["🧍","You ask and wait at the counter instead of leaving."],["⏳","The clerk keeps you there."],["📦","The parcel arrives and you get it instantly."],["🔁","You ask again for the next one."]],hook:"Ask and wait; answer arrives the moment it exists."},
+  code:`func Handler(w http.ResponseWriter, r *http.Request) {
+    select {
+    case m := <-inbox(r): // wait for data...
+        json.NewEncoder(w).Encode(m)
+    case <-time.After(30 * time.Second): // ...or time out
+        w.WriteHeader(http.StatusNoContent)
+    }
+}`,
+  gen(){ const f=rec2(); f([1,2],'The client asks; the server does not answer yet.',V({request:'open'}));
+   f([3,4],'A message arrives after 1.2s: respond immediately.',V({latency:'~0s',response:'msg'}));
+   f([5,6],'No message in 30s: respond 204 and the client asks again.',V({response:'204'})); return f.out; }},
+ {n:"WebSockets", when:"Two-way, low-latency (chat, games, collaboration). Needs sticky connections and a pub/sub backplane to scale.", cost:"1 persistent connection per client",
+  story:{t:"The Open Phone Line",cast:[["📞","Call once and stay on the line","persistent connection"],["🗣️","Either side can talk any time","full duplex"],["💓","'Still there?' every 30s","ping/pong heartbeat"]],
+   sc:[["📞","Dial once."],["🗣️ ↔ 🗣️","Both sides talk whenever they want."],["💓","Quick 'still there?' checks keep the line alive."],["📴","If the line drops, dial again and catch up."]],hook:"One open line, both directions, instant."},
+  code:`func Serve(conn *websocket.Conn, user string) {
+    go func() {
+        for m := range bus.Subscribe(user) { // pushed by the server
+            conn.WriteJSON(m)
+        }
+    }()
+    for {
+        var in Message
+        if conn.ReadJSON(&in) != nil { return } // client disconnected
+        bus.Publish(in.To, in)                // sent by the client
+    }
+}`,
+  gen(){ const f=rec2(); f([1],'Asha connects once; the connection stays open.',V({connection:'open'}));
+   f([7,8,9,10],'Asha sends "hi" to Bob over the same connection.',V({from:'Asha',to:'Bob'}));
+   f([2,3,4],'Bob\'s server receives it from the pub/sub bus and pushes it down Bob\'s socket instantly.',V({delivered:'~50ms'})); return f.out; }},
+ {n:"Server-sent events (SSE)", when:"Server → client streams only (live scores, notifications, LLM token streams). Plain HTTP, auto-reconnect built in.", cost:"1 open response per client",
+  story:{t:"The Radio Broadcast",cast:[["📻","Tune in once","EventSource connection"],["📡","The station keeps broadcasting","server pushes"],["🔁","Lost signal? The radio retunes itself","auto-reconnect"]],
+   sc:[["📻","Tune in to the station."],["📡 📡","News keeps coming without you asking."],["🙊","You cannot talk back on this channel."],["🔁","If it drops, the radio reconnects and resumes."]],hook:"One-way stream over HTTP; reconnects itself."},
+  code:`func Stream(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Content-Type", "text/event-stream")
+    flusher := w.(http.Flusher)
+    for ev := range updates(r.Context()) {
+        fmt.Fprintf(w, "id: %d\\ndata: %s\\n\\n", ev.ID, ev.JSON)
+        flusher.Flush() // send now, keep the response open
+    }
+}`,
+  gen(){ const f=rec2(); f([1,2,3],'The browser opens new EventSource("/stream"); the response stays open.',V({stream:'open'}));
+   f([4,5,6],'Each update is written as an event and flushed immediately.',A(['score 1-0','score 2-0'],{title:'events received'}));
+   f([5],'If the connection drops, the browser reconnects and sends Last-Event-ID to resume.',V({'Last-Event-ID':2})); return f.out; }},
+];
+
 /* ---------- boot ---------- */
 load();
 if (state.lastVisit && state.onboarded){ const gap = daysBetween(state.lastVisit, today()); if (gap >= 4 && dayNum() >= 1) WB = gap; }
