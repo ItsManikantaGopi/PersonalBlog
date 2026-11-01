@@ -14025,6 +14025,216 @@ def uniques(r: redis.Redis, day: str) -> int:
 };
 Object.entries(PYC4).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
 
+/* ===================== Python batch 5 (line-aligned, final) ===================== */
+const PYC5 = {
+7: [
+`def transcode(job: Job) -> None:
+    src = download(job.key)
+    for q in ["1080p", "720p", "480p"]:
+        out = f"videos/{job.id}/{q}/"  # fixed key = safe to retry
+        ffmpeg(src, q, out)  # raises on failure:
+        # the whole file is retried
+
+
+    mark_ready(job.id)
+`,
+`def split(job: Job) -> None:
+    segs = split_at_keyframes(download(job.key), seconds=10)
+    for i, s in enumerate(segs):
+        queue.push(SegJob(video=job.id, index=i, data=s))  # fan out
+
+    db.set_pending(job.id, len(segs))
+
+
+def on_segment_done(video: str) -> None:
+    if db.decr_pending(video) == 0:  # last segment finished
+        stitch_playlist(video)
+        mark_ready(video)
+`],
+8: [
+`def charge(conn, key: str, req: ChargeReq):
+    try: conn.execute("INSERT INTO idem(key, status) VALUES(%s, 'started')", (key,))
+    except UniqueViolation:
+        return stored_result(conn, key)  # retry: return the first answer
+
+    res = gateway.charge(req, idempotency_key=key)  # pass the key to the gateway too
+    conn.execute("UPDATE idem SET status='done', result=%s WHERE key=%s", (res, key))
+    return res
+`,
+`def on_webhook(conn, ev: Event) -> None:
+    with conn.transaction() as tx:  # rolls back on any error
+        # insert the event ID first
+        try: tx.execute("INSERT INTO processed_events(id) VALUES(%s)", (ev.id,))
+        except UniqueViolation: return  # duplicate delivery: already handled
+
+        tx.execute("UPDATE payments SET state='CAPTURED' WHERE id=%s AND state='PENDING'", (ev.payment_id,))
+        # leaving the with-block commits both together
+`],
+9: [
+`while True:
+    _, job = r.brpop("queue:default")
+    # job is removed from Redis now
+    run(job)  # crash here = job lost forever
+`,
+`job = r.blmove("queue:default", f"inprogress:{me}", 0, "RIGHT", "LEFT")
+threading.Thread(target=heartbeat, args=(me,), daemon=True).start()  # SET hb:<me> EX 30, every 10s
+run(job)
+r.lrem(f"inprogress:{me}", 1, job)  # done
+
+def reap() -> None:
+    for w in workers():
+        if not r.exists(f"hb:{w}"):  # silent worker
+            while r.lmove(f"inprogress:{w}", "queue:default", "RIGHT", "LEFT"): pass
+`,
+`out = sqs.receive_message(
+    QueueUrl=q, VisibilityTimeout=30,
+)
+for m in out.get("Messages", []):
+    if run(m):
+        sqs.delete_message(QueueUrl=q, ReceiptHandle=m["ReceiptHandle"])
+    # no delete = visible again after 30s
+`],
+10: [
+`def big_bang() -> None:
+    set_maintenance(True)
+    copy_all_data(old_db, new_db)  # raises on failure
+    switch_dns("app", new_lb)  # 100% at once
+    set_maintenance(False)
+    smoke_test()  # problems now hit every user
+`,
+`def ramp(steps: list[int]) -> None:
+    for pct in steps:  # e.g. 1, 5, 25, 50, 100
+        set_weights("app", 100 - pct, pct)
+        time.sleep(15 * 60)
+        if error_rate(new_stack) > 0.005 or p99(new_stack) > SLO:
+            set_weights("app", 100, 0)  # instant rollback
+            raise RolledBack(pct)
+
+
+    return
+`,
+`MIGRATED = {"/payments", "/notifications"}
+
+def route(request):
+    for prefix in MIGRATED:
+        if request.path.startswith(prefix):
+            return new_service(request)
+
+
+
+    return legacy(request)  # everything else still on the old system
+`],
+11: [
+`# replicas = ceil(current * current_cpu / target_cpu)
+def desired(current: int, cpu: float, target: float) -> int:
+    return math.ceil(current * cpu / target)
+`,
+`def desired(depth: int, per_pod: int, lo: int, hi: int) -> int:
+    n = -(-depth // per_pod)  # ceil
+    n = max(n, lo)
+    n = min(n, hi)  # protect the database
+    return n
+`],
+13: [
+`def match(shift: Shift, nearby: list[Worker]) -> Worker:
+    best = nearby[0]
+    for w in nearby[1:]:
+        if dist(w, shift) < dist(best, shift): best = w
+
+    return best
+`,
+`def score(w: Worker, s: Shift) -> float:
+    return 0.5 * w.reliability + 0.3 * w.rating / 5 - 0.2 * dist(w, s) / 10
+
+
+def next_wave(s: Shift, cands: list[Worker], sent: int) -> list[Worker]:
+    cands.sort(key=lambda w: score(w, s), reverse=True)
+    size = 50 << (sent // 50)  # 50, then 100, then 200...
+    return cands[sent:sent + size]
+`],
+14: [
+`# Prometheus rule
+# alert: HighErrors
+# expr: rate(http_errors_total[1m]) / rate(http_requests_total[1m]) > 0.05
+# for: 1m
+def firing(err_rate: float) -> bool:
+    return err_rate > 0.05
+# a 1-minute blip pages; a slow steady leak never does
+`,
+`SLO = 0.999  # 99.9% success
+
+def burn_rate(err_rate: float) -> float:
+    return err_rate / (1 - SLO)  # 1.0 = exactly on budget
+
+
+def should_page(err_1h: float, err_5m: float) -> bool:
+    return burn_rate(err_1h) > 14.4 and burn_rate(err_5m) > 14.4  # fast burn, still happening
+`],
+30: [
+`CLAIM = """
+  SELECT id, cron FROM jobs
+  WHERE next_run_at <= now()
+  ORDER BY next_run_at LIMIT 100
+  FOR UPDATE SKIP LOCKED"""
+
+def poll(cur) -> None:
+    for job_id, cron in query(cur, CLAIM):
+        enqueue(job_id)
+        cur.execute("UPDATE jobs SET next_run_at=%s WHERE id=%s", (next_run(cron), job_id))
+`,
+`class Wheel:
+    def __init__(self):
+        self.slots, self.cur = [[] for _ in range(8)], 0
+
+
+    def add(self, t: Task, delay_sec: int) -> None:
+        t.rounds = delay_sec // 8
+        i = (self.cur + delay_sec) % 8
+        self.slots[i].append(t)
+
+
+    def tick(self) -> None:
+        self.cur = (self.cur + 1) % 8
+        for t in list(self.slots[self.cur]):
+            if t.rounds == 0: self.slots[self.cur].remove(t); t.run()
+            else: t.rounds -= 1  # keep for the next lap
+`,
+`def schedule(r: redis.Redis, job: str, at: float) -> None:
+    r.zadd("delayed", {job: at})
+
+
+def due(r: redis.Redis) -> None:
+    now = time.time()
+    for job in r.zrangebyscore("delayed", "-inf", now):
+        if r.zrem("delayed", job) == 1:  # only one worker wins
+            enqueue(job)
+`],
+31: [
+`def verify(token: str, pub_key) -> dict:
+    try:
+        claims = jwt.decode(token, pub_key, algorithms=["RS256"])  # key from the IdP's JWKS, cached
+
+    except jwt.InvalidTokenError:
+        raise Unauthorized()  # bad signature or expired
+
+    return claims
+`,
+`def verify(r: redis.Redis, token: str) -> dict:
+    raw = r.get(f"sess:{token}")
+    if raw is None:
+        raise Unauthorized()  # unknown or revoked
+
+    s = json.loads(raw)
+    # s holds the user ID, scopes, etc.
+    return s
+
+
+def logout(r: redis.Redis, token: str) -> None:
+    r.delete(f"sess:{token}")  # revoked immediately
+`],
+};
+Object.entries(PYC5).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
+
 /* ---------- boot ---------- */
 load();
 if (state.lastVisit && state.onboarded){ const gap = daysBetween(state.lastVisit, today()); if (gap >= 4 && dayNum() >= 1) WB = gap; }
