@@ -11750,7 +11750,7 @@ function sdAlgosHTML(i){ const L = SDA[i]; if (!L) return "";
    ${storyHTML(a.story)}
    ${playerHTML(SV)}</div></li>`; }
 (function(){ const base = sdLessonHTML; sdLessonHTML = function(i){ const v = base(i); const h = sdAlgosHTML(i); if (!h) return v;
-  const at = v.indexOf('<li class="ls"><span class="ls-n">A</span>'); return at>0 ? v.slice(0,at) + h + v.slice(at) : v; }; })();
+  let at = v.indexOf('<li class="ls"><span class="ls-n">A</span>'); if (at<0) at = v.indexOf('<li class="ls"><span class="ls-n">4</span>'); return at>0 ? v.slice(0,at) + h + v.slice(at) : v; }; })();
 document.addEventListener("click", e=>{ const a = e.target.closest("[data-act]"); if (!a || a.dataset.act!=="svPick") return;
   const top = document.getElementById("svStage")?.closest(".ls"); const y = top ? top.getBoundingClientRect().top : null;
   svSelect(+a.dataset.i, +a.dataset.k); render(); const n = document.getElementById("svStage")?.closest(".ls"); if (n && y!==null) window.scrollBy(0, n.getBoundingClientRect().top - y); });
@@ -11948,6 +11948,190 @@ func (c *FIFO) Put(k string, v int) {
   const ln = (P.frames.lines||[])[P.i] || []; let first = null;
   box.querySelectorAll(".cxl").forEach(el=>{ const on = ln.includes(+el.dataset.n); el.classList.toggle("on", on); if (on && !first) first = el; });
   if (first) box.scrollTop = Math.max(0, first.offsetTop - box.clientHeight/3); }; })();
+
+/* ===================== More algorithm sets: cache writes, load balancing, feed fan-out ===================== */
+SDA[15].push(
+ {n:"Cache-aside (lazy loading)", when:"The app reads the cache, falls back to the DB on a miss, and fills the cache. Most common pattern.", cost:"1 extra DB read per miss",
+  story:{t:"The Kitchen Notepad",cast:[["📝","A notepad of answers you looked up","cache"],["📚","The big recipe book","database"],["✍️","Copy the answer to the notepad","fill on miss"]],
+   sc:[["❓ 📝","Someone asks for a recipe. Check the notepad first."],["📝 ✗ → 📚","Not there? Look it up in the big book."],["✍️ 📝","Write it on the notepad for next time."],["❓ 📝 ✓","Next person asking gets it instantly."]],hook:"Check the cache, miss, read the DB, fill the cache."},
+  code:`func GetUser(id string) (User, error) {
+    if u, ok := cache.Get("user:" + id); ok {
+        return u, nil // hit: fast path
+    }
+    u, err := db.FindUser(id) // miss: go to the database
+    if err != nil {
+        return User{}, err
+    }
+    cache.Set("user:"+id, u, 5*time.Minute) // fill for next time
+    return u, nil
+}
+
+func UpdateUser(u User) error {
+    if err := db.SaveUser(u); err != nil { return err }
+    cache.Delete("user:" + u.ID) // next read reloads fresh data
+    return nil
+}`,
+  gen(){ const f=rec2(); const S=(c,d)=>M([['cache','{'+c+'}'],['database','{'+d+'}']],{title:'state'});
+   f([1,2],'Read user 42. Look in the cache first.',S('','42: Asha'));
+   f([5,9,10],'Miss. Read the database, then store the result in the cache with a 5-minute TTL.',S('42: Asha','42: Asha'));
+   f([2,3],'Read user 42 again: a hit, served from memory.',S('42: Asha','42: Asha'));
+   f([13,14,15],'Update: write the database, then delete the cache key (do not overwrite it, to avoid races).',S('','42: Asha K.'));
+   f([1,5,9],'Next read misses and reloads the fresh value.',S('42: Asha K.','42: Asha K.')); return f.out; }},
+ {n:"Write-through", when:"Every write goes to the cache and the DB together. Reads are always fresh; writes are slower.", cost:"2 writes per update",
+  story:{t:"The Twin Ledgers",cast:[["📒","The front-desk ledger","cache"],["📕","The archive ledger","database"],["✍️✍️","Write both before saying done","synchronous dual write"]],
+   sc:[["💰","A payment comes in."],["✍️ 📒","Write it in the front-desk ledger."],["✍️ 📕","Then in the archive, before telling the customer it is done."],["👀 📒","Anyone reading the front desk sees the latest numbers."]],hook:"Write both, then say done; reads are always fresh."},
+  code:`func SaveBalance(id string, amount int) error {
+    if err := db.Save(id, amount); err != nil { // 1. the source of truth
+        return err
+    }
+    cache.Set("bal:"+id, amount, 0) // 2. cache updated in the same call
+    return nil // only now report success
+}
+
+func GetBalance(id string) int {
+    v, _ := cache.Get("bal:" + id) // always up to date
+    return v
+}`,
+  gen(){ const f=rec2(); const S=(c,d)=>M([['cache','{'+c+'}'],['database','{'+d+'}']],{title:'state'});
+   f([1,2],'Write balance 500. First save it in the database.',S('','a1: 500'));
+   f([5,6],'Then set the cache before returning success.',S('a1: 500','a1: 500'));
+   f([9,10,11],'Reads come from the cache and are already fresh.',S('a1: 500','a1: 500'));
+   f([2,3],'If the database write fails, nothing is cached and the caller sees the error.',S('a1: 500','a1: 500')); return f.out; }},
+ {n:"Write-back (write-behind)", when:"Write to the cache now, flush to the DB later in batches. Very fast writes; risk of loss if the cache dies.", cost:"1 fast write; DB writes batched",
+  story:{t:"The Sticky Notes",cast:[["🗒️","Sticky notes on the desk","cache"],["🗄️","The filing cabinet","database"],["⏰","File them every evening","periodic flush"]],
+   sc:[["🗒️🗒️🗒️","All day you jot quick notes. Super fast."],["⏰ 18:00","Every evening you file them in the cabinet."],["🗄️ ✓","The cabinet catches up in one go."],["🔥 🗒️","If the desk burns before evening, today's notes are lost."]],hook:"Fast now, durable later; unflushed writes are at risk."},
+  code:`var dirty = map[string]int{} // changed but not yet in the DB
+
+func IncrViews(id string) {
+    cache.Incr("views:" + id) // instant
+    dirty[id] = cache.GetInt("views:" + id)
+}
+
+func Flusher() {
+    for range time.Tick(10 * time.Second) {
+        db.BatchSave(dirty) // one write for many changes
+        dirty = map[string]int{}
+    }
+}`,
+  gen(){ const f=rec2(); let c=0; const S=(d,db,dirty)=>M([['cache',`views: ${d}`],['dirty',dirty],['database',`views: ${db}`]],{title:'state'});
+   for(let i=1;i<=3;i++){ c++; f([3,4,5],`View ${i}: increment in the cache only and mark it dirty.`,S(c,0,'p1')); }
+   f([8,9,10],'Every 10 seconds the flusher writes all dirty keys in one batch.',S(c,c,'p1'));
+   f([11],'Dirty set cleared. If the cache crashed before the flush, those 3 views would be lost.',S(c,c,'(empty)')); return f.out; }},
+);
+SDA[1] = [
+ {n:"Round robin", when:"Servers are similar and requests are similar. Simplest and stateless.", cost:"O(1) per request",
+  story:{t:"Dealing Cards",cast:[["🃏","Each request is a card","request"],["👥","Players around a table","servers"],["🔁","Deal one to each in turn","rotate"]],
+   sc:[["🃏 → 👤1","First card to player 1."],["🃏 → 👤2","Next to player 2."],["🃏 → 👤3","Then player 3."],["🔁 👤1","Back to player 1. Fair, if every card takes the same effort."]],hook:"Take turns; fair when every request costs the same."},
+  code:`type RoundRobin struct {
+    servers []string
+    next    atomic.Uint64
+}
+
+func (r *RoundRobin) Pick() string {
+    i := r.next.Add(1) - 1
+    return r.servers[i%uint64(len(r.servers))]
+}`,
+  gen(){ const f=rec2(); const sv=['s1','s2','s3']; for(let i=0;i<5;i++) f([6,7,8],`Request ${i+1}: counter = ${i}, ${i} % 3 = ${i%3}, send to ${sv[i%3]}.`,A(sv,{title:'servers',c:{[i%3]:'a'}}),V({counter:i}));
+   f([8],'Weakness: a slow server still gets its turn, even if it is overloaded.',A(sv,{title:'servers',c:{1:'bad'}})); return f.out; }},
+ {n:"Least connections", when:"Requests take very different times (uploads, WebSockets). Sends work to the least busy server.", cost:"O(n) scan or O(log n) heap",
+  story:{t:"The Supermarket Queues",cast:[["🛒","A shopper","request"],["🧾","Checkout lanes","servers"],["👀","Pick the shortest line","fewest active connections"]],
+   sc:[["🛒 👀","A shopper looks at all the lanes."],["🧾 3 · 1 · 2","Lane 2 has only one person."],["🛒 → 2","They join lane 2."],["🧾 ✓","Lanes stay balanced even when some shoppers take long."]],hook:"Join the shortest line."},
+  code:`func (lb *LeastConn) Pick() *Server {
+    var best *Server
+    for _, s := range lb.servers {
+        if best == nil || s.Active() < best.Active() {
+            best = s
+        }
+    }
+    best.Inc() // decremented when the response finishes
+    return best
+}`,
+  gen(){ const f=rec2(); let a=[3,1,2]; const S=(c)=>A(a.slice(),{title:'active connections per server',lab:['s1','s2','s3'],c});
+   f([1,2,3],'Look at every server\'s active connection count.',S());
+   f([4,5],'s2 has the fewest (1), so it is the best.',S({1:'a'}));
+   a[1]++; f([8,9],'Send the request to s2 and count it as active.',S({1:'ok'}));
+   a[0]--; a[0]--; f([3,4,5],'Two long requests on s1 finish. Now s1 is the least busy and gets the next one.',S({0:'a'})); return f.out; }},
+ {n:"Consistent hashing (sticky)", when:"The same key should hit the same server (caches, chat sessions), and adding a server should move few keys.", cost:"O(log n) per lookup",
+  story:{t:"Seats Around a Round Table",cast:[["🍩","A round table","hash ring"],["🪑","Servers sit at points on it","node positions"],["🔑","Each user walks clockwise to the next seat","key → next node"]],
+   sc:[["🍩","Servers sit around a round table."],["🔑 ↻ 🪑","Each user goes clockwise to the next server."],["🪑 + new","A new server sits down."],["🔑 few move","Only users just before it change server."]],hook:"Same key, same server; adding one moves only a slice."},
+  code:`func (r *Ring) Get(key string) string {
+    h := crc32.ChecksumIEEE([]byte(key))
+    i := sort.Search(len(r.hashes), func(i int) bool {
+        return r.hashes[i] >= h
+    })
+    if i == len(r.hashes) {
+        i = 0 // wrap around the ring
+    }
+    return r.nodes[r.hashes[i]]
+}`,
+  gen(){ const f=rec2(); f([1,2],'Hash the user ID onto a number on the ring: user 42 → 3,900.',A(['A','B','C'],{lab:['1000','4000','7000'],title:'ring positions (node at hash)'}),V({hash:3900}));
+   f([3,4,5],'Binary search the sorted positions for the first one ≥ 3,900: B at 4,000.',A(['A','B','C'],{lab:['1000','4000','7000'],title:'ring positions (node at hash)',c:{1:'a'}}));
+   f([9],'User 42 always lands on B, so B\'s cache for that user stays warm.',A(['A','B','C'],{lab:['1000','4000','7000'],title:'ring positions (node at hash)',c:{1:'ok'}}));
+   f([3,4,5],'Add D at 3,000. User 42 (3,900) still maps to B. Only keys between 1,000 and 3,000 move to D.',A(['A','D','B','C'],{lab:['1000','3000','4000','7000'],title:'ring positions (node at hash)',c:{1:'a',2:'ok'}}));
+   f([6,7],'A hash of 7,500 is past the last node, so it wraps around to A.',A(['A','D','B','C'],{lab:['1000','3000','4000','7000'],title:'ring positions (node at hash)',c:{0:'a'}}),V({hash:7500})); return f.out; }},
+];
+SDA[5] = [
+ {n:"Fan-out on write (push)", when:"Most users have modest follower counts. Reads become a single cache lookup.", cost:"O(followers) per post · O(1) per feed read",
+  story:{t:"The Newspaper Boy",cast:[["📰","A new post","post"],["🚴","Delivered to every follower's mailbox","fan-out job"],["📬","Your mailbox","feed cache"]],
+   sc:[["✍️ 📰","You publish a post."],["🚴 📬📬📬","It is dropped into every follower's mailbox right away."],["📬 👀","Followers open their mailbox: it is already there."],["⭐ 📬×50M","A celebrity post means 50 million deliveries."]],hook:"Do the work at write time so reads are instant."},
+  code:`func OnPost(p Post) {
+    followers := graph.Followers(p.AuthorID)
+    for _, f := range followers {
+        redis.LPush("feed:"+f, p.ID)    // put it in each feed
+        redis.LTrim("feed:"+f, 0, 499) // keep the newest 500
+    }
+}
+
+func ReadFeed(user string) []Post {
+    ids := redis.LRange("feed:"+user, 0, 19)
+    return posts.GetMany(ids)
+}`,
+  gen(){ const f=rec2(); const feeds=new Map([['bob',['p3']],['cara',['p1']]]);
+   f([1,2],'Asha posts p9. Find her followers: Bob and Cara.',M(feeds,{title:'feed caches'}));
+   feeds.get('bob').unshift('p9'); f([3,4,5],'Push p9 to the front of Bob\'s feed and trim it to 500.',M(feeds,{title:'feed caches',hl:'bob'}));
+   feeds.get('cara').unshift('p9'); f([3,4,5],'Same for Cara.',M(feeds,{title:'feed caches',hl:'cara'}));
+   f([9,10,11],'Bob opens the app: read 20 IDs from his list and load those posts. One fast lookup.',M(feeds,{title:'feed caches',hl:'bob'})); return f.out; }},
+ {n:"Fan-out on read (pull)", when:"Write-heavy or celebrity accounts. Nothing is precomputed; the feed is built when opened.", cost:"O(1) per post · O(following) per feed read",
+  story:{t:"The Morning Rounds",cast:[["🚶","You visit each friend","query each followee"],["📰","Pick up their latest news","recent posts"],["🧺","Sort it into one basket","merge by time"]],
+   sc:[["🚶 🏠🏠🏠","Each morning you walk to every friend's house."],["📰📰📰","Collect their latest posts."],["🧺 ⏱️","Sort everything by time."],["🐢","Easy to keep up to date, but slow if you follow many people."]],hook:"Do the work at read time; writes are free."},
+  code:`func ReadFeed(user string) []Post {
+    var all []Post
+    for _, a := range graph.Following(user) {
+        all = append(all, posts.Recent(a, 20)...)
+    }
+    sort.Slice(all, func(i, j int) bool { return all[i].At.After(all[j].At) })
+    if len(all) > 20 { all = all[:20] }
+    return all
+}`,
+  gen(){ const f=rec2(); f([1,2,3],'Bob follows Asha, Dev and Eli. Visit each of them.',A(['asha','dev','eli'],{title:'following',c:{0:'a'}}));
+   f([3,4],'Fetch each author\'s 20 most recent posts.',A(['p9 (asha)','p7 (dev)','p8 (eli)'],{title:'collected'}));
+   f([6,7],'Sort by time, keep the newest 20.',A(['p9','p8','p7'],{title:'Bob\'s feed',c:{0:'ok'}}));
+   f([3],'Following 2,000 people means 2,000 lookups on every open: why big feeds precompute.',V({following:2000,lookups:2000})); return f.out; }},
+ {n:"Hybrid", when:"Real social networks: push for normal accounts, pull for celebrities, merge at read time.", cost:"Bounded writes and fast reads",
+  story:{t:"Mailbox Plus Notice Board",cast:[["📬","Your mailbox gets normal friends' posts","pushed feed"],["📌","Celebrities pin posts on a public board","pulled at read time"],["🧺","You read both and merge","merge"]],
+   sc:[["📬","Friends' posts arrive in your mailbox."],["⭐ 📌","Celebrities just pin their post on one board."],["👀 📬 + 📌","When you look, you check your mailbox and the board."],["🧺 ✓","Merge them: fast reads, no 50-million-delivery storms."]],hook:"Push for most, pull for the famous, merge on read."},
+  code:`const celebrityThreshold = 100_000
+
+func OnPost(p Post) {
+    if graph.FollowerCount(p.AuthorID) >= celebrityThreshold {
+        return // celebrities are pulled at read time
+    }
+    pushToFollowers(p)
+}
+
+func ReadFeed(user string) []Post {
+    feed := redis.LRange("feed:"+user, 0, 19)
+    for _, c := range graph.CelebritiesFollowed(user) {
+        feed = append(feed, posts.RecentIDs(c, 5)...)
+    }
+    return mergeNewestFirst(feed, 20)
+}`,
+  gen(){ const f=rec2(); f([3,4,7],'Asha (1,200 followers) posts: below the threshold, so push it to followers.',V({followers:1200,mode:'push'}));
+   f([3,4,5],'A star with 50M followers posts: above the threshold, so skip fan-out entirely.',V({followers:'50,000,000',mode:'pull later'}));
+   f([10,11],'Bob opens the app: read his pushed feed.',A(['p9 (asha)','p3'],{title:'pushed feed'}));
+   f([12,13,14],'Add recent posts from the celebrities he follows.',A(['p9 (asha)','s5 (star)','p3'],{title:'merged',c:{1:'a'}}));
+   f([15],'Merge newest first and return 20.',A(['s5','p9','p3'],{title:'Bob\'s feed',c:{0:'ok',1:'ok',2:'ok'}})); return f.out; }},
+];
 
 /* ---------- boot ---------- */
 load();
