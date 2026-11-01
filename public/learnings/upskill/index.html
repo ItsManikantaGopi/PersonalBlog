@@ -13734,6 +13734,148 @@ def encode(id: int) -> str:
 };
 Object.entries(PYC2).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
 
+/* ===================== Python batch 3 (line-aligned) ===================== */
+const PYC3 = {
+20: [
+`BOUNDS = ["g", "n"]  # shard 0: < g, 1: g..m, 2: >= n
+
+def shard_for(key: str) -> int:
+    return bisect.bisect_right(BOUNDS, key[:1].lower())
+`,
+`def shard_for(key: str, n: int) -> int:
+    h = hashlib.md5()
+    h.update(key.encode())
+    return int.from_bytes(h.digest()[:4], "big") % n
+`,
+`def add(self, node: str, vnodes: int) -> None:
+    for i in range(vnodes):  # many points per node = even spread
+        h = zlib.crc32(f"{node}#{i}".encode())
+        self.hashes.append(h)
+        self.owner[h] = node
+
+    self.hashes.sort()
+`],
+22: [
+`def crawl(seeds: list[str]) -> None:
+    queue = deque(seeds)
+    seen = set()
+    while queue:
+        url = queue.popleft()  # oldest first
+        if url in seen: continue
+        seen.add(url)
+        for link in fetch_links(url):
+            queue.append(link)
+`,
+`# heap items are (-score, url) so the highest score pops first
+
+def next_url(heap: list, last_hit: dict[str, float]) -> str:
+    while True:
+        neg_score, url = heapq.heappop(heap)
+        host = host_of(url)
+        if time.time() - last_hit.get(host, 0) >= 1:  # politeness
+            last_hit[host] = time.time()
+            return url
+
+        heapq.heappush(heap, (neg_score, url))  # too soon for this host: put it back
+`,
+`class Bloom:
+    def __init__(self, m: int, k: int): self.bits, self.k = [False] * m, k
+    def add(self, s: str) -> None:
+        for i in range(self.k): self.bits[hash_i(s, i) % len(self.bits)] = True
+
+
+    def maybe_has(self, s: str) -> bool:
+        for i in range(self.k):
+            if not self.bits[hash_i(s, i) % len(self.bits)]: return False  # definitely new
+
+        return True  # probably seen
+`],
+23: [
+`def chunks(data: bytes, size: int) -> list[bytes]:
+    out = []
+    for i in range(0, len(data), size):
+        end = min(i + size, len(data))
+        out.append(data[i:end])
+
+    return out
+`,
+`def chunks(data: bytes) -> list[bytes]:
+    out = []
+    start, h = 0, 0
+    for i, b in enumerate(data):
+        h = ((h << 1) + b) & 0xFFFFFFFF  # rolling hash of recent bytes
+        if h % 64 == 0 or i == len(data) - 1:  # boundary chosen by content
+            out.append(data[start:i + 1])
+            start, h = i + 1, 0
+
+
+    return out
+`],
+24: [
+`def nearby(lat: float, lng: float) -> list[Driver]:
+    cell = geohash.encode(lat, lng, precision=6)  # ~1.2 km cell
+    out = []
+    for c in geohash.neighbors(cell) + [cell]:
+        out += index.get(c, [])  # drivers filed under each cell
+
+    out.sort(key=lambda d: distance(d, lat, lng))
+    return out
+`,
+`def insert(self, p: Point) -> None:
+    if not self.box.contains(p): return
+    if self.kids is None and len(self.pts) < 4:
+        self.pts.append(p)
+        return
+
+    if self.kids is None: self.split()  # too crowded: 4 children
+    for k in self.kids: k.insert(p)
+`],
+25: [
+`def book(cur, seat: str, user: int) -> None:
+    cur.execute("SELECT status FROM seats WHERE id=%s FOR UPDATE", (seat,))
+    status = cur.fetchone()[0]  # this row is now locked
+    if status != "AVAILABLE":
+        raise SeatTaken(seat)
+
+    cur.execute("UPDATE seats SET status='BOOKED', holder=%s WHERE id=%s", (user, seat))
+    # commit releases the lock
+`,
+`def book(cur, seat: str, user: int, version: int) -> None:
+    cur.execute("""UPDATE seats SET status='BOOKED', holder=%s, version=version+1
+        WHERE id=%s AND status='AVAILABLE' AND version=%s""", (user, seat, version))
+    if cur.rowcount == 0:
+        raise Conflict(seat)  # someone changed it: reload and retry
+`,
+`def hold(cur, seat: str, user: int) -> bool:
+    cur.execute("""UPDATE seats SET status='HELD', holder=%s, expires_at=now()+interval '10 min'
+        WHERE id=%s AND (status='AVAILABLE' OR (status='HELD' AND expires_at < now()))""", (user, seat))
+    n = cur.rowcount
+    return n == 1
+`],
+26: [
+`def two_phase(parts: list[Participant], tx: Tx) -> None:
+    for p in parts:  # phase 1: prepare (lock + vote)
+        if not p.prepare(tx):
+            for q in parts: q.abort(tx)
+            raise Aborted()
+
+
+    for p in parts:  # phase 2: commit
+        p.commit(tx)
+`,
+`# each step is a pair: (do, undo)
+
+def run_saga(steps: list[tuple[Callable, Callable]]) -> None:
+    for i, (do, _) in enumerate(steps):
+        if not run_ok(do):  # the step raised: it failed
+            for _, undo in reversed(steps[:i]):  # compensate in reverse
+                undo()
+
+            raise SagaFailed(i)
+`],
+};
+Object.entries(PYC3).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
+
 /* ---------- boot ---------- */
 load();
 if (state.lastVisit && state.onboarded){ const gap = daysBetween(state.lastVisit, today()); if (gap >= 4 && dayNum() >= 1) WB = gap; }
