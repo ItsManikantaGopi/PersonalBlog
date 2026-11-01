@@ -13876,6 +13876,155 @@ def run_saga(steps: list[tuple[Callable, Callable]]) -> None:
 };
 Object.entries(PYC3).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
 
+/* ===================== Python batch 4 (line-aligned) ===================== */
+const PYC4 = {
+4: [
+`def send(n: Notification) -> None:
+    for attempt in range(1, 4):
+        if provider.send(n):
+            return
+
+        time.sleep(60)  # same wait every time
+
+    dlq.push(n)  # give up: dead-letter queue
+`,
+`def backoff(attempt: int) -> float:
+    d = 2 ** attempt  # 1s, 2s, 4s, 8s...
+    if d > 60:
+        d = 60  # cap
+
+    return d
+`,
+`def backoff_jitter(attempt: int) -> float:
+    cap = 2 ** attempt
+    cap = min(cap, 60)
+    return random.uniform(0, cap)  # "full jitter"
+`],
+6: [
+`def poll(since: int) -> None:
+    while True:
+        msgs = requests.get(f"/messages?since={since}").json()
+        for m in msgs: show(m); since = m["id"]
+        time.sleep(3)  # ask again later
+`,
+`async def handler(request):
+    try:
+        m = await asyncio.wait_for(inbox(request).get(), 30)  # wait for data...
+        return web.json_response(m)
+    except asyncio.TimeoutError:  # ...or time out
+        return web.Response(status=204)
+`,
+`async def serve(ws, user: str) -> None:
+    async def push():
+        async for m in bus.subscribe(user):  # pushed by the server
+            await ws.send_json(m)
+
+    asyncio.create_task(push())
+    while True:
+        msg = await ws.receive_json()
+        if msg is None: return  # client disconnected
+        await bus.publish(msg["to"], msg)  # sent by the client
+`,
+`async def stream(request):
+    resp = web.StreamResponse(headers={"Content-Type": "text/event-stream"})
+    await resp.prepare(request)
+    async for ev in updates(request):
+        await resp.write(f"id: {ev.id}\\ndata: {ev.json}\\n\\n".encode())
+        # write() sends now and keeps the response open
+`],
+12: [
+`def score(q: list[str], doc: Doc, idx: Index) -> float:
+    k1, b = 1.2, 0.75
+    total = 0.0
+    for term in q:
+        tf = doc.count(term)
+        idf = math.log(1 + (idx.n - idx.df(term) + 0.5) / (idx.df(term) + 0.5))
+        norm = tf * (k1 + 1) / (tf + k1 * (1 - b + b * doc.length / idx.avg_len))
+        total += idf * norm
+
+    return total
+`,
+`def search(q: str, k: int) -> list[Doc]:
+    qv = embed(q)  # e.g. 768 numbers
+    return index.nearest(qv, k, cosine)
+
+
+def cosine(a: np.ndarray, b: np.ndarray) -> float:
+    dot = float(a @ b)
+    norms = np.linalg.norm(a) * np.linalg.norm(b)
+    return dot / norms
+`],
+27: [
+`Insert = namedtuple("Insert", "pos text")
+
+# adjust b so it can apply after a has been applied
+def transform(a: Insert, b: Insert) -> Insert:
+    if a.pos <= b.pos:
+        b = b._replace(pos=b.pos + len(a.text))
+
+    return b
+`,
+`class Elem(NamedTuple):
+    id: tuple[int, str]  # (counter, replica_id): unique everywhere
+    after: tuple[int, str]  # the element this was inserted after
+    char: str
+
+
+def merge(a: set[Elem], b: set[Elem]) -> list[Elem]:
+    everything = a | b  # same set on every replica
+    return order_by_after_then_id(everything)  # deterministic order
+`],
+28: [
+`def add_score(r: redis.Redis, player: str, pts: float) -> None:
+    r.zincrby("board", pts, player)
+
+
+def rank(r: redis.Redis, player: str) -> int:
+    return r.zrevrank("board", player) + 1  # 1-based
+
+
+def top(r: redis.Redis) -> list[tuple[bytes, float]]:
+    return r.zrevrange("board", 0, 9, withscores=True)
+`,
+`buckets = [0] * 100  # buckets[i] = players with score in [i*100, i*100+99]
+
+def update(old: int, new: int) -> None:
+    buckets[old // 100] -= 1
+    buckets[new // 100] += 1
+
+
+def approx_rank(score: int) -> int:
+    above = 0
+    for i in range(score // 100 + 1, len(buckets)): above += buckets[i]
+    return above + 1
+`],
+29: [
+`def window_start(ts: datetime, size: timedelta) -> datetime:
+    return datetime.min + (ts - datetime.min) // size * size  # 10:00:37 → 10:00:00
+
+
+def on_click(ev: Click) -> None:
+    w = window_start(ev.ts, timedelta(minutes=1))
+    counts[(ev.ad_id, w)] += 1
+`,
+`def windows(ts: datetime, size: timedelta, hop: timedelta) -> list[datetime]:
+    out = []
+    start = window_start(ts, hop)
+    while start > ts - size:
+        out.append(start); start -= hop  # every window that contains ts
+
+    return out
+`,
+`def track(r: redis.Redis, day: str, user: str) -> None:
+    r.pfadd(f"uniq:{day}", user)  # ~12 KB per key, any number of users
+
+
+def uniques(r: redis.Redis, day: str) -> int:
+    return r.pfcount(f"uniq:{day}")  # ±0.81% error
+`],
+};
+Object.entries(PYC4).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
+
 /* ---------- boot ---------- */
 load();
 if (state.lastVisit && state.onboarded){ const gap = daysBetween(state.lastVisit, today()); if (gap >= 4 && dayNum() >= 1) WB = gap; }
