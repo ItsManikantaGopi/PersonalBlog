@@ -1089,7 +1089,7 @@ html[data-site] .sysn.bad .sye-t{fill:#737373;text-decoration:line-through}
 html[data-site] .sye{stroke:#3A3A3A;stroke-width:2;stroke-linecap:round;stroke-dasharray:0.01 11}
 html[data-site] .sye.flow{stroke:#FAFAFA;stroke-width:5;stroke-dasharray:0.01 13;animation:dotflow .55s linear infinite;marker-end:none}
 html[data-site] .sye.bad{marker-end:none}
-html[data-site] #view, html[data-site] #hero, html[data-site] dialog{filter:grayscale(1)}
+html[data-site] #view, html[data-site] #hero, html[data-site] .cm-stagewrap, html[data-site] .cm-card{filter:grayscale(1)}
 html[data-site] .sye.bad{stroke:#5A5A5A;stroke-width:3;stroke-dasharray:6 7;animation:none}
 html[data-site] .syl{fill:#8C8C8C;font:500 11px var(--mono)}
 html[data-site] .syl.flow{fill:#FAFAFA}
@@ -1250,7 +1250,7 @@ html[data-site] .scene-t{min-height:4.5em}
 <main class="wrap" id="view"></main>
 
 <dialog id="logDlg">
-  <form class="dlgform" novalidate>
+  <form class="dlgform" novalidate autocomplete="off" data-bwignore="true">
     <h2>Log an attempt</h2>
     <p class="sub" id="logName"></p>
     <label class="f">Result</label>
@@ -1271,7 +1271,7 @@ html[data-site] .scene-t{min-height:4.5em}
 </dialog>
 
 <dialog id="onbDlg" class="onb onb2">
-  <form class="dlgform" novalidate>
+  <form class="dlgform" novalidate autocomplete="off" data-bwignore="true">
     <div class="ob-top"><span class="ob-brand">Upskill</span><span class="ob-count" id="obCount">1 / 3</span></div>
     <div class="ob-bar"><i data-ob="0" class="on"></i><i data-ob="1"></i><i data-ob="2"></i></div>
     <section class="ob-step on" data-step="0">
@@ -1279,7 +1279,7 @@ html[data-site] .scene-t{min-height:4.5em}
       <p class="lead">Go, data structures and system design, taught as short animated stories. Each day you learn one thing, practise one thing and recall what is fading.</p>
       <ol class="ob-loop"><li><b>Learn</b><span>10 min · one lesson</span></li><li><b>Practise</b><span>15 min · one problem</span></li><li><b>Recall</b><span>5 min · spaced review</span></li></ol>
       <label class="f" for="onbName">Your first name <span class="opt">optional</span></label>
-      <input type="text" id="onbName" maxlength="40" autocomplete="given-name" placeholder="e.g. Asha">
+      <input type="text" id="onbName" name="nickname" maxlength="40" autocomplete="off" data-bwignore="true" data-1p-ignore="true" data-lpignore="true" data-form-type="other" placeholder="e.g. Asha">
     </section>
     <section class="ob-step" data-step="1">
       <h2>How much time can you give each day?</h2>
@@ -11681,6 +11681,69 @@ document.addEventListener("click", e=>{ const a = e.target.closest("[data-act]")
   if (tab!=="sysd" || SDT.mod!=="blocks"){ sdtSelect("blocks"); tab = "sysd"; }
   render(); document.getElementById("sbStage")?.scrollIntoView({block:"center"}); });
 (function(){ const base = afterRender; afterRender = function(){ base(); if (tab==='sysd' && SDT.mod==='blocks' && SB.frames.length && document.getElementById('sbStage')){ SB.fresh = true; pDraw(SB); } else pStop(SB); }; })();
+
+/* ===================== Algorithms inside each system ===================== */
+// SD index → list of algorithms: {n, when, cost, story, gen}
+const SDA = {
+3: [
+ {n:"Token bucket", when:"Allows short bursts, then a steady rate. The default choice (AWS, Stripe).", cost:"O(1) time · 2 numbers per user",
+  story:{t:"The Arcade Token Jar",cast:[["🫙","A jar that holds 4 tokens","bucket capacity"],["🪙","One token per game","one request"],["⏲️","A token added every second","refill rate"]],
+   sc:[["🫙 🪙🪙🪙🪙","Each player gets a jar with 4 tokens."],["🎮🎮🎮🎮 🫙","Play 4 games in a row: the jar is empty."],["🎮 🚫","A 5th game right away? No token, wait."],["⏲️ 🪙","One second later a token drops in. Play again."]],hook:"Bursts are fine until the jar is empty; then you go at the refill speed."},
+  gen(){ const f=rec(); let tk=4; const jar=()=>A([0,1,2,3].map(i=>i<tk?'🪙':''),{title:'bucket (capacity 4, +1 token per second)'});
+   f('Each user starts with a full bucket of 4 tokens.',jar(),V({time:'0s',tokens:tk}));
+   for(let r=1;r<=5;r++){ if(tk>0){ tk--; f(`Request ${r} at 0s: take a token. Allowed.`,jar(),V({time:'0s',tokens:tk,result:'200 OK'})); } else f(`Request ${r} at 0s: bucket empty. Rejected with 429.`,jar(),V({time:'0s',tokens:tk,result:'429'})); }
+   tk=2; f('2 seconds pass: 2 tokens dripped back in.',jar(),V({time:'2s',tokens:tk}));
+   tk--; f('Request 6 at 2s: allowed. Store only (tokens, lastRefill) per user and refill lazily on each request.',jar(),V({time:'2s',tokens:tk,result:'200 OK'})); return f.out; }},
+ {n:"Leaky bucket", when:"Smooths traffic into a perfectly steady output. Good in front of a fragile downstream.", cost:"O(1) time · a queue per user",
+  story:{t:"The Dripping Funnel",cast:[["🫗","A funnel that holds 4 cups","queue capacity"],["💧","Drips out at a fixed speed","processing rate"],["🌊","Overflow spills away","dropped requests"]],
+   sc:[["🌊🌊 🫗","A sudden wave of water pours in."],["🫗 4/4","The funnel fills up to its 4-cup limit."],["🌊 💦","Anything extra overflows and is lost."],["💧 ... 💧","Below, water drips out at the same steady pace, no matter how hard it pours."]],hook:"Requests queue and leak out at a constant rate; overflow is dropped."},
+  gen(){ const f=rec(); let q=[]; const Q=()=>A([0,1,2,3].map(i=>q[i]||''),{title:'queue (capacity 4), leaks 1 per second'});
+   f('A burst of 6 requests arrives at once.',Q(),V({incoming:6}));
+   for(let r=1;r<=6;r++){ if(q.length<4){ q.push('r'+r); f(`r${r} joins the queue.`,Q(),V({queued:q.length})); } else f(`r${r}: queue full. Dropped.`,Q(),V({queued:q.length,dropped:'r'+r})); }
+   for(let s=1;s<=2;s++){ const out=q.shift(); f(`Second ${s}: ${out} leaks out to the server. Output stays at exactly 1 per second.`,Q(),V({processed:out,queued:q.length})); }
+   f('Trade-off: steady load on the backend, but bursts wait in line (added latency).',Q()); return f.out; }},
+ {n:"Fixed window counter", when:"Simplest to build (one counter per minute). Lets up to 2× the limit through around window edges.", cost:"O(1) time · 1 counter per window",
+  story:{t:"The Hourly Ticket Booth",cast:[["🕐","Each new hour","a time window"],["🎟️","3 tickets per hour","the limit"],["🔁","The count resets on the hour","window reset"]],
+   sc:[["🎟️🎟️🎟️ 1:59","Someone buys 3 tickets at 1:59."],["🕑 reset","At 2:00 the booth resets its count."],["🎟️🎟️🎟️ 2:00","They buy 3 more at 2:00."],["6 in 1 minute 😬","6 tickets in one minute, even though the limit is 3 per hour."]],hook:"One counter per window; cheap, but bursts sneak through at the edges."},
+  gen(){ const f=rec(); const W=(a,b)=>M([['window 0:00–0:59',a+' / 3'],['window 1:00–1:59',b+' / 3']],{title:'counters (limit 3 per minute)'});
+   f('Key = user + current minute. INCR it on each request; allow while it is ≤ 3.',W(0,0));
+   f('Requests at 0:58, 0:59, 0:59: counter reaches 3. All allowed.',W(3,0),R(['0:58 ✓','0:59 ✓','0:59 ✓']));
+   f('At 1:00 a new key starts at 0.',W(3,0));
+   f('Requests at 1:00, 1:00, 1:01: all allowed again.',W(3,3),R(['1:00 ✓','1:00 ✓','1:01 ✓']));
+   f('That is 6 requests in about 3 seconds, double the intended rate. This is the edge problem.',W(3,3),V({'requests in 3s':6,limit:'3/min'})); return f.out; }},
+ {n:"Sliding window log", when:"Exact. Stores every timestamp, so memory grows with traffic.", cost:"O(log n) per request · n timestamps per user",
+  story:{t:"The Guest Book",cast:[["📖","A book of entry times","timestamp log"],["⏱️","Only the last 60 seconds count","sliding window"],["✂️","Old pages torn out","evict old entries"]],
+   sc:[["📖 ✍️","Every visit is written down with its exact time."],["⏱️ 60s","To decide, look only at entries from the last 60 seconds."],["✂️ old","Older entries are torn out first."],["3 in book? 🚫","If 3 recent entries remain, the next guest waits."]],hook:"Keep every timestamp; drop the old ones; count what is left."},
+  gen(){ const f=rec(); let log=[]; const L=()=>A(log.length?log:[],{title:'log of request times (limit 3 per 60s)'});
+   [[10,1],[30,1],[50,1],[55,0],[75,1]].forEach(([t])=>{ log=log.filter(x=>x>t-60); const ok=log.length<3; if(ok) log.push(t);
+     f(`Request at ${t}s: remove times older than ${t-60}s, ${log.length-(ok?1:0)} left. ${ok?'Under 3, allowed and logged.':'Already 3, rejected.'}`,L(),V({now:t+'s',inWindow:log.length,result:ok?'200':'429'})); });
+   f('No edge problem, because the window slides with each request. Cost: storing every timestamp (Redis sorted set).',L()); return f.out; }},
+ {n:"Sliding window counter", when:"Near-exact with tiny memory: blends this window and the previous one. Common in production (Cloudflare).", cost:"O(1) time · 2 counters per user",
+  story:{t:"The Two Tally Sheets",cast:[["📄","Last minute's tally","previous window count"],["📃","This minute's tally","current window count"],["⚖️","Weight the old sheet by how much still overlaps","weighted estimate"]],
+   sc:[["📄 8  📃 3","Last minute: 8 requests. This minute so far: 3."],["⏱️ 25%","We are 25% into this minute, so 75% of last minute still overlaps."],["⚖️ 3 + 8×0.75 = 9","Estimate = 3 + 6 = 9 requests in the last 60 seconds."],["9 < 10 ✓","Limit is 10, so allow. Two numbers, no log."]],hook:"Estimate = current + previous × overlap. Almost exact, almost free."},
+  gen(){ const f=rec(); f('Limit: 10 per minute. We keep just two counters per user.',V({previous:8,current:3}));
+   f('Now is 15s into the current minute, so 75% of the previous minute still lies inside the last 60 seconds.',V({previous:8,current:3,overlap:'75%'}));
+   f('Estimate = current + previous × 0.75 = 3 + 6 = 9.',V({estimate:9,limit:10}));
+   f('9 < 10: allow and increment the current counter to 4.',V({previous:8,current:4,result:'200 OK'}));
+   f('Next request: 4 + 6 = 10, which reaches the limit: reject with 429.',V({estimate:10,limit:10,result:'429'})); return f.out; }},
+],
+};
+const SV = mkPlayer("sv"); PLAYERS.sv = SV; SV.sd = null; SV.k = 0;
+function svSelect(i, k){ SV.sd = i; SV.k = k; pStop(SV); SV.i = 0; SV.err = ""; SV.fresh = true; SV.frames = SDA[i][k].gen(); }
+function sdAlgosHTML(i){ const L = SDA[i]; if (!L) return "";
+  if (SV.sd !== i) svSelect(i, 0); const a = L[SV.k];
+  return `<li class="ls"><span class="ls-n">★</span><div class="ls-b"><h3>Algorithms you can use (${L.length})</h3>
+   <p class="quiet">Same goal, different algorithms. Learn each story, then say which you would pick and why.</p>
+   <div class="tiers">${L.map((x,k)=>`<button class="tier${k===SV.k?" on":""}" data-act="svPick" data-i="${i}" data-k="${k}"><span class="tier-k">${String(k+1).padStart(2,"0")}</span><b>${esc(x.n)}</b><span class="tier-c">${esc(x.cost)}</span></button>`).join("")}</div>
+   <p class="tier-h"><b>When to use:</b> ${esc(a.when)}</p>
+   ${storyHTML(a.story)}
+   ${playerHTML(SV)}</div></li>`; }
+(function(){ const base = sdLessonHTML; sdLessonHTML = function(i){ const v = base(i); const h = sdAlgosHTML(i); if (!h) return v;
+  const at = v.indexOf('<li class="ls"><span class="ls-n">A</span>'); return at>0 ? v.slice(0,at) + h + v.slice(at) : v; }; })();
+document.addEventListener("click", e=>{ const a = e.target.closest("[data-act]"); if (!a || a.dataset.act!=="svPick") return;
+  const top = document.getElementById("svStage")?.closest(".ls"); const y = top ? top.getBoundingClientRect().top : null;
+  svSelect(+a.dataset.i, +a.dataset.k); render(); const n = document.getElementById("svStage")?.closest(".ls"); if (n && y!==null) window.scrollBy(0, n.getBoundingClientRect().top - y); });
+(function(){ const base = afterRender; afterRender = function(){ base(); if (tab==='sysd' && SV.frames.length && document.getElementById('svStage')){ SV.fresh = true; pDraw(SV); } else pStop(SV); }; })();
 
 /* ---------- boot ---------- */
 load();
