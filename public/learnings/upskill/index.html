@@ -1269,6 +1269,13 @@ html[data-site] .scene-t{min-height:4.5em}
 .fold[open] summary::before{content:"▾"}
 .fold[open] summary{margin-bottom:12px}
 details.legend-d{display:none}
+
+.onb2 .ob-opts.four{grid-template-columns:repeat(4,1fr)}
+@media (max-width:560px){.onb2 .ob-opts.four{grid-template-columns:repeat(2,1fr)}}
+.gh-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.gh-tools label.btn{cursor:pointer}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:capIn .3s ease}
+@media (max-width:600px){.gh-tools .btn{font-size:12px;padding:0 10px}}
 </style>
 </head>
 <body>
@@ -1308,50 +1315,23 @@ details.legend-d{display:none}
 
 <dialog id="onbDlg" class="onb onb2">
   <form class="dlgform" novalidate autocomplete="off" data-bwignore="true">
-    <div class="ob-top"><span class="ob-brand">Upskill</span><span class="ob-count" id="obCount">1 / 3</span></div>
-    <div class="ob-bar"><i data-ob="0" class="on"></i><i data-ob="1"></i><i data-ob="2"></i></div>
-    <section class="ob-step on" data-step="0">
-      <h2>Get better at backend engineering, 30 minutes at a time.</h2>
-      <p class="lead">Go, data structures and system design, taught as short animated stories. Each day you learn one thing, practise one thing and recall what is fading.</p>
-      <ol class="ob-loop"><li><b>Learn</b><span>10 min · one lesson</span></li><li><b>Practise</b><span>15 min · one problem</span></li><li><b>Recall</b><span>5 min · spaced review</span></li></ol>
-      <label class="f" for="onbName">Your first name <span class="opt">optional</span></label>
-      <input type="text" id="onbName" name="nickname" maxlength="40" autocomplete="off" data-bwignore="true" data-1p-ignore="true" data-lpignore="true" data-form-type="other" placeholder="e.g. Asha">
-    </section>
-    <section class="ob-step" data-step="1">
-      <h2>How much time can you give each day?</h2>
-      <p class="lead">Pick what you can keep doing. Showing up daily beats long sessions.</p>
-      <div class="ob-opts">
-        <label><input type="radio" name="daily" value="30" checked><div><b>30 min</b><small>The focus loop. Recommended.</small></div></label>
-        <label><input type="radio" name="daily" value="45"><div><b>45 min</b><small>Loop plus one extra problem</small></div></label>
-        <label><input type="radio" name="daily" value="70"><div><b>70 min</b><small>Full daily plan</small></div></label>
-        <label><input type="radio" name="daily" value="90"><div><b>90 min</b><small>Fastest pace</small></div></label>
-      </div>
-      <h3 class="ob-q">Which language do you code in?</h3>
-      <div class="ob-opts two">
-        <label><input type="radio" name="lang" value="go" checked><div><b>Go</b><small>Includes 14 short Go lessons</small></div></label>
-        <label><input type="radio" name="lang" value="py"><div><b>Python</b><small>Python solutions and toolkit</small></div></label>
-      </div>
-    </section>
-    <section class="ob-step" data-step="2">
-      <h2>Where are you starting, and how far do you want to go?</h2>
-      <div class="ob-opts two">
-        <label><input type="radio" name="track" value="core" checked><div><b>Backend core</b><small>6 weeks · Go, 59 key problems, 32 system designs</small></div></label>
-        <label><input type="radio" name="track" value="faang"><div><b>Deep track</b><small>12 weeks · adds advanced DSA and concepts</small></div></label>
-      </div>
-      <h3 class="ob-q">Your level today</h3>
-      <div class="ob-opts three">
-        <label><input type="radio" name="level" value="new" checked><div><b>New</b><small>Step by step</small></div></label>
-        <label><input type="radio" name="level" value="go"><div><b>Some Go</b><small>Go as refreshers</small></div></label>
-        <label><input type="radio" name="level" value="back"><div><b>Returning</b><small>Lean on recall</small></div></label>
-      </div>
-      <label class="f" for="onbStart">Start date</label>
-      <input type="date" id="onbStart">
-    </section>
+    <div class="ob-top"><span class="ob-brand">Upskill</span></div>
+    <h2>Get better at backend engineering, a little every day.</h2>
+    <p class="lead">Each day: learn one thing, practise one thing, recall what is fading. Two quick questions and you're in.</p>
+    <label class="f" for="onbName">Your first name <span class="opt">optional</span></label>
+    <input type="text" id="onbName" name="nickname" maxlength="40" autocomplete="off" data-bwignore="true" data-1p-ignore="true" data-lpignore="true" data-form-type="other" placeholder="e.g. Asha">
+    <h3 class="ob-q">Time per day</h3>
+    <div class="ob-opts four">
+      <label><input type="radio" name="daily" value="30" checked><div><b>30 min</b><small>Recommended</small></div></label>
+      <label><input type="radio" name="daily" value="45"><div><b>45 min</b></div></label>
+      <label><input type="radio" name="daily" value="70"><div><b>70 min</b></div></label>
+      <label><input type="radio" name="daily" value="90"><div><b>90 min</b></div></label>
+    </div>
+    <p class="note" style="margin-top:14px">Have a progress file from before? Use <b>Load progress</b> at the top of the page after this.</p>
     <div class="row onb-foot">
       <button class="btn ghost" type="button" data-act="onbClose" data-v="skip">Skip</button>
       <span style="flex:1"></span>
-      <button class="btn" type="button" data-act="obBack" id="obBack" hidden>Back</button>
-      <button class="btn primary" type="button" data-act="obNext" id="obNext">Continue</button>
+      <button class="btn primary" type="button" data-act="onbClose" data-v="go">Start learning</button>
     </div>
   </form>
 </dialog>
@@ -10551,7 +10531,7 @@ const onb = document.getElementById("onbDlg");
 function openOnboarding(){
   onb.returnValue = "";
   document.getElementById("onbName").value = state.name || "";
-  document.getElementById("onbStart").value = state.start;
+  const os = document.getElementById("onbStart"); if (os) os.value = state.start;
   onb.querySelector(`input[name="daily"][value="${state.daily}"]`).checked = true;
   const lv = onb.querySelector(`input[name="level"][value="${state.level}"]`); if (lv) lv.checked = true;
   const tr = onb.querySelector(`input[name="track"][value="${state.track}"]`); if (tr) tr.checked = true;
@@ -10561,11 +10541,11 @@ function openOnboarding(){
 onb.addEventListener("close", ()=>{
   if (onb.returnValue!=="go") { if (!state.onboarded){ state.onboarded = true; save(); } return; }
   state.name = document.getElementById("onbName").value.trim().slice(0,40);
-  state.start = document.getElementById("onbStart").value || state.start;
+  state.start = (document.getElementById("onbStart")||{}).value || state.start;
   state.daily = +onb.querySelector('input[name="daily"]:checked').value;
-  state.level = onb.querySelector('input[name="level"]:checked').value;
-  state.track = onb.querySelector('input[name="track"]:checked').value;
-  state.settings.lang = onb.querySelector('input[name="lang"]:checked').value;
+  state.level = (onb.querySelector('input[name="level"]:checked')||{value:state.level}).value;
+  state.track = (onb.querySelector('input[name="track"]:checked')||{value:state.track}).value;
+  state.settings.lang = (onb.querySelector('input[name="lang"]:checked')||{value:state.settings.lang||"go"}).value;
   if (state.settings.lang==="py") goSelect(15);
   state.onboarded = true; save(); render();
 });
@@ -10679,7 +10659,7 @@ cine.addEventListener("close", ()=>{ CM.playing = false; clearTimeout(CM.timer);
 /* ---------- backup ---------- */
 function exportData(){
   saveNow();
-  const json = JSON.stringify(state, null, 2), filename = `gopher-prep-backup-${today()}.json`;
+  const json = JSON.stringify(state, null, 2), filename = `upskill-progress-${today()}.json`;
   const m = () => document.getElementById("dataMsg");
   const fallback = () => { const blob = new Blob([json], {type:"application/json"}); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500); if (m()) m().textContent = "Backup downloaded. Keep the file somewhere safe."; };
   if (window.claude && window.claude.use){
@@ -10996,6 +10976,8 @@ function renderHero(){
     <div class="gh-top">
       <div class="gh-brand"><span class="gh-logo" aria-hidden="true">🐹</span><b>Upskill</b>${state.name?`<span class="gh-sep">/</span><span class="gh-user">${esc(state.name)}</span>`:""}<span class="gh-badge">${state.track==="faang"?"FAANG · 12 weeks":"Core · 6 weeks"}</span></div>
       <div class="gh-tools">
+        <button class="btn" data-act="saveProg" title="Download your progress as a JSON file">⤓ Save progress</button>
+        <label class="btn" title="Load a progress file you saved earlier">⤒ Load progress<input type="file" id="loadProg" accept=".json,application/json" hidden></label>
         <div class="seg" role="group" aria-label="Coding language"><button class="${!isPy()?"on":""}" data-act="lang" data-v="go">Go</button><button class="${isPy()?"on":""}" data-act="lang" data-v="py">Python</button></div>
         <button class="gh-icon" data-act="themeToggle" aria-label="Toggle light or dark theme">${document.documentElement.dataset.theme==="light"?"☾":"☀"}</button>
       </div>
@@ -14234,6 +14216,17 @@ def logout(r: redis.Redis, token: str) -> None:
 `],
 };
 Object.entries(PYC5).forEach(([i, list])=>list.forEach((code, k)=>{ if (SDA[i] && SDA[i][k]) SDA[i][k].py = code; }));
+
+/* ===================== One-screen setup + save/load progress ===================== */
+obShow = function(){};
+function toast(msg){ document.querySelector(".toast")?.remove(); const t = document.createElement("div"); t.className = "toast"; t.setAttribute("role","status"); t.textContent = msg; document.body.appendChild(t); setTimeout(()=>t.remove(), 3500); }
+document.addEventListener("click", e=>{ const a = e.target.closest("[data-act='saveProg']"); if (!a) return; exportData(); toast("Progress saved as a JSON file. Load it here any time to continue."); });
+document.addEventListener("change", e=>{ if (e.target.id!=="loadProg" || !e.target.files[0]) return;
+  const f = e.target.files[0], rd = new FileReader();
+  rd.onload = () => { try { const x = JSON.parse(rd.result); if (!x || typeof x!=="object" || !("probs" in x) || !("start" in x)) throw new Error("bad");
+      state = deepMerge(blank(), x); state.onboarded = true; saveNow(); RV = null; { const od = document.getElementById("onbDlg"); if (od && od.open) od.close(); } render(); toast("Progress loaded" + (state.name ? ", welcome back " + state.name : "") + "."); }
+    catch(err){ toast("That file isn't an Upskill progress file."); } };
+  rd.readAsText(f); e.target.value = ""; });
 
 /* ---------- boot ---------- */
 load();
