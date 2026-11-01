@@ -12634,6 +12634,209 @@ SDA[6] = [
    f([5],'If the connection drops, the browser reconnects and sends Last-Event-ID to resume.',V({'Last-Event-ID':2})); return f.out; }},
 ];
 
+/* ===================== Algorithm sets: crawler, file sync, geo, collaboration, leaderboard ===================== */
+SDA[22] = [
+ {n:"BFS frontier (queue)", when:"Broad, fair coverage layer by layer from the seeds. Simple, but treats every page as equally important.", cost:"O(1) push/pop",
+  story:{t:"Ripples in a Pond",cast:[["🪨","Seed pages","start URLs"],["〰️","Visit everything one link away, then two","breadth-first"],["📋","A first-in, first-out list","queue"]],
+   sc:[["🪨","Drop a stone: the seed page."],["〰️","Visit every page it links to."],["〰️〰️","Then every page those link to."],["📋","Always take the oldest URL from the list."]],hook:"Nearest links first, in order of discovery."},
+  code:`func Crawl(seeds []string) {
+    queue := append([]string{}, seeds...)
+    seen := map[string]bool{}
+    for len(queue) > 0 {
+        url := queue[0]; queue = queue[1:] // oldest first
+        if seen[url] { continue }
+        seen[url] = true
+        for _, link := range fetchLinks(url) {
+            queue = append(queue, link)
+        }
+    }
+}`,
+  gen(){ const f=rec2(); let q=['/']; const Q=(c)=>A(q.slice(),{title:'queue (front → back)',c});
+   f([2],'Start with the seed page.',Q({0:'a'}));
+   q=['/a','/b']; f([5,6,7,8,9],'Fetch "/", add its links /a and /b to the back.',Q());
+   q=['/b','/a1','/a2']; f([5,8,9],'Take /a (oldest), add its links /a1 /a2.',Q({0:'a'}));
+   q=['/a1','/a2','/b1']; f([5,8,9],'Take /b, add /b1. Pages one link away are all done before two links away.',Q()); return f.out; }},
+ {n:"Priority frontier", when:"Real crawlers: important or frequently changing pages first, with per-host politeness.", cost:"O(log n) per URL with a heap",
+  story:{t:"The Hospital Triage",cast:[["🩺","Score each URL","priority (PageRank, freshness)"],["🏥","Most urgent seen first","max-heap"],["⏱️","One patient per doctor at a time","per-host politeness"]],
+   sc:[["🩺","Each new URL gets a score."],["🏥","The highest score is crawled next."],["⏱️","But never two pages from the same site within a second."],["📈","Important news pages stay fresh; old blogs wait."]],hook:"Score, take the best, stay polite per host."},
+  code:`type Item struct { URL string; Score float64 }
+
+func Next(h *MaxHeap, lastHit map[string]time.Time) string {
+    for {
+        it := heap.Pop(h).(Item)
+        host := hostOf(it.URL)
+        if time.Since(lastHit[host]) >= time.Second { // politeness
+            lastHit[host] = time.Now()
+            return it.URL
+        }
+        heap.Push(h, it) // too soon for this host: put it back
+    }
+}`,
+  gen(){ const f=rec2(); f([1],'URLs with scores: news.com/top 0.9, news.com/old 0.4, blog.io/x 0.7.',A([0.9,0.7,0.4],{bars:1,lab:['news/top','blog/x','news/old'],title:'priority'}));
+   f([5,6,7,8,9],'Pop news/top (0.9): news.com not hit recently, crawl it.',A([0.9,0.7,0.4],{bars:1,lab:['news/top','blog/x','news/old'],title:'priority',c:{0:'ok'}}));
+   f([5,6,7,8,9],'Next best: blog/x (0.7). Different host, crawl it.',A([0.9,0.7,0.4],{bars:1,lab:['news/top','blog/x','news/old'],title:'priority',c:{0:'x',1:'ok'}}));
+   f([5,6,11],'news/old: news.com was hit less than 1s ago, so push it back and wait.',A([0.9,0.7,0.4],{bars:1,lab:['news/top','blog/x','news/old'],title:'priority',c:{0:'x',1:'x',2:'b'}})); return f.out; }},
+ {n:"Bloom filter for seen URLs", when:"Billions of URLs: answer 'seen before?' in a few GB. Rare false positives skip a page; never false negatives.", cost:"O(k) per check · ~10 bits per URL",
+  story:{t:"The Light Switch Board",cast:[["💡","A long row of light switches","bit array"],["🎯","Each URL flips 3 switches","k hash functions"],["❓","All 3 on? Probably seen","maybe / definitely not"]],
+   sc:[["💡💡💡","A long row of switches, all off."],["🎯 3","Adding a URL turns on the 3 switches its hashes point to."],["❓","To check a URL, look at its 3 switches."],["⚫","Any switch off: definitely new. All on: probably seen."]],hook:"Any bit off means new; all on means probably seen."},
+  code:`type Bloom struct { bits []bool; k int }
+
+func (b *Bloom) Add(s string) {
+    for i := 0; i < b.k; i++ { b.bits[hash(s, i)%len(b.bits)] = true }
+}
+
+func (b *Bloom) MaybeHas(s string) bool {
+    for i := 0; i < b.k; i++ {
+        if !b.bits[hash(s, i)%len(b.bits)] { return false } // definitely new
+    }
+    return true // probably seen
+}`,
+  gen(){ const f=rec2(); let bits=Array(10).fill(0); const B=(c)=>A(bits.slice(),{title:'bits',c});
+   f([1],'An empty bit array of 10 bits, k = 3 hashes.',B());
+   bits[1]=bits[4]=bits[7]=1; f([3,4],'Add /a: its hashes point to 1, 4, 7. Turn them on.',B({1:'a',4:'a',7:'a'}));
+   f([7,8,9],'Check /b: hashes 2, 4, 9. Bit 2 is off, so /b is definitely new.',B({2:'bad',4:'b',9:'bad'}));
+   bits[2]=bits[9]=1; f([3,4],'Add /b.',B({2:'a',4:'a',9:'a'}));
+   f([7,8,9,11],'Check /c: hashes 1, 2, 9, all on, though /c was never added. A false positive: rare, and only means one page is skipped.',B({1:'b',2:'b',9:'b'})); return f.out; }},
+];
+SDA[23] = [
+ {n:"Fixed-size chunking", when:"Simple and fast. But inserting one byte near the start shifts every chunk boundary, so everything re-uploads.", cost:"O(n)",
+  story:{t:"The Ruler Cuts",cast:[["📏","Cut every 4 MB with a ruler","fixed boundaries"],["✍️","Insert a sentence at the start","edit"],["🔀","Every later cut lands on different text","boundary shift"]],
+   sc:[["📏","Cut the document every 4 MB."],["✍️","Add one line at the very top."],["🔀","Now every piece contains different text."],["📤📤📤","All pieces look new and re-upload."]],hook:"Fixed cuts; one insert shifts everything."},
+  code:`func Chunks(data []byte, size int) [][]byte {
+    var out [][]byte
+    for i := 0; i < len(data); i += size {
+        end := min(i+size, len(data))
+        out = append(out, data[i:end])
+    }
+    return out
+}`,
+  gen(){ const f=rec2(); f([3,4,5],'Text "ABCDEFGH" in chunks of 4: ABCD | EFGH.',A(['ABCD','EFGH'],{title:'chunks'}));
+   f([3,4,5],'Insert "x" at the start: xABC | DEFG | H. Every chunk changed, so all re-upload.',A(['xABC','DEFG','H'],{title:'chunks',c:{0:'bad',1:'bad',2:'bad'}})); return f.out; }},
+ {n:"Content-defined chunking", when:"Dropbox, rsync, backups. Boundaries depend on the content (rolling hash), so an edit changes only nearby chunks.", cost:"O(n) with a rolling hash",
+  story:{t:"Cutting at Full Stops",cast:[["✂️","Cut wherever a sentence ends","content boundary"],["✍️","Insert a word in sentence 1","edit"],["✓","Only sentence 1's piece changes","local change"]],
+   sc:[["✂️","Cut the text at every full stop, not every N letters."],["✍️","Add a word in the first sentence."],["✓","Only the first piece is different."],["📤","Upload one chunk, reuse the rest."]],hook:"Cut where the content says; edits stay local."},
+  code:`func Chunks(data []byte) [][]byte {
+    var out [][]byte
+    start, h := 0, uint32(0)
+    for i, b := range data {
+        h = (h<<1 + uint32(b)) // rolling hash of recent bytes
+        if h%64 == 0 || i == len(data)-1 { // boundary chosen by content
+            out = append(out, data[start:i+1])
+            start, h = i+1, 0
+        }
+    }
+    return out
+}`,
+  gen(){ const f=rec2(); f([4,5,6,7],'Boundaries fall where the rolling hash hits a pattern (here: after each ".").',A(['Hi.','I am Go.','Bye.'],{title:'chunks'}));
+   f([4,5,6,7],'Insert "!" in the first sentence: only the first chunk changes.',A(['Hi!.','I am Go.','Bye.'],{title:'chunks',c:{0:'a',1:'ok',2:'ok'}}));
+   f([7],'Upload 1 chunk; the other 2 are already stored (same hash).',V({upload:'1 of 3 chunks'})); return f.out; }},
+];
+SDA[24] = [
+ {n:"Geohash grid", when:"Simple and DB-friendly: a string prefix = a map cell. Search the cell plus its 8 neighbours.", cost:"O(1) cell lookup",
+  story:{t:"Postcodes on a Map",cast:[["🗺️","The map split into a grid of cells","geohash cells"],["🔤","Longer code = smaller cell","precision"],["🔲","Check your cell and the 8 around it","neighbour search"]],
+   sc:[["🗺️","Divide the world into labelled squares."],["🔤 tdr1","Each driver is filed under their square's code."],["🔲","A rider looks in their square and the 8 next to it."],["🚕","Pick the nearest driver from those few."]],hook:"Same prefix, same area; search 9 cells."},
+  code:`func Nearby(lat, lng float64) []Driver {
+    cell := geohash.Encode(lat, lng, 6) // ~1.2 km cell
+    var out []Driver
+    for _, c := range append(geohash.Neighbors(cell), cell) {
+        out = append(out, index[c]...) // drivers filed under each cell
+    }
+    sortByDistance(out, lat, lng)
+    return out
+}`,
+  gen(){ const f=rec2(); f([2],'The rider is in cell tdr1yz.',A(['','','','','tdr1yz','','','',''],{title:'3 × 3 cells',c:{4:'a'}}));
+   f([4,5],'Collect drivers in the rider\'s cell and its 8 neighbours (the driver may be just across a border).',A(['1','','2','','0','1','','','3'],{title:'drivers per cell',c:{0:'b',2:'b',4:'b',5:'b',8:'b'}}));
+   f([7,8],'Sort those 7 drivers by real distance and offer the closest.',R(['d17 · 0.4 km','d42 · 0.9 km'])); return f.out; }},
+ {n:"Quadtree", when:"Very uneven density (a city centre vs countryside). Cells split only where there are many points.", cost:"O(log n) per lookup",
+  story:{t:"Zooming Into a Crowded Map",cast:[["🔳","A square that splits in 4 when crowded","node split"],["🏙️","Busy areas get tiny squares","fine detail"],["🌾","Empty areas stay big","coarse detail"]],
+   sc:[["🔳","Start with one square for the whole city."],["🏙️","More than 4 drivers inside? Split it into 4."],["🔳🔳","Keep splitting only where it is crowded."],["🔎","Searching walks down to the small square you are in."]],hook:"Split only where crowded; walk down to search."},
+  code:`func (q *Quad) Insert(p Point) {
+    if !q.box.Contains(p) { return }
+    if q.kids == nil && len(q.pts) < 4 {
+        q.pts = append(q.pts, p)
+        return
+    }
+    if q.kids == nil { q.split() } // too crowded: 4 children
+    for _, k := range q.kids { k.Insert(p) }
+}`,
+  gen(){ const f=rec2(); f([2,3,4],'Insert 4 drivers into the root square: room for them.',V({root:'4 points'}));
+   f([3,7],'A 5th arrives: split the root into 4 child squares.',A(['NW: 3','NE: 1','SW: 1','SE: 0'],{title:'children'}));
+   f([7,8],'The busy NW square splits again later; empty SE stays one big square.',A(['NW → 4 more','NE','SW','SE (empty)'],{title:'tree',c:{0:'a'}})); return f.out; }},
+];
+SDA[27] = [
+ {n:"Operational transform (OT)", when:"Google Docs style: a central server orders edits and shifts later ones to account for earlier ones.", cost:"Needs a server; transform logic per operation type",
+  story:{t:"The Shifted Bookmark",cast:[["✍️","Two people edit at once","concurrent ops"],["🧑‍⚖️","The server decides who was first","total order"],["↔️","The later edit's position is shifted","transform"]],
+   sc:[["✍️✍️","Asha and Bob type at the same moment."],["🧑‍⚖️","The server says Asha's edit came first."],["↔️","Bob's position is shifted by Asha's inserted text."],["✓","Both screens end up the same."]],hook:"Order the edits, then shift the later one."},
+  code:`type Insert struct { Pos int; Text string }
+
+// adjust b so it can apply after a has been applied
+func Transform(a, b Insert) Insert {
+    if a.Pos <= b.Pos {
+        b.Pos += len(a.Text)
+    }
+    return b
+}`,
+  gen(){ const f=rec2(); f([1],'Document "cat". Asha inserts "s" at 3; Bob inserts "the " at 0. Both based on the same version.',R(['"cat"']));
+   f([4,5],'The server orders Bob first: "the cat".',R(['"the cat"']));
+   f([4,5,6],'Transform Asha\'s op against Bob\'s: Bob inserted 4 chars before position 3, so Asha\'s position becomes 7.',V({'asha.pos':'3 → 7'}));
+   f([8],'Apply: "the cats". Every client ends with the same text.',R(['"the cats"'])); return f.out; }},
+ {n:"CRDT (e.g. RGA / Yjs)", when:"Offline-first and peer-to-peer. Each character has a unique ID, so edits merge in any order without a server.", cost:"Extra metadata per character",
+  story:{t:"Numbered Beads on a String",cast:[["📿","Each letter is a bead with a unique tag","element ID"],["🔗","A new bead says 'put me after bead X'","insert after"],["🤝","Merging is just collecting all beads","commutative merge"]],
+   sc:[["📿","Each letter is a bead with its own tag."],["🔗","New letters are placed after a specific tagged bead."],["✈️","Two people edit offline."],["🤝","Combine both bags of beads: the order works out the same for everyone."]],hook:"Tag every element; merges agree in any order."},
+  code:`type Elem struct {
+    ID    [2]int // (counter, replicaID): unique everywhere
+    After [2]int // the element this was inserted after
+    Char  rune
+}
+
+func Merge(a, b []Elem) []Elem {
+    all := union(a, b)           // same set on every replica
+    return orderByAfterThenID(all) // deterministic order
+}`,
+  gen(){ const f=rec2(); f([1,2,3,4],'"cat" is c(1,A) a(2,A) t(3,A), each with a unique ID.',A(['c','a','t'],{title:'elements'}));
+   f([3],'Offline, Asha adds "s" after t(3,A) as (4,A). Bob adds "!" after t(3,A) as (4,B).',A(['c','a','t','s','!'],{title:'both edits',c:{3:'a',4:'b'}}));
+   f([7,8,9],'Merge: same elements on both sides; ties ordered by ID. Both get "cats!" no matter who syncs first.',R(['"cats!"'])); return f.out; }},
+];
+SDA[28] = [
+ {n:"Redis sorted set", when:"Up to tens of millions of players with exact ranks. Skip list + hash: O(log n) updates and rank lookups.", cost:"O(log n) per update or rank",
+  story:{t:"The Self-Sorting Scoreboard",cast:[["📋","A board that keeps itself in order","sorted set"],["➕","Add points to a player","ZINCRBY"],["🔢","Ask a player's position","ZREVRANK"]],
+   sc:[["📋","Every player sits on a board sorted by score."],["➕","Add 40 points: the player slides up."],["🔢","Ask 'what place am I?' and get it instantly."],["🏆","Read the top 10 straight off the top."]],hook:"Add points; the board keeps itself sorted."},
+  code:`func AddScore(ctx context.Context, rdb *redis.Client, player string, pts float64) {
+    rdb.ZIncrBy(ctx, "board", pts, player)
+}
+
+func Rank(ctx context.Context, rdb *redis.Client, player string) int64 {
+    return rdb.ZRevRank(ctx, "board", player).Val() + 1 // 1-based
+}
+
+func Top(ctx context.Context, rdb *redis.Client) []redis.Z {
+    return rdb.ZRevRangeWithScores(ctx, "board", 0, 9).Val()
+}`,
+  gen(){ const f=rec2(); let b=[['ravi',980],['li',910],['asha',900]]; const S=(hl)=>M(b.map(([k,v])=>[k,v]),{title:'board (high → low)',hl});
+   f([1,2],'Starting board.',S());
+   b=[['ravi',980],['asha',940],['li',910]]; f([1,2],'Asha +40 → 940. The set re-sorts: she passes Li.',S('asha'));
+   f([5,6],'Rank of Asha: 0-based 1, so #2.',S('asha'),V({rank:2}));
+   f([9,10],'Top 10: read the first entries in order.',R(['1 ravi 980','2 asha 940','3 li 910'])); return f.out; }},
+ {n:"Score buckets (histogram)", when:"Hundreds of millions of players where 'top 3%' is enough below the leaderboard top. Count players per score range.", cost:"O(buckets) per rank estimate",
+  story:{t:"The Exam Grade Bands",cast:[["🗂️","Bands: 0–99, 100–199, …","score buckets"],["🔢","Only count how many are in each band","counts"],["📊","Your rank ≈ everyone in higher bands","approximate rank"]],
+   sc:[["🗂️","Sort students into grade bands instead of a full list."],["🔢","Just count how many are in each band."],["📊","Your rank ≈ the number of students in higher bands."],["✓","Good enough for 'you are in the top 3%'."]],hook:"Count per band; estimate rank from bands above."},
+  code:`var buckets [100]int64 // buckets[i] = players with score in [i*100, i*100+99]
+
+func Update(old, new int) {
+    atomic.AddInt64(&buckets[old/100], -1)
+    atomic.AddInt64(&buckets[new/100], 1)
+}
+
+func ApproxRank(score int) int64 {
+    var above int64
+    for i := score/100 + 1; i < len(buckets); i++ { above += buckets[i] }
+    return above + 1
+}`,
+  gen(){ const f=rec2(); f([1],'Count players per 100-point band.',A([50000,30000,12000,3000],{bars:1,lab:['0-99','100-199','200-299','300+'],title:'players per band'}));
+   f([3,4,5],'A player moves from 180 to 230: one band down by 1, the next up by 1.',A([50000,29999,12001,3000],{bars:1,lab:['0-99','100-199','200-299','300+'],title:'players per band',c:{1:'b',2:'a'}}));
+   f([8,9,10,11],'Rank of score 230 ≈ players in higher bands (3,000) + 1 = about #3,001: top 3%.',V({approxRank:'≈ 3,001',of:'95,000'})); return f.out; }},
+];
+
 /* ---------- boot ---------- */
 load();
 if (state.lastVisit && state.onboarded){ const gap = daysBetween(state.lastVisit, today()); if (gap >= 4 && dayNum() >= 1) WB = gap; }
