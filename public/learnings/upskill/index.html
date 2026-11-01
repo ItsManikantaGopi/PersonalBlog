@@ -12837,6 +12837,226 @@ func ApproxRank(score int) int64 {
    f([8,9,10,11],'Rank of score 230 ≈ players in higher bands (3,000) + 1 = about #3,001: top 3%.',V({approxRank:'≈ 3,001',of:'95,000'})); return f.out; }},
 ];
 
+/* ===================== Algorithm sets: auth tokens, scheduling, stream windows, storage engines, payments ===================== */
+SDA[31] = [
+ {n:"JWT (self-contained token)", when:"Many services verify identity without a central lookup. Fast; hard to revoke before expiry, so keep it short-lived.", cost:"Signature check only (µs)",
+  story:{t:"The Stamped Wristband",cast:[["🎟️","A wristband with your details printed on","claims"],["🔏","A tamper-proof stamp","signature"],["⏰","Valid until midnight","exp"]],
+   sc:[["🎟️","At the entrance you get a stamped wristband."],["🔏","Every bar checks the stamp itself, no phone call needed."],["⏰","It stops working at midnight."],["🚫","Lose it before then? It still works until it expires."]],hook:"Check the stamp locally; it is valid until it expires."},
+  code:`func Verify(tokenStr string, pub *rsa.PublicKey) (jwt.MapClaims, error) {
+    tok, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
+        return pub, nil // public key from the IdP's JWKS, cached
+    })
+    if err != nil || !tok.Valid {
+        return nil, ErrUnauthorized // bad signature or expired
+    }
+    return tok.Claims.(jwt.MapClaims), nil
+}`,
+  gen(){ const f=rec2(); f([1],'Request arrives with Authorization: Bearer eyJ… (header.payload.signature).',V({sub:'user_42',exp:'+15m',scope:'orders:read'}));
+   f([2,3],'Check the signature with the cached public key. No network call.',V({signature:'valid'}));
+   f([5,6],'Expired or tampered? Reject with 401.',V({result:'401 if invalid'}));
+   f([8],'Valid: pass the claims (user 42, scopes) to the service.',V({result:'allowed'})); return f.out; }},
+ {n:"Opaque token (session lookup)", when:"Instant revocation (logout, banned user). Each request looks the token up in a shared store.", cost:"1 Redis/DB lookup per request",
+  story:{t:"The Cloakroom Ticket",cast:[["🎫","A random ticket number","opaque token"],["📒","The cloakroom book says whose it is","session store"],["✂️","Cross it out to cancel","revoke"]],
+   sc:[["🎫","You get a ticket with a random number; it means nothing by itself."],["📒","Every time, staff look the number up in the book."],["✂️","Lost ticket? Cross it out: it stops working at once."],["🐢","Costs a lookup every time."]],hook:"Meaningless ticket, looked up each time, revocable instantly."},
+  code:`func Verify(ctx context.Context, rdb *redis.Client, token string) (Session, error) {
+    raw, err := rdb.Get(ctx, "sess:"+token).Bytes()
+    if err != nil {
+        return Session{}, ErrUnauthorized // unknown or revoked
+    }
+    var s Session
+    json.Unmarshal(raw, &s)
+    return s, nil
+}
+
+func Logout(ctx context.Context, rdb *redis.Client, token string) {
+    rdb.Del(ctx, "sess:"+token) // revoked immediately
+}`,
+  gen(){ const f=rec2(); f([1,2],'Token 9f3c… arrives. Look it up in Redis.',M([['sess:9f3c…','{user: 42}']],{title:'session store'}));
+   f([6,7,8],'Found: user 42.',V({result:'allowed'}));
+   f([11,12],'The user logs out: delete the key.',M([],{title:'session store'}));
+   f([2,3,4],'Next request with the same token: not found, 401 straight away.',V({result:'401'})); return f.out; }},
+];
+SDA[30] = [
+ {n:"Database polling (SKIP LOCKED)", when:"Durable and simple; good up to thousands of jobs per second. Due jobs are claimed in batches.", cost:"1 query per poll interval",
+  story:{t:"The Due-Date Shelf",cast:[["📚","Books sorted by due date","jobs by next_run_at"],["🙋","Clerks each grab a handful that are due","pollers"],["🔒","A grabbed book can't be grabbed twice","SKIP LOCKED"]],
+   sc:[["📚","Every job has a due time on the shelf."],["🙋","Each clerk takes the due ones every second."],["🔒","Books in someone's hands are skipped by others."],["📅","After running, write the next due date."]],hook:"Every second, claim what's due; skip what others hold."},
+  code:`const claim = ` + "`" + `
+  SELECT id, cron FROM jobs
+  WHERE next_run_at <= now()
+  ORDER BY next_run_at LIMIT 100
+  FOR UPDATE SKIP LOCKED` + "`" + `
+
+func Poll(tx *sql.Tx) {
+    for _, j := range query(tx, claim) {
+        enqueue(j.ID)
+        tx.Exec("UPDATE jobs SET next_run_at=$2 WHERE id=$1", j.ID, nextRun(j.Cron))
+    }
+}`,
+  gen(){ const f=rec2(); f([2,3,4],'Every second: select jobs whose time has come, oldest first.',A(['j1 09:00','j2 09:00','j3 09:05'],{title:'jobs',c:{0:'a',1:'a'}}));
+   f([5],'Another poller running the same query skips rows already locked: no double runs.',V({poller2:'skips j1, j2'}));
+   f([8,9,10],'Enqueue each and set its next run time in the same transaction.',A(['j1 10:00','j2 09:15','j3 09:05'],{title:'jobs',c:{0:'ok',1:'ok'}})); return f.out; }},
+ {n:"Timing wheel", when:"Millions of timers in memory (timeouts, retries) with O(1) add and fire. Used by Kafka and Netty.", cost:"O(1) add/fire per tick",
+  story:{t:"The Clock with Slots",cast:[["🕐","A clock face with 8 slots","wheel buckets"],["👉","A hand that moves one slot per tick","current tick"],["📌","Pin each task to the slot when it is due","schedule"]],
+   sc:[["🕐","A clock with 8 slots, one per second."],["📌","A task due in 3 seconds is pinned 3 slots ahead."],["👉","Each second the hand moves and runs that slot's tasks."],["🔁","Longer delays store how many laps are left."]],hook:"Pin tasks to slots; the moving hand fires them."},
+  code:`type Wheel struct {
+    slots [8][]Task
+    cur   int
+}
+
+func (w *Wheel) Add(t Task, delaySec int) {
+    t.Rounds = delaySec / 8
+    i := (w.cur + delaySec) % 8
+    w.slots[i] = append(w.slots[i], t)
+}
+
+func (w *Wheel) Tick() {
+    w.cur = (w.cur + 1) % 8
+    for _, t := range w.slots[w.cur] {
+        if t.Rounds == 0 { go t.Run() } else { t.Rounds-- /* keep for next lap */ }
+    }
+}`,
+  gen(){ const f=rec2(); let s=Array(8).fill(''); const W=(c)=>A(s.slice(),{title:'slots (hand at 0)',c});
+   s[3]='A'; f([6,7,8,9],'Add task A with a 3s delay: slot (0 + 3) % 8 = 3.',W({3:'a'}));
+   s[5]='B(1)'; f([6,7,8,9],'Add B with 13s: slot 5, one extra lap.',W({5:'a'}));
+   f([12,13,14,15],'Tick to slot 3: A has 0 laps left, run it.',W({3:'ok'}));
+   f([12,13,14,15],'Tick to slot 5: B has 1 lap left, decrement and wait one more lap.',W({5:'b'})); return f.out; }},
+ {n:"Delay queue (Redis sorted set)", when:"Distributed delayed jobs with a shared store: score = run time. Simple, fast; less durable than a DB.", cost:"O(log n) add · O(log n + k) fetch due",
+  story:{t:"The Numbered Waiting Room",cast:[["🎟️","Ticket shows the time you will be called","score = run_at"],["📋","The list stays sorted by time","sorted set"],["📢","Call everyone whose time has passed","ZRANGEBYSCORE"]],
+   sc:[["🎟️","Each job gets a ticket with its run time."],["📋","The list is always in time order."],["📢","Every second, call everyone whose time is up."],["✋","Remove each called ticket so it runs once."]],hook:"Score by run time; pop everything that's due."},
+  code:`func Schedule(ctx context.Context, rdb *redis.Client, job string, at time.Time) {
+    rdb.ZAdd(ctx, "delayed", redis.Z{Score: float64(at.Unix()), Member: job})
+}
+
+func Due(ctx context.Context, rdb *redis.Client) {
+    now := strconv.FormatInt(time.Now().Unix(), 10)
+    for _, job := range rdb.ZRangeByScore(ctx, "delayed", &redis.ZRangeBy{Min: "-inf", Max: now}).Val() {
+        if rdb.ZRem(ctx, "delayed", job).Val() == 1 { // only one worker wins
+            enqueue(job)
+        }
+    }
+}`,
+  gen(){ const f=rec2(); f([1,2],'Schedule three jobs with run times as scores.',M([['email-1','10:00:05'],['retry-7','10:00:20'],['report','11:00:00']],{title:'delayed (sorted by score)'}));
+   f([5,6,7],'At 10:00:21, fetch everything with score ≤ now: email-1 and retry-7.',M([['email-1','due'],['retry-7','due'],['report','11:00:00']],{title:'delayed',hl:'retry-7'}));
+   f([8,9],'ZREM returns 1 only for the worker that removed it, so each job is enqueued once.',M([['report','11:00:00']],{title:'delayed'})); return f.out; }},
+];
+SDA[29] = [
+ {n:"Tumbling windows", when:"Fixed, non-overlapping buckets (clicks per minute for billing). Each event counts once.", cost:"1 counter per key per window",
+  story:{t:"The Hourly Tally Sheet",cast:[["📄","A new sheet every minute","window"],["✍️","Mark each click on the current sheet","count"],["📤","Hand in the sheet when the minute ends","emit"]],
+   sc:[["📄","Start a fresh sheet at 10:00."],["✍️","Tally every click that minute."],["📤","At 10:01 hand it in and start a new sheet."],["✓","Each click is on exactly one sheet."]],hook:"Back-to-back buckets; every event in one."},
+  code:`func WindowStart(ts time.Time, size time.Duration) time.Time {
+    return ts.Truncate(size) // 10:00:37 → 10:00:00
+}
+
+func OnClick(ev Click) {
+    w := WindowStart(ev.TS, time.Minute)
+    counts[Key{ev.AdID, w}]++
+}`,
+  gen(){ const f=rec2(); f([1,2],'Click at 10:00:37 belongs to the window starting 10:00:00.',V({ts:'10:00:37',window:'10:00'}));
+   f([5,6,7],'Increment the counter for (ad 7, 10:00).',M([['ad7 @ 10:00','1']],{title:'counts'}));
+   f([5,6,7],'Clicks at 10:00:50 and 10:01:05: one in 10:00, one in 10:01.',M([['ad7 @ 10:00','2'],['ad7 @ 10:01','1']],{title:'counts'})); return f.out; }},
+ {n:"Sliding (hopping) windows", when:"Smooth trends ('last 5 minutes, updated every minute'). Each event lands in several overlapping windows.", cost:"size/hop counters per event",
+  story:{t:"The Moving Spotlight",cast:[["🔦","A 5-minute spotlight","window size"],["➡️","Moves forward every minute","hop"],["👥","An event lights up in 5 spotlights","overlap"]],
+   sc:[["🔦","A spotlight covers the last 5 minutes."],["➡️","Every minute it moves forward one minute."],["👥","So each event is inside 5 positions of the spotlight."],["📈","You get a smooth moving average."]],hook:"Overlapping windows: smooth, but each event counts several times."},
+  code:`func Windows(ts time.Time, size, hop time.Duration) []time.Time {
+    var out []time.Time
+    last := ts.Truncate(hop)
+    for start := last; start.After(ts.Add(-size)); start = start.Add(-hop) {
+        out = append(out, start) // every window that contains ts
+    }
+    return out
+}`,
+  gen(){ const f=rec2(); f([1,3],'Event at 10:04:30. Window size 5 min, hop 1 min.',V({ts:'10:04:30'}));
+   f([4,5],'It belongs to windows starting 10:04, 10:03, 10:02, 10:01, 10:00.',A(['10:00','10:01','10:02','10:03','10:04'],{title:'windows containing it',c:{0:'a',1:'a',2:'a',3:'a',4:'a'}}));
+   f([7],'Each window emits a 5-minute total every minute: a smooth trend line.',V({updates:'every 1 min'})); return f.out; }},
+ {n:"HyperLogLog (unique counts)", when:"Count distinct users across billions of events in ~12 KB with ~1% error. Redis PFADD/PFCOUNT.", cost:"O(1) per event · fixed tiny memory",
+  story:{t:"The Longest Run of Heads",cast:[["🪙","Hash each user to random-looking bits","hash"],["🔢","Remember the longest run of leading zeros seen","max zeros"],["📐","Long runs mean you have seen many people","estimate"]],
+   sc:[["🪙","Each user's ID becomes a random coin-flip sequence."],["🔢","Note the longest run of zeros at the start."],["📐","Seeing 10 zeros in a row suggests ~1,000 different users."],["🗂️","Average many such counters for accuracy."]],hook:"Rare patterns reveal how many you've seen."},
+  code:`func Track(ctx context.Context, rdb *redis.Client, day, user string) {
+    rdb.PFAdd(ctx, "uniq:"+day, user) // ~12 KB per key, any number of users
+}
+
+func Uniques(ctx context.Context, rdb *redis.Client, day string) int64 {
+    return rdb.PFCount(ctx, "uniq:"+day).Val() // ±0.81% error
+}`,
+  gen(){ const f=rec2(); f([1,2],'Each view adds the user to the day\'s HyperLogLog.',V({events:'50,000,000'}));
+   f([1,2],'Duplicates do not grow it; memory stays about 12 KB.',V({memory:'12 KB'}));
+   f([5,6],'PFCOUNT estimates unique users: about 2,013,000 (true 2,000,000).',V({estimate:'≈ 2,013,000',error:'< 1%'}));
+   f([6],'An exact set of 2M IDs would need tens of MB per day.',V({exact:'~40 MB'})); return f.out; }},
+];
+SDA[18] = [
+ {n:"B-tree", when:"Read-heavy workloads with point and range lookups (Postgres, MySQL InnoDB). Updates pages in place.", cost:"O(log n) read/write · random writes",
+  story:{t:"The Library Signposts",cast:[["🪧","Signposts: 'A–M left, N–Z right'","inner nodes"],["📚","Shelves with sorted books","leaf pages"],["✂️","A full shelf splits in two","page split"]],
+   sc:[["🪧","At the door, a sign sends you left or right."],["🪧","Another sign narrows it further."],["📚","Three signs later you are at the right shelf."],["✂️","When a shelf is full, it splits and the sign above gets a new entry."]],hook:"Follow the signs; few hops to any row."},
+  code:`func (n *Node) Search(key int) (Value, bool) {
+    i := sort.SearchInts(n.keys, key)
+    if n.leaf {
+        if i < len(n.keys) && n.keys[i] == key { return n.vals[i], true }
+        return nil, false
+    }
+    return n.children[i].Search(key) // one level down
+}`,
+  gen(){ const f=rec2(); f([1,2],'Search 42. Root keys [30, 60]: 42 is between them, go to the middle child.',A([30,60],{title:'root',c:{0:'b',1:'b'}}));
+   f([2,7],'Inner node [35, 45, 55]: 42 < 45, go to its child.',A([35,45,55],{title:'level 2',c:{1:'b'}}));
+   f([3,4],'Leaf [40, 42, 44]: found 42.',A([40,42,44],{title:'leaf',c:{1:'ok'}}));
+   f([7],'With ~500 keys per page, a billion rows needs only 3–4 page reads.',V({levels:'3–4'})); return f.out; }},
+ {n:"LSM tree", when:"Write-heavy workloads (Cassandra, RocksDB, Kafka-like logs). Appends in memory, flushes sorted files, merges later.", cost:"O(1) amortised write · reads may check several files",
+  story:{t:"The Notebook and the Filing Cabinet",cast:[["📝","Jot new entries in a notebook","memtable"],["🗂️","When full, file a sorted copy","SSTable flush"],["🧹","Merge old folders at night","compaction"]],
+   sc:[["📝","New entries go into a small notebook: very fast."],["🗂️","When it's full, sort it and file it as a folder."],["🔍","To find something, check the notebook, then newest folders first."],["🧹","At night, merge folders and drop old versions."]],hook:"Write fast to memory, flush sorted, merge later."},
+  code:`func (db *LSM) Put(k, v string) {
+    db.wal.Append(k, v)   // durability first
+    db.mem.Set(k, v)      // sorted in memory
+    if db.mem.Size() > limit {
+        db.sstables = append([]*SST{flushSorted(db.mem)}, db.sstables...)
+        db.mem = NewMemtable()
+    }
+}
+
+func (db *LSM) Get(k string) (string, bool) {
+    if v, ok := db.mem.Get(k); ok { return v, true }
+    for _, t := range db.sstables { // newest first
+        if t.bloom.MaybeHas(k) { if v, ok := t.Get(k); ok { return v, true } }
+    }
+    return "", false
+}`,
+  gen(){ const f=rec2(); f([1,2,3],'Write x=1: append to the WAL, put in the in-memory table.',M([['memtable','{x:1}'],['sstables','[]']],{title:'LSM'}));
+   f([4,5,6],'Memtable full: flush it as a sorted file.',M([['memtable','{}'],['sstables','[{x:1}]']],{title:'LSM'}));
+   f([1,2,3],'Write x=2: lands in the new memtable.',M([['memtable','{x:2}'],['sstables','[{x:1}]']],{title:'LSM'}));
+   f([10,11],'Read x: the memtable has the newest value, 2.',V({x:2}));
+   f([12,13],'Missing keys: Bloom filters skip files that cannot contain them. Compaction later drops x=1.',V({compaction:'merges files'})); return f.out; }},
+];
+SDA[8] = [
+ {n:"Idempotency key (client-generated)", when:"Clients retry on timeouts. The same key always returns the first result, so a charge happens once.", cost:"1 unique insert per request",
+  story:{t:"The Numbered Cheque",cast:[["🧾","Each cheque has a unique number","idempotency key"],["🏦","The bank remembers numbers it cashed","key store"],["🔁","The same cheque twice? Show the first receipt","replay result"]],
+   sc:[["🧾 #701","You hand over cheque #701."],["🏦","The bank cashes it and notes #701."],["🔁 #701","Unsure it went through, you hand it again."],["🧾","They show you the first receipt; no second payment."]],hook:"Same key, same result; money moves once."},
+  code:`func Charge(db *sql.DB, key string, req ChargeReq) (Result, error) {
+    _, err := db.Exec("INSERT INTO idem(key, status) VALUES($1, 'started')", key)
+    if isUniqueViolation(err) {
+        return storedResult(db, key) // retry: return the first answer
+    }
+    res := gateway.Charge(req, key) // pass the key to the gateway too
+    db.Exec("UPDATE idem SET status='done', result=$2 WHERE key=$1", key, res)
+    return res, nil
+}`,
+  gen(){ const f=rec2(); f([1,2],'Request with key k-701: insert succeeds, this is the first time.',M([['k-701','started']],{title:'idem'}));
+   f([6,7,8],'Charge the card (the gateway also gets the key), store the result.',M([['k-701','done: ch_9']],{title:'idem'}));
+   f([2,3,4],'The client retries k-701 after a timeout: unique violation, return ch_9 again.',V({charges:1,response:'ch_9'})); return f.out; }},
+ {n:"Webhook dedupe table", when:"Payment providers resend webhooks. Record each event ID with the state change in one transaction.", cost:"1 unique insert per event",
+  story:{t:"The Stamped Letters",cast:[["✉️","Each letter from the bank has an ID","event_id"],["📒","A ledger of letters already handled","processed_events"],["🔒","Handle and log in one go","same transaction"]],
+   sc:[["✉️ evt_1","A 'payment captured' letter arrives."],["🔒","Mark the order paid and log evt_1 together."],["✉️ evt_1","The bank sends the same letter again."],["📒 ✓","Already logged: ignore it."]],hook:"Log the event ID with the change; duplicates bounce."},
+  code:`func OnWebhook(db *sql.DB, ev Event) error {
+    tx, _ := db.Begin()
+    defer tx.Rollback()
+    if _, err := tx.Exec("INSERT INTO processed_events(id) VALUES($1)", ev.ID); isUniqueViolation(err) {
+        return nil // duplicate delivery: already handled
+    }
+    tx.Exec("UPDATE payments SET state='CAPTURED' WHERE id=$1 AND state='PENDING'", ev.PaymentID)
+    return tx.Commit()
+}`,
+  gen(){ const f=rec2(); f([2,4],'evt_1 arrives: insert its ID inside a transaction.',M([['processed','{evt_1}']],{title:'tables'}));
+   f([7,8],'Move the payment PENDING → CAPTURED and commit both together.',V({payment:'CAPTURED'}));
+   f([4,5],'evt_1 is redelivered: the insert violates the unique key, return 200 and do nothing.',V({payment:'CAPTURED',duplicates:'ignored'})); return f.out; }},
+];
+
 /* ---------- boot ---------- */
 load();
 if (state.lastVisit && state.onboarded){ const gap = daysBetween(state.lastVisit, today()); if (gap >= 4 && dayNum() >= 1) WB = gap; }
