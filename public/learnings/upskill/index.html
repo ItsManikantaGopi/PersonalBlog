@@ -13057,6 +13057,227 @@ SDA[8] = [
    f([4,5],'evt_1 is redelivered: the insert violates the unique key, return 200 and do nothing.',V({payment:'CAPTURED',duplicates:'ignored'})); return f.out; }},
 ];
 
+/* ===================== Algorithm sets: video, jobs, migration, autoscaling, matching, alerting ===================== */
+SDA[7] = [
+ {n:"Whole-file transcoding", when:"Short videos (under a few minutes). One worker does the whole file; simplest to run and retry.", cost:"Latency ≈ video length × encode speed",
+  story:{t:"One Chef, One Cake",cast:[["👨‍🍳","One chef","one worker"],["🎂","Bakes the whole cake","whole file"],["⏳","A huge cake takes hours","long videos"]],
+   sc:[["🎂","An order for a cake arrives."],["👨‍🍳","One chef bakes it start to finish."],["✓","For small cakes this is perfect."],["⏳","A wedding cake takes all day, and a mistake means starting over."]],hook:"One worker, one file: simple, slow for big ones."},
+  code:`func Transcode(ctx context.Context, job Job) error {
+    in := download(job.Key)
+    for _, q := range []string{"1080p", "720p", "480p"} {
+        out := fmt.Sprintf("videos/%s/%s/", job.ID, q) // fixed key = safe to retry
+        if err := ffmpeg(ctx, in, q, out); err != nil {
+            return err // the whole file is retried
+        }
+    }
+    return markReady(job.ID)
+}`,
+  gen(){ const f=rec2(); f([1,2],'A worker picks the job and downloads the 10-minute video.',V({video:'10 min',workers:1}));
+   ['1080p','720p','480p'].forEach((q,i)=>f([3,4,5],`Encode ${q} into a fixed output path.`,A(['1080p','720p','480p'],{title:'renditions',c:Object.fromEntries([...Array(i+1)].map((_,k)=>[k,k===i?'a':'ok']))})));
+   f([9],'All renditions done: mark READY. A failure at minute 9 restarts from zero.',V({latency:'≈ 10 min'})); return f.out; }},
+ {n:"Chunked parallel transcoding", when:"Long videos or tight latency. Split at keyframes, encode chunks on many workers, then stitch.", cost:"Latency ≈ one chunk + stitch",
+  story:{t:"The Cupcake Line",cast:[["🧁","Split into cupcakes","segments"],["👨‍🍳👨‍🍳👨‍🍳","Many chefs at once","parallel workers"],["📦","Pack them into one box","stitch playlist"]],
+   sc:[["🧁🧁🧁","Cut the big order into cupcakes."],["👨‍🍳👨‍🍳👨‍🍳","Ten chefs each bake one at the same time."],["🔁","A burnt cupcake? Rebake only that one."],["📦","Box them in order: done in a fraction of the time."]],hook:"Split, encode in parallel, retry pieces, stitch."},
+  code:`func Split(ctx context.Context, job Job) {
+    segs := splitAtKeyframes(download(job.Key), 10*time.Second)
+    for i, s := range segs {
+        queue.Push(SegJob{Video: job.ID, Index: i, Data: s}) // fan out
+    }
+    db.SetPending(job.ID, len(segs))
+}
+
+func OnSegmentDone(video string) {
+    if db.DecrPending(video) == 0 { // last segment finished
+        stitchPlaylist(video)
+        markReady(video)
+    }
+}`,
+  gen(){ const f=rec2(); f([1,2],'Split the 10-minute video at keyframes into 60 segments of 10 seconds.',V({segments:60}));
+   f([3,4,6],'Push one job per segment; workers encode them in parallel.',A(['s1','s2','s3','…','s60'],{title:'segments',c:{0:'a',1:'a',2:'a'}}));
+   f([9,10],'Each finished segment decrements the pending counter. A failed segment retries alone.',A(['s1','s2','s3','…','s60'],{title:'segments',c:{0:'ok',1:'bad',2:'ok'}}));
+   f([10,11,12],'Counter hits 0: stitch the HLS playlist and mark READY.',V({latency:'≈ 20 s',workers:60})); return f.out; }},
+];
+SDA[9] = [
+ {n:"Plain pop (BRPOP)", when:"Never, if jobs matter. The job leaves Redis the moment a worker takes it; a crash loses it.", cost:"Fast; at-most-once",
+  story:{t:"Ticket in the Pocket",cast:[["🎫","The cook pockets the ticket","pop"],["😵","The cook faints","worker crash"],["❓","Nobody knows the order existed","lost job"]],
+   sc:[["🎫","The cook takes the ticket off the rail and pockets it."],["😵","The cook faints."],["❓","The ticket is gone with them."],["🍽️","The customer never gets their meal."]],hook:"Popped jobs die with the worker."},
+  code:`for {
+    res, _ := rdb.BRPop(ctx, 0, "queue:default").Result()
+    job := res[1]           // removed from Redis now
+    run(job)                // crash here = job lost forever
+}`,
+  gen(){ const f=rec2(); f([2,3],'Worker pops j1: it is no longer in Redis.',M([['queue','[j2, j3]'],['worker','j1']],{title:'state'}));
+   f([4],'The pod is OOMKilled mid-run.',M([['queue','[j2, j3]'],['worker','💥']],{title:'state'}));
+   f([4],'j1 exists nowhere. Lost.',V({j1:'lost'})); return f.out; }},
+ {n:"Reliable fetch + heartbeat reaper", when:"Redis-based queues (Sidekiq Pro, sidekiq-assured-jobs). Move the job to a per-worker list; recover it if the worker goes silent.", cost:"1 extra list op + heartbeats",
+  story:{t:"Ticket on Your Clip",cast:[["📋","The ticket goes on your clip","in-progress list"],["💓","Call 'still cooking' every 10s","heartbeat"],["🧹","Manager re-posts tickets of silent cooks","reaper"]],
+   sc:[["📋","The cook clips the ticket to their own board."],["💓","They keep calling 'still on it'."],["😵","They faint; the calls stop."],["🧹","The manager moves the ticket back to the rail."]],hook:"Move, heartbeat, reap the silent."},
+  code:`job := rdb.BLMove(ctx, "queue:default", "inprogress:"+me, "RIGHT", "LEFT", 0).Val()
+go heartbeat(me) // SET hb:<me> 1 EX 30, every 10s
+run(job)
+rdb.LRem(ctx, "inprogress:"+me, 1, job) // done
+
+func Reap() {
+    for _, w := range workers() {
+        if rdb.Exists(ctx, "hb:"+w).Val() == 0 { // silent worker
+            for rdb.LMove(ctx, "inprogress:"+w, "queue:default", "RIGHT", "LEFT").Err() == nil {}
+        }
+    }
+}`,
+  gen(){ const f=rec2(); f([1],'Atomically move j1 from the queue into this worker\'s in-progress list.',M([['queue','[j2, j3]'],['inprogress:A','[j1]']],{title:'state'}));
+   f([2,3],'Heartbeat key hb:A refreshed every 10s while running.',V({'hb:A':'TTL 30s'}));
+   f([7,8],'Worker A crashes; hb:A expires.',V({'hb:A':'gone'}));
+   f([9],'The reaper moves j1 back to the queue. Another worker runs it (so the job must be idempotent).',M([['queue','[j1, j2, j3]'],['inprogress:A','[]']],{title:'state'})); return f.out; }},
+ {n:"Visibility timeout (SQS)", when:"Managed queues. A received message is hidden, not deleted; if not deleted in time, it reappears.", cost:"Built in; extend the timeout for long jobs",
+  story:{t:"The Library Hold Slip",cast:[["📕","Borrowed book is hidden from others","in flight"],["⏰","Due back in 30 minutes","visibility timeout"],["🔁","Not returned? Back on the shelf","redelivery"]],
+   sc:[["📕","You borrow the book; others cannot see it."],["⏰","You have 30 minutes."],["✓","Finished? Return it for good (delete)."],["🔁","Forgot? After 30 minutes it reappears for someone else."]],hook:"Hidden while you work; reappears if you don't finish."},
+  code:`out, _ := sqsc.ReceiveMessage(ctx, &sqs.ReceiveMessageInput{
+    QueueUrl: q, VisibilityTimeout: 30,
+})
+for _, m := range out.Messages {
+    if err := run(m); err == nil {
+        sqsc.DeleteMessage(ctx, &sqs.DeleteMessageInput{QueueUrl: q, ReceiptHandle: m.ReceiptHandle})
+    } // no delete = visible again after 30s
+}`,
+  gen(){ const f=rec2(); f([1,2,3],'Receive j1: SQS hides it for 30 seconds.',V({j1:'in flight'}));
+   f([4,5,6],'Success: delete it permanently.',V({j1:'deleted'}));
+   f([4,7],'If the worker crashed instead, j1 becomes visible again after 30s and is redelivered.',V({j1:'visible again'})); return f.out; }},
+];
+SDA[10] = [
+ {n:"Big-bang cutover", when:"Small systems with an accepted maintenance window. One night, everything moves.", cost:"Downtime; all-or-nothing risk",
+  story:{t:"Moving House in One Night",cast:[["🌙","Close the shop for a night","maintenance window"],["🚚","Move everything at once","full migration"],["🎲","If anything is broken, it is all broken","high risk"]],
+   sc:[["🌙","Put up a 'closed tonight' sign."],["🚚","Move every box in one go."],["🔑","Open the new shop in the morning."],["🎲","Forgot something? Every customer notices."]],hook:"One night, everything at once, no partial rollback."},
+  code:`func BigBang() error {
+    setMaintenance(true)
+    if err := copyAllData(oldDB, newDB); err != nil { return err }
+    switchDNS("app", newLB) // 100% at once
+    setMaintenance(false)
+    return smokeTest()      // problems now hit every user
+}`,
+  gen(){ const f=rec2(); f([2],'Turn on maintenance mode: users see a downtime page.',V({traffic:'0%'}));
+   f([3],'Copy all data while writes are stopped.',V({copy:'2 hours'}));
+   f([4,5],'Switch DNS fully to the new stack.',V({new:'100%'}));
+   f([6],'Smoke test after the switch: any bug affects everyone.',V({risk:'all users'})); return f.out; }},
+ {n:"Gradual weighted shift", when:"Zero-downtime moves of whole stacks. Replicate data, then shift traffic 1% → 100% with instant rollback.", cost:"A hybrid period running both sides",
+  story:{t:"The Two Shops and a Signpost",cast:[["🧭","A signpost sends some customers to each shop","weighted DNS"],["📈","Turn the dial slowly","ramp"],["🔙","Turn it back instantly","rollback"]],
+   sc:[["🧭 5%","1 in 20 customers goes to the new shop."],["👀","Watch complaints and wait times."],["📈","All good? 25%, 50%, 100%."],["🔙","Trouble? Dial back to 0% in a minute."]],hook:"Shift a little, watch, shift more, roll back fast."},
+  code:`func Ramp(steps []int) error {
+    for _, pct := range steps { // e.g. 1, 5, 25, 50, 100
+        setWeights("app", 100-pct, pct)
+        time.Sleep(15 * time.Minute)
+        if errorRate(newStack) > 0.005 || p99(newStack) > slo {
+            setWeights("app", 100, 0) // instant rollback
+            return ErrRolledBack
+        }
+    }
+    return nil
+}`,
+  gen(){ const f=rec2(); [1,5,25].forEach(p=>f([2,3,4],`Send ${p}% of traffic to the new stack and watch for 15 minutes.`,A([100-p,p],{bars:1,lab:['old','new'],title:'traffic %'})));
+   f([5,6,7],'Error rate above 0.5%? Weights go back to 100/0 at once.',A([100,0],{bars:1,lab:['old','new'],title:'traffic %',c:{1:'bad'}}));
+   f([2,3,10],'Otherwise continue to 100%. No downtime at any point.',A([0,100],{bars:1,lab:['old','new'],title:'traffic %',c:{1:'ok'}})); return f.out; }},
+ {n:"Strangler fig (route by route)", when:"Replacing a monolith or moving services one at a time. A router sends each migrated route to the new system.", cost:"Longest overall, lowest risk per step",
+  story:{t:"The Vine Around the Tree",cast:[["🌳","The old tree","legacy system"],["🌿","A vine grows around it, branch by branch","new services"],["🪓","When the vine holds everything, remove the tree","decommission"]],
+   sc:[["🌳","The old system keeps running."],["🌿","Move one feature at a time to the new system."],["🧭","A router sends each moved route to the new side."],["🪓","When nothing is left, switch the old one off."]],hook:"Move one route at a time behind a router."},
+  code:`var migrated = map[string]bool{"/payments": true, "/notifications": true}
+
+func Route(w http.ResponseWriter, r *http.Request) {
+    for prefix := range migrated {
+        if strings.HasPrefix(r.URL.Path, prefix) {
+            newSvc.ServeHTTP(w, r)
+            return
+        }
+    }
+    legacy.ServeHTTP(w, r) // everything else still on the old system
+}`,
+  gen(){ const f=rec2(); f([1],'Payments and notifications are already migrated.',A(['/payments','/notifications','/feed','/users'],{title:'routes',c:{0:'ok',1:'ok'}}));
+   f([3,4,5,6],'GET /payments/42 → new service.',V({route:'/payments/42',to:'new'}));
+   f([10],'GET /feed → still the legacy monolith.',V({route:'/feed',to:'legacy'}));
+   f([1],'Next sprint: add /feed to the map. Repeat until legacy has no routes.',A(['/payments','/notifications','/feed','/users'],{title:'routes',c:{0:'ok',1:'ok',2:'a'}})); return f.out; }},
+];
+SDA[11] = [
+ {n:"CPU-based HPA", when:"CPU-bound web servers. Wrong for queue workers that wait on I/O (CPU stays low while the backlog grows).", cost:"Built into Kubernetes",
+  story:{t:"Judging Busyness by Sweat",cast:[["😅","How sweaty the staff look","CPU %"],["📞","The real problem: callers waiting","queue backlog"],["🙈","Calm staff, long queue","wrong signal"]],
+   sc:[["😅","The manager adds staff when they look sweaty."],["📞📞📞","But the staff are calm, just waiting on slow phone lines."],["🙈","The manager sees no sweat and adds nobody."],["⏳","Callers wait longer and longer."]],hook:"Scale on what users feel, not on CPU, for workers."},
+  code:`// replicas = ceil(current * currentCPU / targetCPU)
+func Desired(current int, cpu, target float64) int {
+    return int(math.Ceil(float64(current) * cpu / target))
+}`,
+  gen(){ const f=rec2(); f([1,2,3],'Web pods at 90% CPU, target 60%: 4 × 90/60 = 6 pods. Works well.',V({pods:'4 → 6'}));
+   f([1,2,3],'Queue workers at 20% CPU (waiting on S3) with 1,200 jobs queued: 4 × 20/60 = 2. It scales DOWN.',V({pods:'4 → 2',queue:1200}));
+   f([3],'Wrong signal for workers: use queue depth instead.',V({result:'backlog grows'})); return f.out; }},
+ {n:"Queue-depth scaling (KEDA)", when:"Queue workers. Pods = ceil(queue depth ÷ jobs each pod can handle), down to zero when empty.", cost:"A metrics poll every few seconds",
+  story:{t:"Counting the Hold Queue",cast:[["📞","Calls on hold","queue depth"],["🧑‍💼","Each agent handles 20","target per pod"],["🏠","No calls: everyone goes home","scale to zero"]],
+   sc:[["📞×1200","1,200 callers on hold."],["🧑‍💼","Each agent clears 20, so call in 60 agents."],["📉","Queue drains: send agents home gradually."],["🏠","Zero calls: zero agents, zero cost."]],hook:"Agents = calls waiting ÷ calls per agent."},
+  code:`func Desired(depth, perPod, min, max int) int {
+    n := (depth + perPod - 1) / perPod // ceil
+    if n < min { n = min }
+    if n > max { n = max } // protect the database
+    return n
+}`,
+  gen(){ const f=rec2(); f([1,2],'1,200 jobs queued, 20 per pod: 60 pods.',V({depth:1200,desired:60}));
+   f([4],'Max is 50 to protect the database: cap at 50.',V({desired:50}));
+   f([1,2,3],'Queue empty: 0 pods (min 0). Karpenter removes the idle nodes.',V({depth:0,desired:0})); return f.out; }},
+];
+SDA[13] = [
+ {n:"Greedy nearest worker", when:"Ride-hailing style one-to-one matches where speed matters most. Fast, but ignores reliability and fairness.", cost:"O(k) over nearby candidates",
+  story:{t:"Shout to the Closest",cast:[["📍","The shift's location","job"],["🧍","The closest available worker","nearest"],["⚡","Offer instantly","greedy"]],
+   sc:[["📍","A café needs one server."],["🧍","Find the closest free worker."],["⚡","Offer it to them right away."],["😕","Even if they often cancel."]],hook:"Nearest first: fast but blind to quality."},
+  code:`func Match(shift Shift, nearby []Worker) Worker {
+    best := nearby[0]
+    for _, w := range nearby[1:] {
+        if dist(w, shift) < dist(best, shift) { best = w }
+    }
+    return best
+}`,
+  gen(){ const f=rec2(); f([1,2],'Candidates within 5 km.',M([['Ravi','0.8 km · 60% show-up'],['Asha','1.5 km · 98% show-up'],['Li','3.0 km · 95%']],{title:'workers'}));
+   f([3,4],'Pick the closest: Ravi at 0.8 km.',M([['Ravi','0.8 km · 60% show-up'],['Asha','1.5 km · 98%'],['Li','3.0 km · 95%']],{title:'workers',hl:'Ravi'}));
+   f([6],'Risk: a 40% chance of a no-show.',V({expected:'60% filled'})); return f.out; }},
+ {n:"Scored invite waves", when:"Marketplaces with many candidates and quality signals. Score everyone, invite the top N, widen if not filled.", cost:"O(k log k) sort per wave",
+  story:{t:"The Party Invitations",cast:[["⭐","Score each guest","distance + reliability + rating"],["✉️","Send the first batch of invitations","wave 1"],["⏳","Not enough replies? Next batch","widen"]],
+   sc:[["⭐","Rate every possible guest."],["✉️","Invite the best 50."],["⏳","Wait 10 minutes."],["✉️✉️","Still short? Invite the next 100, a bit further away."]],hook:"Score, invite the best batch, widen if needed."},
+  code:`func Score(w Worker, s Shift) float64 {
+    return 0.5*w.Reliability + 0.3*w.Rating/5 - 0.2*dist(w, s)/10
+}
+
+func NextWave(s Shift, cands []Worker, sent int) []Worker {
+    sort.Slice(cands, func(i, j int) bool { return Score(cands[i], s) > Score(cands[j], s) })
+    size := 50 << (sent / 50) // 50, then 100, then 200...
+    return cands[sent:min(sent+size, len(cands))]
+}`,
+  gen(){ const f=rec2(); f([1,2],'Score: reliability matters most, then rating, minus distance.',A([0.52,0.78,0.71],{bars:1,lab:['Ravi','Asha','Li'],title:'score'}));
+   f([5,6],'Sort by score: Asha, Li, Ravi.',A([0.78,0.71,0.52],{bars:1,lab:['Asha','Li','Ravi'],title:'score',c:{0:'ok'}}));
+   f([7,8],'Wave 1 invites the top 50. If not filled in 10 minutes, wave 2 invites the next 100.',V({wave1:50,wave2:100})); return f.out; }},
+];
+SDA[14] = [
+ {n:"Static threshold alert", when:"Simple resource checks (disk > 90%). Noisy for user-facing health: pages on blips, misses slow burns.", cost:"Cheap; high noise",
+  story:{t:"The Smoke Alarm Over the Toaster",cast:[["🔔","Rings above a fixed level","threshold"],["🍞","Burnt toast sets it off","false alarm"],["🔥","A slow smoulder never reaches it","missed problem"]],
+   sc:[["🔔","The alarm rings above a set level."],["🍞","Burnt toast: it rings at 3 a.m."],["🔥","A slow smoulder stays under the level for hours."],["😴","People start ignoring it."]],hook:"Fixed lines: noisy blips, missed slow burns."},
+  code:`// Prometheus rule
+// alert: HighErrors
+// expr: rate(http_errors_total[1m]) / rate(http_requests_total[1m]) > 0.05
+// for: 1m
+func Firing(errRate float64) bool {
+    return errRate > 0.05
+}`,
+  gen(){ const f=rec2(); f([3,6,7],'A 1-minute spike to 6% errors: page fires at 3 a.m., then clears itself.',A([1,1,6,1,1],{bars:1,lab:['1m','2m','3m','4m','5m'],title:'error %',c:{2:'bad'}}));
+   f([6,7],'A steady 3% for 6 hours never fires, yet burns most of the month\'s error budget.',A([3,3,3,3,3],{bars:1,lab:['1h','2h','3h','4h','5h'],title:'error %'})); return f.out; }},
+ {n:"SLO burn-rate alert", when:"User-facing services. Page when you're spending the error budget too fast (Google SRE multi-window).", cost:"Two windows per alert",
+  story:{t:"The Monthly Allowance",cast:[["💰","43 minutes of 'downtime money' per month","error budget"],["🔥","Spending speed","burn rate"],["🚨","Spending 14× too fast for an hour","page"]],
+   sc:[["💰","You have a monthly allowance of errors."],["🔥","Spending it slowly? Fine."],["🚨","Spending it 14× too fast? Wake someone up."],["🎫","Slow leaks become tickets, not pages."]],hook:"Page on how fast the budget burns, not on blips."},
+  code:`const slo = 0.999 // 99.9% success
+
+func BurnRate(errRate float64) float64 {
+    return errRate / (1 - slo) // 1.0 = exactly on budget
+}
+
+func ShouldPage(err1h, err5m float64) bool {
+    return BurnRate(err1h) > 14.4 && BurnRate(err5m) > 14.4 // fast burn, still happening
+}`,
+  gen(){ const f=rec2(); f([1,3,4],'Budget: 0.1% errors. A 1-minute 6% spike: the 1-hour burn rate is about 1, so no page.',V({'burn(1h)':1.0,page:'no'}));
+   f([3,4],'Steady 3% errors: burn rate 30, so the budget is gone in about a day.',V({'burn(1h)':30}));
+   f([7,8],'Both the 1-hour and 5-minute burn exceed 14.4: page. A real, ongoing problem.',V({page:'yes'})); return f.out; }},
+];
+
 /* ---------- boot ---------- */
 load();
 if (state.lastVisit && state.onboarded){ const gap = daysBetween(state.lastVisit, today()); if (gap >= 4 && dayNum() >= 1) WB = gap; }
