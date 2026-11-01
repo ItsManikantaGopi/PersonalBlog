@@ -6,7 +6,7 @@ const siteUrl = profile.site;
 const pageTitle = "Learnings & resources — Manikanta Gopi";
 const pageDescription =
   "Free interview prep kit: story-based Go and DSA lessons, 32 animated system design walkthroughs, a 6-week plan, spaced review and timed mock rounds.";
-const prepKitUrl = "/learnings/interview-prep/index.html";
+const kitUrl = "/learnings/interview-prep/index.html";
 
 export const Route = createFileRoute("/learnings")({
   head: () => ({
@@ -24,99 +24,199 @@ export const Route = createFileRoute("/learnings")({
   component: Learnings,
 });
 
-const linkClass =
-  "inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-md border border-border bg-background/50 px-4 py-2 font-mono text-xs font-medium transition-all hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary";
+const nav = [
+  { href: "/#work", label: "Work" },
+  { href: "/#products", label: "Products" },
+  { href: "/#consulting", label: "Services" },
+  { href: "/#experience", label: "Experience" },
+  { href: "/learnings", label: "Learnings", current: true },
+  { href: "/#contact", label: "Contact" },
+];
 
-const kitFeatures = [
-  [
-    "Go + DSA stories",
-    "155 problems explained as short stories with step-by-step animations and Go solutions.",
-  ],
-  [
-    "System design",
-    "32 animated designs: foundations (replication, Raft, Kafka), classic questions and platform work.",
-  ],
-  [
-    "6-week plan",
-    "A daily plan that mixes Go, DSA and design lessons, with spaced-repetition review.",
-  ],
-  [
-    "Mock rounds",
-    "Timed 42-minute design mocks with phase beeps, self-scoring and a progress log.",
-  ],
-] as const;
+const primaryCtaClass =
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md bg-primary px-5 py-2.5 font-mono text-sm font-medium text-primary-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+const secondaryCtaClass =
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md border border-border bg-background/50 px-5 py-2.5 font-mono text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-surface hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+const tabTriggerClass =
+  "rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 font-mono text-[11px] uppercase tracking-widest text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none";
+
+const modules = [
+  {
+    tab: "viz",
+    index: "01",
+    title: "DSA stories",
+    detail:
+      "155 problems, each told as a short story with a step-by-step animation and a Go (or Python) solution.",
+    meta: "155 problems · 18 patterns",
+  },
+  {
+    tab: "sysd",
+    index: "02",
+    title: "System design",
+    detail:
+      "32 animated designs: replication, Raft, Kafka and database internals, the classic questions, and platform work like autoscaling and zero-downtime migrations.",
+    meta: "32 designs · playbook · mocks",
+  },
+  {
+    tab: "go",
+    index: "03",
+    title: "Go basics",
+    detail:
+      "14 short lessons from syntax to goroutines, channels and worker pools, each with an animation.",
+    meta: "14 lessons",
+  },
+  {
+    tab: "plan",
+    index: "04",
+    title: "6-week plan",
+    detail:
+      "A daily plan that mixes Go, DSA and design lessons, with spaced-repetition review so things stick.",
+    meta: "Daily tasks · spaced review",
+  },
+  {
+    tab: "interview",
+    index: "05",
+    title: "Mock rounds",
+    detail: "Timed coding and 42-minute design mocks with phase timers, self-scoring and a log.",
+    meta: "Timers · rubric · log",
+  },
+  {
+    tab: "faang",
+    index: "06",
+    title: "FAANG track",
+    detail:
+      "A 12-week extension: advanced patterns, a practice ladder and a behavioral story bank.",
+    meta: "12 weeks",
+  },
+];
 
 function Learnings() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
           <a href="/" className="shrink-0 font-mono text-sm font-medium tracking-tight">
             <span className="text-primary">~/</span>manikanta
           </a>
-          <a
-            href="/"
-            className="font-mono text-[11px] uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground"
-          >
-            ← Portfolio
-          </a>
+          <nav className="flex gap-5 overflow-x-auto">
+            {nav.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                aria-current={item.current ? "page" : undefined}
+                className={`${item.current ? "text-primary" : "hidden text-muted-foreground md:inline"} font-mono text-[11px] uppercase tracking-widest transition-colors hover:text-foreground`}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-6 py-12 md:py-16">
-        <span className="rule-label">Resources / Learnings</span>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">Learnings</h1>
-        <p className="mt-3 max-w-2xl text-muted-foreground">
-          Things I built while preparing for backend and platform interviews, shared so anyone can
-          use them.
-        </p>
-
-        <Tabs defaultValue="interview-prep" className="mt-8">
-          <TabsList>
-            <TabsTrigger value="interview-prep">Interview prep</TabsTrigger>
-            <TabsTrigger value="writing">Writing</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="interview-prep" className="mt-6">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              {kitFeatures.map(([title, detail]) => (
-                <div key={title} className="rounded-lg border border-border p-4">
-                  <h2 className="font-mono text-sm font-medium">{title}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <a href={prepKitUrl} target="_blank" rel="noreferrer" className={linkClass}>
-                Open full screen ↗
-              </a>
-              <span className="text-xs text-muted-foreground">
-                Progress is saved in your browser only. Export it from Progress → Settings.
-              </span>
-            </div>
-            <iframe
-              src={prepKitUrl}
-              title="Gopher Prep: Go, DSA and system design interview prep"
-              loading="lazy"
-              className="mt-5 h-[85vh] min-h-[640px] w-full rounded-lg border border-border bg-background"
-            />
-          </TabsContent>
-
-          <TabsContent value="writing" className="mt-6">
-            <p className="max-w-2xl text-muted-foreground">
-              Longer write-ups on backend systems, Kubernetes and cost work live on Medium.
+      <main>
+        <section className="hero-glow">
+          <div className="mx-auto w-full max-w-5xl px-6 pb-12 pt-16 md:pb-16 md:pt-24">
+            <span className="rule-label">Resources / Learnings</span>
+            <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight md:text-5xl">
+              Learnings
+            </h1>
+            <p className="mt-4 max-w-2xl text-muted-foreground">
+              Things I built while preparing for backend and platform interviews, shared so anyone
+              can use them. Free, no sign-up, progress stays in your browser.
             </p>
-            <a
-              href={profile.medium}
-              target="_blank"
-              rel="noreferrer"
-              className={`${linkClass} mt-4`}
-            >
-              Read on Medium ↗
-            </a>
-          </TabsContent>
-        </Tabs>
+          </div>
+        </section>
+
+        <div className="mx-auto w-full max-w-5xl px-6 py-12 md:py-16">
+          <Tabs defaultValue="interview-prep">
+            <TabsList className="h-auto w-full justify-start gap-8 rounded-none border-b border-border bg-transparent p-0">
+              <TabsTrigger value="interview-prep" className={tabTriggerClass}>
+                Interview prep
+              </TabsTrigger>
+              <TabsTrigger value="writing" className={tabTriggerClass}>
+                Writing
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="interview-prep" className="mt-10">
+              <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                <div className="max-w-2xl">
+                  <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">
+                    Interview prep kit
+                  </h2>
+                  <p className="mt-3 text-muted-foreground">
+                    Go, data structures and system design, learned as stories you can watch step by
+                    step. Follow the daily plan or jump straight to a module.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <a href={kitUrl} className={primaryCtaClass}>
+                    Start the kit →
+                  </a>
+                  <a href={`${kitUrl}?tab=sysd`} className={secondaryCtaClass}>
+                    System design
+                  </a>
+                </div>
+              </div>
+
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {modules.map((m) => (
+                  <a
+                    key={m.tab}
+                    href={`${kitUrl}?tab=${m.tab}`}
+                    className="panel group flex flex-col p-5 transition-all hover:-translate-y-0.5 hover:border-primary"
+                  >
+                    <span className="font-mono text-xs text-primary">{m.index}</span>
+                    <h3 className="mt-3 text-lg font-semibold tracking-tight group-hover:text-primary">
+                      {m.title}
+                    </h3>
+                    <p className="mt-2 flex-1 text-sm text-muted-foreground">{m.detail}</p>
+                    <span className="mt-4 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
+                      {m.meta} <span className="text-primary">→</span>
+                    </span>
+                  </a>
+                ))}
+              </div>
+
+              <p className="mt-8 font-mono text-xs text-muted-foreground">
+                Progress is saved in your browser only. Export or import it from Progress → Settings
+                inside the kit.
+              </p>
+            </TabsContent>
+
+            <TabsContent value="writing" className="mt-10">
+              <h2 className="text-3xl font-semibold tracking-tight md:text-4xl">Writing</h2>
+              <p className="mt-3 max-w-2xl text-muted-foreground">
+                Longer write-ups on backend systems, Kubernetes and cost work live on Medium.
+              </p>
+              <a
+                href={profile.medium}
+                target="_blank"
+                rel="noreferrer"
+                className={`${secondaryCtaClass} mt-6`}
+              >
+                Read on Medium ↗
+              </a>
+            </TabsContent>
+          </Tabs>
+        </div>
       </main>
+
+      <footer className="border-t border-border">
+        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-8">
+          <a href="/" className="font-mono text-xs text-muted-foreground hover:text-primary">
+            ← Back to portfolio
+          </a>
+          <a
+            href={`mailto:${profile.email}`}
+            className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary"
+          >
+            {profile.email}
+          </a>
+        </div>
+      </footer>
     </div>
   );
 }
