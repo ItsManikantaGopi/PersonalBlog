@@ -1244,6 +1244,17 @@ html[data-site] .scene-t{min-height:4.5em}
 .codex .cxl.on{background:rgba(250,250,250,.10);color:var(--ink);border-left-color:var(--ink)}
 .codex .cxl.on i{color:var(--ink)}
 @media (max-width:1100px){.alg-grid{grid-template-columns:1fr}.codex{max-height:300px}}
+
+/* UX pass */
+.jump{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 18px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--canvas)}
+.jump .plain-l{margin-right:6px;white-space:nowrap;flex:none}
+.jump a{font-size:13px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap}
+.jump a:hover{color:var(--ink);border-color:var(--ink)}
+@media (max-width:900px){
+  .tabs .wrap{-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent);padding-right:40px}
+  .jump{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+}
+.alg-grid .vz-ctl{flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -4965,7 +4976,7 @@ function viewViz(){
      ${sec(2,'The problem',`<p class="big">${esc(P.q)}</p>
        ${B.eg?`<div class="io"><div class="io-c"><span class="io-l">Input</span><code>${esc(B.eg[0])}</code></div><div class="io-arrow" aria-hidden="true">→</div><div class="io-c out"><span class="io-l">Output</span><code>${esc(B.eg[1])}</code></div></div>`:''}
        ${B.brute?`<p class="quiet"><b>Slow way:</b> ${inline(B.brute)}</p>`:''}`)}
-     ${sec(3,'Watch it work',`${playerHTML(VZ)}
+     ${sec(3,'Best solution: try your own input',`${playerHTML(VZ)}
        <details class="vz-in"><summary>Try your own input</summary>
          <textarea class="code" id="vzInput" spellcheck="false" style="min-height:80px">${esc(VZ.inputText)}</textarea>
          <div class="row" style="margin-top:8px"><button class="btn primary" data-act="vzRunIn">Run</button><button class="btn ghost" data-act="vzResetIn">Reset</button></div>
@@ -10184,7 +10195,7 @@ function itemDone(n, it){
 function dayProgress(n){ const its = dayItems(n); return its.length ? its.filter(it=>itemDone(n,it)).length/its.length : 0; }
 function itemView(it){
   if (it.k==="go"){ const L = GO_LESSONS[it.i]; return {e:GO_STORY[it.i].cast[0][0], kind:"Go lesson", t:L.t, sub:GO_STORY[it.i].t, btns:`<button class="btn" data-act="goPick" data-i="${it.i}">Open</button><button class="ib" data-act="cinemaGo" data-i="${it.i}" aria-label="Watch video">🎬</button>`}; }
-  if (it.k==="p"){ const p = PBY[it.id]; if (!p) return {e:"❓", kind:"Problem", t:it.id, sub:"", btns:""}; return {e:STORY[p.id].cast[0][0], kind:PATTERNS[p.pi].name, t:p.name, sub:STORY[p.id].t, btns:`<button class="btn" data-act="viz" data-id="${p.id}">Learn</button><button class="btn" data-act="log" data-id="${p.id}">Log</button>`}; }
+  if (it.k==="p"){ const p = PBY[it.id]; if (!p) return {e:"❓", kind:"Problem", t:it.id, sub:"", btns:""}; return {e:STORY[p.id].cast[0][0], kind:PATTERNS[p.pi].name, t:p.name, sub:STORY[p.id].t, btns:`<button class="btn" data-act="viz" data-id="${p.id}">Learn</button><button class="btn" data-act="log" data-id="${p.id}">Log attempt</button>`}; }
   if (it.k==="sd"){ const L = SD[it.i]; return {e:L.story.cast[0][0], kind:"System design", t:L.t, sub:L.story.t, btns:`<button class="btn" data-act="sdt" data-m="sd${it.i}">Open</button><button class="ib" data-act="cinemaSd" data-i="${it.i}" aria-label="Watch video">🎬</button>`}; }
   if (it.k==="con"){ const L = CON[it.i]; return {e:L.story.cast[0][0], kind:"Concept", t:L.t, sub:L.story.t, btns:`<button class="btn" data-act="fg" data-m="c${it.i}">Open</button><button class="ib" data-act="cinemaCon" data-i="${it.i}" aria-label="Watch video">🎬</button>`}; }
   if (it.k==="lp"){ const L = LADDER[it.id], o = LADDER_ORDER.find(x=>x.id===it.id); return {e:"🧗", kind:"Practice: "+(o?o.pat:""), t:L?L.n:it.id, sub:"", btns:`<button class="btn" data-act="fg" data-m="lp:${it.id}">Open</button>`}; }
@@ -10846,7 +10857,7 @@ function viewFaang(){
   const li = (key,emoji,label,done) => `<button class="vl-i${m===key?" on":""}" data-act="fg" data-m="${key}"><span class="dot ${done?"solved":""}" aria-hidden="true"></span><span>${esc(label)}</span><span class="hotm" aria-hidden="true">${emoji}</span></button>`;
   const list = `<div class="vl-h">Start here</div>${li("loop","🏰","How big-tech hiring works",false)}${li("gap","📏","Your readiness check",false)}
     <div class="vl-h" style="margin-top:12px">Concepts</div>${CON.map((L,i)=>li("c"+i,L.story.cast[0][0],L.t,state.con[i])).join("")}
-    <div class="vl-h" style="margin-top:12px">System design</div>${SD.map((L,i)=>li("sd"+i,L.story.cast[0][0],L.t,state.sd[i])).join("")}
+    <div class="vl-h" style="margin-top:12px">System design</div><button class="vl-i" data-act="sdt" data-m="home"><span class="dot" aria-hidden="true"></span><span>Open the System design tab →</span><span class="hotm" aria-hidden="true">🧭</span></button>
     <div class="vl-h" style="margin-top:12px">Coding and behavioral</div>${li("adv","🧗","Advanced DSA + practice ladder",false)}${li("beh","🗣️","Behavioral story bank",false)}${li("ai","🤖","AI-assisted coding rounds",false)}`;
   const opts = [["loop","How big-tech hiring works"],["gap","Your readiness check"],...CON.map((L,i)=>["c"+i,"Concept: "+L.t]),...(m.startsWith("lp:")?[[m,"Practice: "+LADDER[m.slice(3)].n]]:[]),...SD.map((L,i)=>["sd"+i,"Design: "+L.t]),["adv","Advanced DSA + practice ladder"],["beh","Behavioral story bank"],["ai","AI-assisted coding rounds"]].map(([k,l])=>`<option value="${k}" ${k===m?"selected":""}>${esc(l)}</option>`).join("");
   let body = "";
@@ -11670,7 +11681,7 @@ function sdAllQs(i){ return (SD[i].qs||[]).concat((SDP[i]||{}).q||[]); }
   const at = v.indexOf('<li class="ls"><span class="ls-n">4</span>');
   if (at>0) v = v.slice(0,at) + sdPrepHTML(i) + v.slice(at);
   const flow = `<div class="sdflow">${SD_HOW.map(s=>`<span>${s}</span>`).join("")}</div>`;
-  return v.replace('<ol class="lesson">', flow + '<ol class="lesson">'); }; })();
+  return v; }; })();
 /* building blocks get videos */
 (function(){ const base = viewSysd; viewSysd = function(){ let v = base(); if (SDT.mod!=="blocks") return v;
   const names = Object.keys(BLK_ANIM);
@@ -13277,6 +13288,35 @@ func ShouldPage(err1h, err5m float64) bool {
    f([3,4],'Steady 3% errors: burn rate 30, so the budget is gone in about a day.',V({'burn(1h)':30}));
    f([7,8],'Both the 1-hour and 5-minute burn exceed 14.4: page. A real, ongoing problem.',V({page:'yes'})); return f.out; }},
 ];
+
+/* ===================== UX pass: one plan, one timer, clear lesson structure ===================== */
+// The focus loop follows today's plan first, so Today shows one consistent list.
+(function(){
+  const todayN = () => Math.min(planDays(), Math.max(1, dayNum()));
+  const baseL = nextLearn, baseP = nextProblem;
+  nextLearn = function(){ const n = todayN(); const it = dayItems(n).find(x=>["go","sd","con"].includes(x.k) && !itemDone(n,x));
+    if (it) return {k:it.k, i:it.i, t: it.k==="go" ? GO_LESSONS[it.i].t : it.k==="sd" ? SD[it.i].t : CON[it.i].t, done:false};
+    return baseL(); };
+  nextProblem = function(){ const n = todayN(); const it = dayItems(n).find(x=>x.k==="p" && !itemDone(n,x)); return (it && PBY[it.id]) || baseP(); };
+})();
+// Remove the second (older) timer from Today; the focus loop is the one timer.
+(function(){ const base = viewToday; viewToday = function(){ let v = base();
+  v = v.replace(/<section class="panel">\s*<h2>Session timer<\/h2>[\s\S]*?<\/section>/, "");
+  v = v.replace("Five loops a week covers the core in about eight weeks.", "The loop picks from today's plan below. Five loops a week covers the core in about eight weeks.");
+  return v; }; })();
+// Lessons: number sections 1..n in order and add a jump bar.
+(function(){ const base = afterRender; afterRender = function(){ base();
+  document.querySelectorAll(".lesson").forEach((ol, k)=>{
+    const items = [...ol.children].filter(li=>li.classList.contains("ls"));
+    items.forEach((li, i)=>{ const n = li.querySelector(":scope > .ls-n"); if (n) n.textContent = i+1; li.id = li.id || `sec-${k}-${i+1}`; });
+    if (items.length < 5 || ol.previousElementSibling?.classList.contains("jump")) return;
+    const nav = document.createElement("nav"); nav.className = "jump"; nav.setAttribute("aria-label", "On this page");
+    nav.innerHTML = `<span class="plain-l">On this page</span>` + items.map((li,i)=>`<a href="#${li.id}">${i+1}. ${esc(li.querySelector("h3")?.textContent || "")}</a>`).join("");
+    ol.before(nav);
+  }); }; })();
+document.addEventListener("click", e=>{ const a = e.target.closest(".jump a"); if (!a) return; e.preventDefault();
+  const el = document.getElementById(a.getAttribute("href").slice(1)); if (!el) return;
+  const top = el.getBoundingClientRect().top + scrollY - (document.querySelector(".tabs")?.offsetHeight||0) - 70; scrollTo({top, behavior:"smooth"}); });
 
 /* ---------- boot ---------- */
 load();
