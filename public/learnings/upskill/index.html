@@ -1239,7 +1239,7 @@ html[data-site] .scene-t{min-height:4.5em}
 .codex-w{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:20px;background:var(--canvas);overflow:hidden;min-height:0}
 .codex-h{padding:12px 16px;border-bottom:1px solid var(--line)}
 .codex{margin:0;padding:10px 0;font:12.5px/1.65 var(--mono);overflow:auto;flex:1;max-height:520px;color:var(--muted)}
-.codex .cxl{display:block;padding:0 14px 0 0;white-space:pre;border-left:2px solid transparent;transition:background .25s,color .25s}
+.codex .cxl{display:block;padding:0 14px 0 46px;text-indent:-46px;white-space:pre-wrap;overflow-wrap:anywhere;border-left:2px solid transparent;transition:background .25s,color .25s}
 .codex .cxl i{display:inline-block;width:34px;text-align:right;margin-right:12px;font-style:normal;color:#4A4A4A;user-select:none}
 .codex .cxl.on{background:rgba(250,250,250,.10);color:var(--ink);border-left-color:var(--ink)}
 .codex .cxl.on i{color:var(--ink)}
@@ -12287,6 +12287,170 @@ func NewIDs() (string, string) {
    f([4,5],'Another ID in the same millisecond: sequence 1.',A(['t=1000','m=5','s=1'],{title:'bits: time | machine | sequence',c:{2:'a'}}));
    f([11],'Pack them: time << 22 | machine << 12 | sequence = one sortable 64-bit number.',V({id:'1000<<22 | 5<<12 | 1'}));
    f([6],'4,096 IDs used up in one ms? Wait for the next millisecond.',V({seq:4095})); return f.out; }},
+];
+
+/* ===================== Algorithm sets: partitioning, delivery, locking, leader election ===================== */
+SDA[20] = [
+ {n:"Range partitioning", when:"Keys have a natural order and you need range scans (time series, alphabetical). Risk: hot ranges.", cost:"O(log P) to find the shard",
+  story:{t:"The Encyclopedia Volumes",cast:[["📚","Volumes A–F, G–M, N–Z","shards by key range"],["🔎","Find the right volume by first letter","range lookup"],["🔥","Everyone looking up S","hot shard"]],
+   sc:[["📚📚📚","The encyclopedia is split into volumes by letter."],["🔎 'Go'","'Go' lives in volume G–M."],["📖 G…M","Reading all G words is easy: one volume."],["🔥 S","If everyone searches S words, one volume is swamped."]],hook:"Split by ranges: great for scans, watch for hot spots."},
+  code:`var bounds = []string{"g", "n"} // shard 0: < g, 1: g..m, 2: >= n
+
+func ShardFor(key string) int {
+    return sort.SearchStrings(bounds, strings.ToLower(key[:1])+"\\uffff")
+}`,
+  gen(){ const f=rec2(); const B=(c)=>A(['A–F','G–M','N–Z'],{title:'shards',c});
+   f([1],'Three shards split by first letter.',B());
+   f([3,4],"Key 'go': binary search the boundaries, it falls in G–M.",B({1:'a'}),V({key:'go',shard:1}));
+   f([3,4],"Key 'zebra' goes to N–Z.",B({2:'a'}),V({key:'zebra',shard:2}));
+   f([1],'A scan of all keys from g to m reads just one shard. But a popular prefix overloads one shard.',B({1:'bad'})); return f.out; }},
+ {n:"Hash mod N", when:"Even spread, simple. Changing N remaps almost every key, so resharding is expensive.", cost:"O(1)",
+  story:{t:"The Numbered Lockers",cast:[["🔢","Hash the key to a number","hash(key)"],["🗄️","Locker = number mod 3","mod N"],["➕","Add a 4th locker row","N changes"]],
+   sc:[["🔑 → 🔢","Turn each key into a number."],["🔢 % 3","Remainder picks one of 3 lockers."],["➕ 4","Add a fourth locker: now it is % 4."],["🔀","Almost every key moves. Painful."]],hook:"Even spread, but changing N reshuffles everything."},
+  code:`func ShardFor(key string, n int) int {
+    h := fnv.New32a()
+    h.Write([]byte(key))
+    return int(h.Sum32() % uint32(n))
+}`,
+  gen(){ const f=rec2(); const k=[['user1',17],['user2',22],['user3',9],['user4',30]];
+   f([2,3],'Hash each key to a number.',M(k.map(([a,b])=>[a,'hash '+b]),{title:'keys'}));
+   f([4],'With 3 shards: 17%3=2, 22%3=1, 9%3=0, 30%3=0.',M(k.map(([a,b])=>[a,'shard '+(b%3)]),{title:'N = 3'}));
+   f([4],'Add a 4th shard: 17%4=1, 22%4=2, 9%4=1, 30%4=2. Every key moved.',M(k.map(([a,b])=>[a,'shard '+(b%4)+(b%4!==b%3?'  (moved)':'')]),{title:'N = 4'})); return f.out; }},
+ {n:"Consistent hashing", when:"Nodes come and go (caches, Dynamo-style stores). Adding a node moves only ~1/N keys.", cost:"O(log V) with V virtual nodes",
+  story:{t:"The Clock Face",cast:[["🕐","Positions on a clock","hash ring"],["📍","Each node owns the arc before it","node position"],["➕","A new node takes one arc","minimal movement"]],
+   sc:[["🕐","Put nodes at points on a clock face."],["🔑 ↻","Each key walks clockwise to the first node."],["➕ 📍","Add a node between two others."],["🔀 few","Only keys in that one arc move."]],hook:"Walk clockwise to the next node; new nodes steal only one arc."},
+  code:`func (r *Ring) Add(node string, vnodes int) {
+    for i := 0; i < vnodes; i++ { // many points per node = even spread
+        h := crc32.ChecksumIEEE([]byte(fmt.Sprintf("%s#%d", node, i)))
+        r.hashes = append(r.hashes, h)
+        r.owner[h] = node
+    }
+    slices.Sort(r.hashes)
+}`,
+  gen(){ const f=rec2(); f([1,2,3,4,5,7],'Add nodes A, B, C to the ring, each at several points (virtual nodes) for an even spread.',A(['A','B','C','A','B','C'],{title:'sorted ring points'}));
+   f([1,2,3,4,5,7],'Add D: its points slot in between existing ones.',A(['A','D','B','C','A','D','B','C'],{title:'sorted ring points',c:{1:'a',5:'a'}}));
+   f([7],'Only keys that fell just before each D point move to D: about 1/4 of keys, not all of them.',V({moved:'~25%'})); return f.out; }},
+];
+SDA[19] = [
+ {n:"At-most-once", when:"Losing a message is acceptable (metrics, logs). Never duplicates. Commit the offset before processing.", cost:"Fastest",
+  story:{t:"Tear Off, Then Read",cast:[["📄","A note on the pad","message"],["✂️","Tear it off first","commit offset"],["📖","Then read it","process"]],
+   sc:[["✂️ 📄","Tear the note off the pad first."],["📖","Then start reading it."],["💥","Fall asleep halfway: the note is gone."],["✓","But you never read the same note twice."]],hook:"Commit first: no duplicates, possible loss."},
+  code:`for {
+    msg := consumer.Poll()
+    consumer.Commit(msg.Offset) // mark as done first
+    process(msg)                // a crash here loses the message
+}`,
+  gen(){ const f=rec2(); f([2],'Read message 42.',V({offset:41,msg:42}));
+   f([3],'Commit offset 42 immediately.',V({committed:42}));
+   f([4],'Crash during processing. On restart we resume after 42: message 42 is never processed.',V({committed:42,processed:'—',result:'lost'})); return f.out; }},
+ {n:"At-least-once", when:"The common default. Never loses messages; may process some twice, so handlers must be idempotent.", cost:"Possible duplicates",
+  story:{t:"Read, Then Tear Off",cast:[["📖","Read the note","process"],["✂️","Tear it off after","commit offset"],["🔁","Fell asleep? Read it again","redelivery"]],
+   sc:[["📖","Read the whole note first."],["✂️","Then tear it off."],["💥","Fall asleep before tearing: it is still on the pad."],["🔁","You read it again tomorrow: no loss, but twice."]],hook:"Commit after: nothing lost, maybe twice."},
+  code:`for {
+    msg := consumer.Poll()
+    process(msg)                // must be idempotent
+    consumer.Commit(msg.Offset) // a crash before this = redelivery
+}`,
+  gen(){ const f=rec2(); f([2,3],'Read and process message 42 (charge order 42).',V({processed:'42'}));
+   f([4],'Crash before committing.',V({committed:41}));
+   f([2,3],'Restart: message 42 is delivered again and processed again.',V({processed:'42, 42',result:'duplicate'}));
+   f([3],'Fix: make process idempotent (check a processed-ID table) so the second run does nothing.',V({result:'charged once'})); return f.out; }},
+ {n:"Exactly-once (effectively)", when:"Money and counters. At-least-once delivery + a dedupe key, stored in the same transaction as the effect.", cost:"An extra write per message",
+  story:{t:"The Stamped Receipts",cast:[["🧾","Each note has a receipt number","message ID"],["📒","A book of receipts already handled","processed table"],["🔒","Write the result and the receipt together","one transaction"]],
+   sc:[["🧾 #42","Each note carries a unique receipt number."],["📒 ?","Before acting, check the receipt book."],["🔒 ✍️","Do the work and log the receipt in one go."],["🔁 #42 ✓","Same note again? Already in the book: skip."]],hook:"Deliver at least once, apply exactly once."},
+  code:`func Handle(msg Msg) error {
+    return db.Tx(func(tx *Tx) error {
+        if tx.Exists("processed", msg.ID) {
+            return nil // already applied: skip
+        }
+        if err := tx.ApplyCharge(msg.Order); err != nil { return err }
+        return tx.Insert("processed", msg.ID) // same transaction
+    })
+}`,
+  gen(){ const f=rec2(); f([1,2,3],'Message 42 arrives. Inside a transaction, check if 42 was processed.',V({processed:'{}'}));
+   f([6,7],'Not yet: apply the charge and record 42, both in the same commit.',V({processed:'{42}',charges:1}));
+   f([3,4],'Message 42 is redelivered after a crash: found in the table, skip.',V({processed:'{42}',charges:1,result:'no double charge'})); return f.out; }},
+];
+SDA[25] = [
+ {n:"Pessimistic lock (SELECT … FOR UPDATE)", when:"High contention on the same rows, short transactions. Others wait instead of failing.", cost:"Holds a row lock for the whole transaction",
+  story:{t:"Holding the Seat With Your Hand",cast:[["✋","Put your hand on the seat","row lock"],["⏳","Others wait their turn","blocked transactions"],["✅","Sit, then let go","commit releases lock"]],
+   sc:[["✋ F7","You put your hand on seat F7."],["⏳","Someone else reaches for it and has to wait."],["✅","You sit down and let go."],["🙅","They see it is taken."]],hook:"Lock first, decide, then release."},
+  code:`func Book(tx *sql.Tx, seat string, user int) error {
+    var status string
+    tx.QueryRow("SELECT status FROM seats WHERE id=$1 FOR UPDATE", seat).Scan(&status)
+    if status != "AVAILABLE" {
+        return ErrTaken
+    }
+    _, err := tx.Exec("UPDATE seats SET status='BOOKED', holder=$2 WHERE id=$1", seat, user)
+    return err // commit releases the lock
+}`,
+  gen(){ const f=rec2(); f([2,3],'Asha locks row F7 and reads AVAILABLE.',V({F7:'AVAILABLE',lock:'Asha'}));
+   f([3],'Bob runs the same SELECT … FOR UPDATE and blocks, waiting for the lock.',V({lock:'Asha',Bob:'waiting'}));
+   f([7,8],'Asha updates to BOOKED and commits; the lock is released.',V({F7:'BOOKED (Asha)'}));
+   f([3,4,5],'Bob now reads BOOKED and gets "seat taken".',V({Bob:'ErrTaken'})); return f.out; }},
+ {n:"Optimistic lock (version column)", when:"Low contention, long user think-time. No locks held; conflicts are detected at write time.", cost:"Retry on conflict",
+  story:{t:"The Version Stamp",cast:[["🔖","Each row has a version number","version"],["✍️","Update only if the version is unchanged","conditional write"],["🔁","Changed? Reload and try again","retry"]],
+   sc:[["🔖 v3","You read seat F7, version 3."],["✍️ v3 → v4","You save only if it is still version 3."],["⚡","Someone saved first: it is now version 4."],["🔁","Your save changes 0 rows, so you reload."]],hook:"Check the version you read is still current."},
+  code:`func Book(db *sql.DB, seat string, user, version int) error {
+    res, _ := db.Exec(` + "`" + `UPDATE seats SET status='BOOKED', holder=$2, version=version+1
+        WHERE id=$1 AND status='AVAILABLE' AND version=$3` + "`" + `, seat, user, version)
+    if n, _ := res.RowsAffected(); n == 0 {
+        return ErrConflict // someone changed it: reload and retry
+    }
+    return nil
+}`,
+  gen(){ const f=rec2(); f([1],'Asha and Bob both read F7: AVAILABLE, version 3.',V({F7:'AVAILABLE v3'}));
+   f([2,3],'Asha updates WHERE version = 3: 1 row changed, now version 4.',V({F7:'BOOKED v4 (Asha)'}));
+   f([2,3,4,5],'Bob updates WHERE version = 3: 0 rows changed. Conflict.',V({Bob:'ErrConflict'}));
+   f([5],'Bob reloads, sees BOOKED, and picks another seat. No locks were ever held.',V({F7:'BOOKED v4'})); return f.out; }},
+ {n:"Hold with expiry (reservation)", when:"Users need minutes to pay. Hold the seat with a TTL; release automatically if they leave.", cost:"1 conditional write + a sweeper",
+  story:{t:"The Coat on the Chair",cast:[["🧥","Leave your coat on the chair","hold"],["⏲️","10 minutes to come back","expires_at"],["🧹","Staff clear old coats","sweeper"]],
+   sc:[["🧥 F7","You drop your coat on F7 and go to pay."],["⏲️ 10:00","You have 10 minutes."],["💳 ✓","Pay in time: the seat is yours."],["🧹","Too late? Staff remove the coat and the seat is free again."]],hook:"Hold briefly, confirm on payment, expire otherwise."},
+  code:`func Hold(db *sql.DB, seat string, user int) bool {
+    res, _ := db.Exec(` + "`" + `UPDATE seats SET status='HELD', holder=$2, expires_at=now()+interval '10 min'
+        WHERE id=$1 AND (status='AVAILABLE' OR (status='HELD' AND expires_at < now()))` + "`" + `, seat, user)
+    n, _ := res.RowsAffected()
+    return n == 1
+}`,
+  gen(){ const f=rec2(); f([1,2,3],'Asha holds F7: it was AVAILABLE, so 1 row changes. Expires in 10 minutes.',V({F7:'HELD by Asha',expires:'10:10'}));
+   f([2,3,4,5],'Bob tries at 10:05: the hold has not expired, 0 rows change.',V({Bob:'not available'}));
+   f([2,3,4,5],'Asha never pays. At 10:11 Bob tries again: the hold expired, so the WHERE matches and Bob gets it.',V({F7:'HELD by Bob',expires:'10:21'})); return f.out; }},
+];
+SDA[17] = [
+ {n:"Raft election (majority vote)", when:"You need a correct single leader even with network splits (etcd, Consul).", cost:"One round of votes per election",
+  story:{t:"The Class Monitor Vote",cast:[["🙋","A student who stands for election","candidate"],["🗳️","Each student votes once per term","vote"],["👑","Majority wins","leader"]],
+   sc:[["😴 👑","The monitor stops answering."],["🙋","After a random wait, one student stands."],["🗳️🗳️🗳️","Classmates vote, one vote each this term."],["👑","3 of 5 votes: new monitor."]],hook:"Random timeout, one vote per term, majority wins."},
+  code:`func (n *Node) onElectionTimeout() {
+    n.term++
+    n.votedFor = n.id
+    votes := 1
+    for _, p := range n.peers {
+        if p.RequestVote(n.term, n.lastLogIndex) { votes++ }
+    }
+    if votes > len(n.peers)/2 { // majority of the whole cluster
+        n.becomeLeader()
+    }
+}`,
+  gen(){ const f=rec2(); f([1,2,3,4],'Node A times out first: term becomes 2, it votes for itself.',V({term:2,votes:1}));
+   f([5,6],'It asks the 4 peers for votes; B, C and D agree.',V({votes:4}));
+   f([8,9],'4 > 5/2, a majority. A becomes leader for term 2.',V({leader:'A',term:2})); return f.out; }},
+ {n:"Lease-based leader (lock with TTL)", when:"Simpler: use an existing store (etcd, Redis, DynamoDB) to hold a leader lock that must be renewed.", cost:"A renew call every few seconds",
+  story:{t:"The Library Key",cast:[["🔑","One key to the room","leader lock"],["⏲️","Must be renewed every 10 seconds","lease TTL"],["🔁","If not renewed, anyone can take it","failover"]],
+   sc:[["🔑 A","A takes the only key, valid for 10 seconds."],["🔁 A","A keeps renewing it."],["😴 A","A freezes and stops renewing."],["🔑 B","The lease expires; B takes the key."]],hook:"Hold the lease, keep renewing, lose it if you stop."},
+  code:`func Campaign(ctx context.Context, cli *redis.Client, id string) {
+    for {
+        ok, _ := cli.SetNX(ctx, "leader", id, 10*time.Second).Result()
+        if ok || cli.Get(ctx, "leader").Val() == id {
+            cli.Expire(ctx, "leader", 10*time.Second) // renew
+            doLeaderWork()
+        }
+        time.Sleep(3 * time.Second)
+    }
+}`,
+  gen(){ const f=rec2(); f([3],'A runs SET leader=A NX with a 10-second TTL: succeeds.',V({leader:'A',ttl:'10s'}));
+   f([4,5,6],'Every 3 seconds A renews the TTL and does leader work.',V({leader:'A',ttl:'10s'}));
+   f([8],'A freezes (GC pause). Nobody renews; the key expires.',V({leader:'—'}));
+   f([3,4,5],'B\'s SetNX succeeds: B is leader. Use a fencing token so a waking A cannot write stale data.',V({leader:'B',fence:2})); return f.out; }},
 ];
 
 /* ---------- boot ---------- */
