@@ -1175,6 +1175,28 @@ html[data-site] .chip.hot{background:#FAFAFA;color:#0A0A0A}
 .loop-wk i{width:22px;height:6px;border-radius:2px;background:var(--line)}
 .loop-wk i.on{background:var(--ink)}
 @media (max-width:720px){.loop-g{grid-template-columns:1fr}}
+/* ===== fixed-size players: no page jumps ===== */
+.stage-box{position:relative;height:clamp(240px,34vw,380px);overflow:hidden;display:flex;justify-content:center;align-items:center}
+.stage-box .stage{width:100%;align-items:center;justify-content:center;transform-origin:center center;transition:transform .25s ease}
+.stage-wrap .vz-msg{height:4.8em;overflow-y:auto;display:flex;align-items:center;justify-content:center}
+.cm-stagewrap{height:min(52vh,460px);overflow:hidden}
+.cm-stagewrap .stage{transform-origin:top center}
+html[data-site] .art{height:170px;min-height:0;overflow:hidden}
+html[data-site] .scene-t{min-height:4.5em}
+/* worst → best */
+.basics{border-left:2px solid var(--ink);padding:4px 0 4px 14px;margin:0 0 16px}
+.basics p{margin:6px 0 0;color:var(--ink);max-width:70ch;line-height:1.6}
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-bottom:12px}
+.tier{display:flex;flex-direction:column;gap:3px;text-align:left;border:1px solid var(--line);border-radius:12px;background:var(--canvas);color:var(--ink);padding:12px 14px;cursor:pointer;font:inherit;transition:border-color .2s,background .2s}
+.tier:hover{border-color:var(--muted)}
+.tier.on{border-color:var(--ink);background:var(--sel)}
+.tier-k{font:500 10.5px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.tier b{font-size:15px}
+.tier-c{font:500 12px var(--mono);color:var(--muted)}
+.tier-h{margin:0 0 12px;min-height:3em;line-height:1.6;max-width:72ch}
+.refs{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.refs a{font:500 13px var(--mono);color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 12px}
+.refs a:hover{border-color:var(--ink)}
 </style>
 </head>
 <body>
@@ -4862,7 +4884,7 @@ function storyAuto(box,btn){
 function stopStories(){ storyTimers.forEach(clearInterval); storyTimers=[]; document.querySelectorAll('[data-act="sAuto"]').forEach(b=>b.textContent='▶'); }
 function playerHTML(P){ return `
   <div class="stage-wrap">
-    <div id="${P.pre}Stage" class="stage"></div>
+    <div class="stage-box"><div id="${P.pre}Stage" class="stage"></div></div>
     <div class="cap"><span class="cap-n" id="${P.pre}Badge">1</span><p id="${P.pre}Msg" class="vz-msg" aria-live="polite"></p></div>
     <div class="vz-ctl">
       <button class="ib" data-act="pRestart" data-pl="${P.pre}" aria-label="Back to the start">⏮</button>
@@ -11346,6 +11368,177 @@ document.addEventListener("click", e=>{ const a = e.target.closest("[data-act]")
   if (LP.on){ LP.on = false; clearInterval(LP.timer); LP.ph = -1; }
   else { LP.on = true; LP.start = Date.now(); LP.ph = -1; clearInterval(LP.timer); LP.timer = setInterval(loopTick, 500); }
   render(); });
+
+/* ===================== Worst → best approaches ===================== */
+// id: [bruteTime, bruteSpace, betterName, betterHow, betterTime, betterSpace, bestName, bestTime, bestSpace]
+const APX = {
+"two-sum":["O(n²)","O(1)","Sort + two pointers","Sort (value, index) pairs, then move one pointer from each end: too small → move left up, too big → move right down.","O(n log n)","O(n)","Hash map of seen values","O(n)","O(n)"],
+"best-time-to-buy-and-sell-stock":["O(n²)","O(1)","","","","","Running minimum","O(n)","O(1)"],
+"contains-duplicate":["O(n²)","O(1)","Sort, then compare neighbours","After sorting, equal numbers sit next to each other, so one pass over neighbours finds a repeat.","O(n log n)","O(1)","Hash set","O(n)","O(n)"],
+"product-of-array-except-self":["O(n²)","O(1)","Prefix and suffix arrays","Build left[i] = product of everything before i and right[i] = product of everything after i; answer is left[i] × right[i].","O(n)","O(n)","Prefix pass + suffix pass in the output array","O(n)","O(1) extra"],
+"maximum-subarray":["O(n²)","O(1)","Prefix sums","Store running sums; any subarray sum is prefix[j] − prefix[i]. Still checks all pairs unless combined with a running minimum.","O(n²) → O(n)","O(n)","Kadane's algorithm","O(n)","O(1)"],
+"valid-anagram":["O(n log n)","O(n)","","","","","Count letters (array of 26)","O(n)","O(1)"],
+"group-anagrams":["O(n² · k)","O(n)","Sorted word as key","Sort each word's letters; anagrams share the same sorted key, group them in a map.","O(n · k log k)","O(n · k)","Letter-count key","O(n · k)","O(n · k)"],
+"top-k-frequent-elements":["O(n log n)","O(n)","Count + min-heap of size k","Count with a map, keep only the k most frequent in a small heap.","O(n log k)","O(n)","Count + bucket by frequency","O(n)","O(n)"],
+"longest-consecutive-sequence":["O(n³)","O(1)","Sort, then count runs","Sort and walk; consecutive numbers are now neighbours.","O(n log n)","O(1)","Hash set, start only at sequence beginnings","O(n)","O(n)"],
+"subarray-sum-equals-k":["O(n³)","O(1)","Prefix sums, all pairs","Precompute prefix sums so each subarray sum is one subtraction.","O(n²)","O(n)","Prefix sum + hash map of counts","O(n)","O(n)"],
+"valid-palindrome":["O(n)","O(n)","","","","","Two pointers from both ends","O(n)","O(1)"],
+"3sum":["O(n³)","O(1)","Hash set per first number","Fix one number, then solve two-sum on the rest with a set.","O(n²)","O(n)","Sort + two pointers","O(n²)","O(1) extra"],
+"container-with-most-water":["O(n²)","O(1)","","","","","Two pointers, move the shorter wall","O(n)","O(1)"],
+"move-zeroes":["O(n²)","O(1)","Copy to a new array","Write non-zeros into a new array, then pad with zeros.","O(n)","O(n)","Write pointer in place","O(n)","O(1)"],
+"longest-substring-without-repeating-characters":["O(n³)","O(k)","Check each start with a set","For each start, extend until a repeat, using a set.","O(n²)","O(k)","Sliding window + last-seen map","O(n)","O(k)"],
+"longest-repeating-character-replacement":["O(n² · 26)","O(26)","","","","","Sliding window + max frequency","O(n)","O(26)"],
+"minimum-window-substring":["O(n² · m)","O(m)","","","","","Sliding window + need/have counts","O(n + m)","O(m)"],
+"permutation-in-string":["O(n! )","O(n)","Sort every window","Sort each window of length m and compare with sorted s1.","O(n · m log m)","O(m)","Fixed window + 26 counts","O(n)","O(26)"],
+"valid-parentheses":["O(n²)","O(n)","","","","","Stack of open brackets","O(n)","O(n)"],
+"min-stack":["O(n) getMin","O(n)","","","","","Stack of (value, min so far)","O(1) per op","O(n)"],
+"daily-temperatures":["O(n²)","O(1)","","","","","Monotonic stack of waiting days","O(n)","O(n)"],
+"evaluate-reverse-polish-notation":["O(n²)","O(n)","","","","","Stack of numbers","O(n)","O(n)"],
+"binary-search":["O(n)","O(1)","","","","","Binary search","O(log n)","O(1)"],
+"search-in-rotated-sorted-array":["O(n)","O(1)","Find the pivot, then binary search","One binary search finds the rotation point, a second searches the right half.","O(log n)","O(1)","One binary search, pick the sorted half","O(log n)","O(1)"],
+"find-minimum-in-rotated-sorted-array":["O(n)","O(1)","","","","","Binary search toward the unsorted half","O(log n)","O(1)"],
+"koko-eating-bananas":["O(max · n)","O(1)","","","","","Binary search on the answer (speed)","O(n log max)","O(1)"],
+"reverse-linked-list":["O(n)","O(n)","Recursion","Reverse the rest, then hook the current node at the end. Uses the call stack.","O(n)","O(n)","Iterative, three pointers","O(n)","O(1)"],
+"merge-two-sorted-lists":["O((n+m) log(n+m))","O(n+m)","","","","","Dummy head + compare fronts","O(n + m)","O(1)"],
+"linked-list-cycle":["O(n)","O(n)","","","","","Slow and fast pointers","O(n)","O(1)"],
+"remove-nth-node-from-end-of-list":["O(n)","O(1)","","","","","Two pointers n apart, one pass","O(n)","O(1)"],
+"lru-cache":["O(n) per op","O(n)","","","","","Hash map + doubly linked list","O(1) per op","O(n)"],
+"maximum-depth-of-binary-tree":["O(n)","O(h)","","","","","DFS: 1 + max(left, right)","O(n)","O(h)"],
+"invert-binary-tree":["O(n)","O(n)","","","","","DFS swap children","O(n)","O(h)"],
+"diameter-of-binary-tree":["O(n²)","O(h)","","","","","One DFS returning height, track best","O(n)","O(h)"],
+"binary-tree-level-order-traversal":["O(n²)","O(n)","","","","","BFS with a queue, one level at a time","O(n)","O(n)"],
+"validate-binary-search-tree":["O(n²)","O(h)","In-order list then check sorted","An in-order walk of a BST is sorted; collect it and check.","O(n)","O(n)","DFS with (low, high) bounds","O(n)","O(h)"],
+"lowest-common-ancestor-of-a-binary-search-tree":["O(n)","O(n)","","","","","Walk down using BST order","O(h)","O(1)"],
+"kth-largest-element-in-an-array":["O(n log n)","O(1)","Min-heap of size k","Keep the k largest seen; the heap top is the answer.","O(n log k)","O(k)","Quickselect","O(n) average","O(1)"],
+"k-closest-points-to-origin":["O(n log n)","O(n)","Max-heap of size k","Keep k closest; evict the farthest.","O(n log k)","O(k)","Quickselect on distance","O(n) average","O(1)"],
+"merge-k-sorted-lists":["O(N log N)","O(N)","Merge lists one by one","Merge list 1 with 2, then with 3… repeated work.","O(N · k)","O(1)","Min-heap of list heads","O(N log k)","O(k)"],
+"task-scheduler":["O(time · 26)","O(26)","Max-heap simulation","Each cycle, run the most frequent tasks first.","O(n log 26)","O(26)","Counting formula","O(n)","O(26)"],
+"number-of-islands":["O((mn)²)","O(mn)","","","","","DFS/BFS flood fill","O(m · n)","O(m · n)"],
+"rotting-oranges":["O((mn)²)","O(1)","","","","","Multi-source BFS","O(m · n)","O(m · n)"],
+"clone-graph":["O(V + E)","O(V)","","","","","DFS + old→new map","O(V + E)","O(V)"],
+"course-schedule":["O(V · (V + E))","O(V + E)","","","","","Topological sort (Kahn's BFS)","O(V + E)","O(V + E)"],
+"pacific-atlantic-water-flow":["O((mn)²)","O(mn)","","","","","Reverse flood fill from both oceans","O(m · n)","O(m · n)"],
+"merge-intervals":["O(n²)","O(n)","","","","","Sort by start, merge neighbours","O(n log n)","O(n)"],
+"insert-interval":["O(n log n)","O(n)","","","","","One pass: before, overlap, after","O(n)","O(n)"],
+"non-overlapping-intervals":["O(2ⁿ)","O(n)","","","","","Sort by end, greedy keep","O(n log n)","O(1)"],
+"meeting-rooms-ii":["O(n²)","O(n)","Min-heap of end times","Sort by start; reuse a room if its earliest end ≤ new start.","O(n log n)","O(n)","Two sorted arrays sweep","O(n log n)","O(n)"],
+"subsets":["O(n · 2ⁿ)","O(n)","","","","","Backtracking: include or skip","O(n · 2ⁿ)","O(n)"],
+"permutations":["O(n · n!)","O(n)","","","","","Backtracking with a used set","O(n · n!)","O(n)"],
+"combination-sum":["O(cᵗ)","O(t)","","","","","Backtracking, reuse allowed, prune > target","O(cᵗ) pruned","O(t)"],
+"word-search":["O(m·n·4ᴸ)","O(L)","","","","","DFS with in-place marking","O(m·n·3ᴸ)","O(L)"],
+"climbing-stairs":["O(2ⁿ)","O(n)","Memoised recursion","Cache ways(n) so each n is solved once.","O(n)","O(n)","Two variables (Fibonacci)","O(n)","O(1)"],
+"house-robber":["O(2ⁿ)","O(n)","Memoised recursion","rob(i) = max(rob(i+1), nums[i] + rob(i+2)), cached.","O(n)","O(n)","Two variables","O(n)","O(1)"],
+"coin-change":["O(cᵃ)","O(a)","Memoised recursion","Cache the fewest coins for each amount.","O(a · c)","O(a)","Bottom-up DP table","O(a · c)","O(a)"],
+"longest-increasing-subsequence":["O(2ⁿ)","O(n)","DP: dp[i] = 1 + max over j < i","Each position looks back at all earlier smaller numbers.","O(n²)","O(n)","Patience sorting + binary search","O(n log n)","O(n)"],
+"word-break":["O(2ⁿ)","O(n)","Memoised recursion","Cache whether each suffix can be split.","O(n² · m)","O(n)","Bottom-up DP over prefixes","O(n² · m)","O(n)"],
+"implement-trie-prefix-tree":["O(n · L) search","O(n · L)","","","","","Trie of child maps","O(L) per op","O(total letters)"],
+"redundant-connection":["O(E · (V + E))","O(V)","","","","","Union-Find with path compression","O(E · α(V))","O(V)"],
+"network-delay-time":["O(V · E)","O(V)","Bellman-Ford","Relax every edge V−1 times.","O(V · E)","O(V)","Dijkstra with a min-heap","O(E log V)","O(V + E)"],
+"course-schedule-ii":["O(V · (V + E))","O(V + E)","","","","","Topological sort (Kahn's BFS)","O(V + E)","O(V + E)"],
+"unique-paths":["O(2^(m+n))","O(m + n)","Memoised recursion","Cache paths(r, c).","O(m · n)","O(m · n)","1-D DP row","O(m · n)","O(n)"],
+"longest-common-subsequence":["O(2ⁿ)","O(n)","Memoised recursion","Cache lcs(i, j).","O(n · m)","O(n · m)","Bottom-up DP (two rows)","O(n · m)","O(m)"],
+"edit-distance":["O(3ⁿ)","O(n)","Memoised recursion","Cache dist(i, j).","O(n · m)","O(n · m)","Bottom-up DP table","O(n · m)","O(m)"],
+"jump-game":["O(2ⁿ)","O(n)","DP: can I reach i?","Mark reachable positions from left to right.","O(n²)","O(n)","Greedy farthest reach","O(n)","O(1)"],
+"find-median-from-data-stream":["O(n log n) per median","O(n)","Insert into a sorted list","Binary search the position, shift to insert.","O(n) per add","O(n)","Two heaps","O(log n) add, O(1) median","O(n)"],
+"sliding-window-maximum":["O(n · k)","O(1)","Max-heap with lazy removal","Push (value, index); pop tops that left the window.","O(n log n)","O(n)","Monotonic deque","O(n)","O(k)"],
+"single-number":["O(n²)","O(1)","Hash map counts","Count each number; return the one with count 1.","O(n)","O(n)","XOR everything","O(n)","O(1)"],
+"counting-bits":["O(n log n)","O(1)","","","","","DP: bits[i] = bits[i >> 1] + (i & 1)","O(n)","O(1) extra"],
+"rotate-image":["O(n²)","O(n²)","","","","","Transpose, then reverse rows","O(n²)","O(1)"],
+"spiral-matrix":["O(m · n)","O(m · n)","","","","","Four shrinking boundaries","O(m · n)","O(1) extra"],
+};
+const PAT_BASICS = {
+"Big-O and arrays":"An array is a row of boxes numbered 0, 1, 2… Reading box i is instant. Big-O counts how the number of steps grows with n, the input size: O(n) means one look per item, O(n²) means every item against every other.",
+"Hashing":"A hash map (Go: map[K]V, Python: dict) stores key → value and answers \"is this key here?\" in about one step. A hash set stores just keys. Trading a little memory for that instant lookup is the most common speed-up there is.",
+"Two pointers":"Two index variables walk the array, usually from both ends towards each other, or one fast and one slow. Each step moves one pointer, so the whole walk is O(n). Often needs the array sorted first.",
+"Sliding window":"A window is a range [left, right] inside an array or string. Grow it by moving right; shrink it by moving left when a rule breaks. Each index enters and leaves once, so it is O(n).",
+"Stack":"A stack is a pile: push on top, pop from the top (last in, first out). Use it when the most recent unfinished thing must be handled first, like matching brackets.",
+"Binary search":"On sorted data, look at the middle: the answer is either left or right of it, so you throw away half every step. 1,000,000 items take only ~20 looks: O(log n).",
+"Linked list":"Each node holds a value and a pointer to the next node. No numbered boxes, so you walk from the head. Most tricks are about re-pointing next carefully without losing the rest of the list.",
+"Trees":"A tree node has a value and up to two children (left, right). Recursion fits naturally: solve for the left subtree, solve for the right, combine. h is the height of the tree.",
+"Heap":"A heap always hands you the smallest (min-heap) or largest (max-heap) item in O(1), and adding or removing costs O(log n). Perfect for \"top k\" and \"next earliest\" questions.",
+"Graphs (BFS/DFS)":"A graph is nodes joined by edges (a grid is a graph too). DFS goes deep first using recursion or a stack; BFS goes level by level using a queue. Mark nodes visited so you never loop forever.",
+"Intervals":"An interval is [start, end]. Sorting by start (or end) lines them up so overlaps sit next to each other. Two intervals overlap when one starts before the other ends.",
+"Backtracking":"Build an answer one choice at a time; after exploring a choice, undo it and try the next. It is a careful way to try every possibility, cutting branches that cannot work.",
+"1-D dynamic programming":"If the answer for n can be built from answers to smaller inputs, store those smaller answers instead of recomputing them. Write the rule (recurrence) first, then fill a table from small to large.",
+"Tries":"A trie is a tree of letters: each path from the root spells a prefix. Looking up a word of length L takes L steps no matter how many words are stored.",
+"Union-Find":"Union-Find keeps groups. find(x) returns x's group leader; union(a, b) merges two groups. With path compression both are nearly O(1).",
+"Advanced graphs":"Weighted graphs need Dijkstra (always expand the closest unvisited node, using a min-heap). Dependency orders need topological sort (repeatedly take nodes with no remaining prerequisites).",
+"2-D dynamic programming":"Same idea as 1-D DP, but the state has two indexes, like (row, col) or (i in word1, j in word2). Fill a grid where each cell uses its neighbours above, left or diagonal.",
+"Greedy":"Greedy makes the locally best choice at each step and never looks back. It only works when you can argue that the local choice never hurts the final answer.",
+"Two heaps":"Keep the smaller half of numbers in a max-heap and the larger half in a min-heap. Their tops sit right at the middle, so the median is always one look away.",
+"Monotonic deque":"A deque lets you add or remove at both ends. Keep it ordered (e.g. decreasing) by dropping items that can never be the answer; the front is then always the best.",
+"Bit manipulation":"Numbers are bits. XOR (^) flips bits and cancels equal numbers (a ^ a = 0). Shifting right (>> 1) halves a number; & 1 reads its last bit.",
+"Matrix":"A matrix is an array of rows: m[r][c]. Many matrix tricks are about walking indexes carefully: transposing swaps m[r][c] with m[c][r].",
+};
+const AP = mkPlayer("ap"); PLAYERS.ap = AP; AP.tier = 2; AP.pid = null;
+const nOf = s => { const m = String(s).match(/n²|n³|2ⁿ|n!|log n|n log n|O\(n\)/); return m ? m[0] : ""; };
+function costOf(T, n){ T = String(T);
+  if (/n!|2\^|2ⁿ|3ⁿ|cᵗ|cᵃ|4ᴸ|3ᴸ/.test(T)) return Math.min(1e12, Math.pow(2, Math.min(40, n/25)));
+  if (/n³/.test(T)) return n*n*n; if (/n²|mn\)²|· n\)|n · k|V · E|n · m|m · n|max · n/.test(T)) return n*n;
+  if (/log/.test(T) && /n/.test(T.replace(/log n/g,""))) return n*Math.log2(n); if (/log/.test(T)) return Math.log2(n);
+  return n; }
+function firstArray(obj){ if (Array.isArray(obj) && obj.every(x=>typeof x!=="object")) return obj; if (obj && typeof obj==="object") for (const v of Object.values(obj)){ const a = firstArray(v); if (a) return a; } if (typeof obj==="string" && obj.length<=14) return obj.split(""); return null; }
+function bruteFrames(id){
+  const f = rec(), X = APX[id], P = PROBLEMS[id], B = BEGIN[id]||{};
+  let arr = firstArray(JSON.parse(JSON.stringify(P.input))); if (arr && arr.length>8) arr = arr.slice(0,8);
+  f(`Worst case first: ${B.brute || "try every possibility and check each one."}`, ...(arr?[A(arr,{title:'input'})]:[]));
+  if (arr && arr.length>1 && /n²|n³/.test(X[0])){ let checks = 0;
+    for (let i=0;i<arr.length && checks<10;i++) for (let j=i+1;j<arr.length && checks<10;j++){ checks++;
+      f(`Check pair (${i}, ${j}): ${arr[i]} with ${arr[j]}. Every pair gets checked, one by one.`, A(arr,{title:'nested loops',c:{[i]:'a',[j]:'b'},p:{i,j}}), V({checks})); }
+    const n = arr.length; f(`For just ${n} items that is ${n*(n-1)/2} checks. For 10,000 items it is about 50 million.`, A(arr,{title:'nested loops'}), V({checks:n*(n-1)/2,'n = 10,000':'≈ 50,000,000'}));
+  } else {
+    [10,100,1000].forEach(n=>f(`With n = ${n.toLocaleString()} items the brute force does about ${Math.round(costOf(X[0],n)).toLocaleString()} steps (${X[0]}).`, V({n, steps:Math.round(costOf(X[0],n)).toLocaleString()})));
+  }
+  f(`Time ${X[0]}, extra space ${X[1]}. Correct, but too slow once the input grows. Next: remove the repeated work.`);
+  return f.out;
+}
+function raceFrames(id, upto){
+  const f = rec(), X = APX[id], tiers = [["Brute force",X[0]]].concat(X[2]?[[X[2],X[4]]]:[]).concat([[X[6],X[7]]]).slice(0, upto+1);
+  const n = 1000, cost = tiers.map(t=>Math.max(1, costOf(t[1], n))), mx = Math.max(...cost);
+  const lab = tiers.map(t=>t[1]);
+  for (let k=1;k<=4;k++) f(k<4 ? `Race at n = 1,000: how many steps does each approach need?` : `Brute force needs ~${Math.round(cost[0]).toLocaleString()} steps; ${tiers.at(-1)[0]} needs ~${Math.round(cost.at(-1)).toLocaleString()}.`,
+    A(cost.map(c=>Math.round(c*k/4)),{bars:1,lab,title:'steps for n = 1,000 (relative)',c:{[tiers.length-1]:k===4?'ok':'a'}}));
+  return f.out;
+}
+function apFrames(id, tier){
+  if (tier===0) return bruteFrames(id);
+  if (tier===1){ const X = APX[id]; const f = rec(); f(`Better: ${X[2]}. ${X[3]}`); f(`Time ${X[4]}, extra space ${X[5]}. Faster than brute force, but there is still a smarter way.`); return f.out.concat(raceFrames(id,1)); }
+  return PROBLEMS[id].gen(JSON.parse(JSON.stringify(PROBLEMS[id].input)));
+}
+function apSelect(id, tier){ AP.pid = id; AP.tier = tier; pStop(AP); AP.i = 0; AP.err = ""; AP.fresh = true; try { AP.frames = apFrames(id, tier); } catch(e){ AP.frames = []; AP.err = "Couldn't build this animation."; } }
+function ladderHTML(id){
+  const X = APX[id]; if (!X) return "";
+  if (AP.pid !== id) apSelect(id, 0);
+  const B = BEGIN[id]||{}, P = PROBLEMS[id], p = PBY[id], pt = PATTERNS[p.pi];
+  const tiers = [{n:"Brute force", h:B.brute||"Try every possibility.", T:X[0], S:X[1]}];
+  if (X[2]) tiers.push({n:X[2], h:X[3], T:X[4], S:X[5]});
+  tiers.push({n:X[6], h:B.aha||P.idea||"", T:X[7], S:X[8]});
+  const tierIdx = i => (i===tiers.length-1 ? 2 : i);
+  const q = encodeURIComponent(p.name);
+  return `<div class="basics"><span class="plain-l">Basics first · ${esc(pt.name)}</span><p>${inline(PAT_BASICS[pt.name]||pt.idea||"")}</p></div>
+  <div class="tiers" role="tablist">${tiers.map((t,i)=>`<button class="tier${tierIdx(i)===AP.tier?" on":""}" role="tab" aria-selected="${tierIdx(i)===AP.tier}" data-act="apTier" data-t="${tierIdx(i)}" data-id="${id}">
+    <span class="tier-k">${i===0?"Worst":i===tiers.length-1?"Best":"Better"}</span><b>${esc(t.n)}</b><span class="tier-c">${esc(t.T)} time · ${esc(t.S)} space</span></button>`).join("")}</div>
+  <p class="tier-h">${inline(tiers.find((_,i)=>tierIdx(i)===AP.tier)?.h||"")}</p>
+  ${playerHTML(AP)}
+  <div class="refs"><span class="plain-l">Read and watch more</span>
+    <a href="https://leetcode.com/problems/${p.slug}/" target="_blank" rel="noopener">LeetCode ↗</a>
+    <a href="https://www.google.com/search?q=${q}+site%3Ageeksforgeeks.org" target="_blank" rel="noopener">GeeksforGeeks ↗</a>
+    <a href="https://www.google.com/search?q=${q}+site%3Atakeuforward.org" target="_blank" rel="noopener">Striver (takeUforward) ↗</a>
+    <a href="https://www.youtube.com/results?search_query=${q}+brute+better+optimal" target="_blank" rel="noopener">Video walkthroughs ↗</a></div>`;
+}
+document.addEventListener("click", e=>{ const a = e.target.closest("[data-act]"); if (!a || a.dataset.act!=="apTier") return;
+  apSelect(a.dataset.id, +a.dataset.t); render(); document.getElementById("apStage")?.closest(".ls")?.scrollIntoView({block:"start"}); });
+(function(){ const base = viewViz; viewViz = function(){ let v = base(); const id = VZ.id;
+  if (VZ.mode==='deck' || !APX[id]) return v;
+  const marker = '<li class="ls"><span class="ls-n">3</span>';
+  const i = v.indexOf(marker); if (i<0) return v;
+  return v.slice(0,i) + `<li class="ls"><span class="ls-n">◆</span><div class="ls-b"><h3>Worst to best, step by step</h3><p class="quiet">Start with the slow idea anyone would try, see why it is slow, then watch each improvement.</p>${ladderHTML(id)}</div></li>` + v.slice(i); }; })();
+(function(){ const base = afterRender; afterRender = function(){ base(); if (tab==='viz' && AP.frames.length && document.getElementById('apStage')){ AP.fresh = true; pDraw(AP); } else pStop(AP); }; })();
+/* fixed-size player: content scales to fit, the page never jumps */
+(function(){ const base = pDraw; pDraw = function(P){ base(P); const st = $p(P,'Stage'); if (!st) return; const box = st.parentElement;
+  if (!box || !(box.classList.contains('stage-box')||box.classList.contains('cm-stagewrap'))) return;
+  st.style.transform = 'none'; const sw = st.scrollWidth, sh = st.scrollHeight, bw = box.clientWidth, bh = box.clientHeight;
+  const k = Math.min(1, bw/Math.max(1,sw), bh/Math.max(1,sh)); st.style.transform = `scale(${k})`; }; })();
 
 /* ---------- boot ---------- */
 load();
