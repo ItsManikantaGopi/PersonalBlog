@@ -1233,6 +1233,17 @@ html[data-site] .scene-t{min-height:4.5em}
   .site-menu nav a::after{content:"→"}
   .site-menu nav a[aria-current]{color:var(--ink)}
 }
+
+/* algorithm code panel */
+.alg-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:stretch}
+.codex-w{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:20px;background:var(--canvas);overflow:hidden;min-height:0}
+.codex-h{padding:12px 16px;border-bottom:1px solid var(--line)}
+.codex{margin:0;padding:10px 0;font:12.5px/1.65 var(--mono);overflow:auto;flex:1;max-height:520px;color:var(--muted)}
+.codex .cxl{display:block;padding:0 14px 0 0;white-space:pre;border-left:2px solid transparent;transition:background .25s,color .25s}
+.codex .cxl i{display:inline-block;width:34px;text-align:right;margin-right:12px;font-style:normal;color:#4A4A4A;user-select:none}
+.codex .cxl.on{background:rgba(250,250,250,.10);color:var(--ink);border-left-color:var(--ink)}
+.codex .cxl.on i{color:var(--ink)}
+@media (max-width:1100px){.alg-grid{grid-template-columns:1fr}.codex{max-height:300px}}
 </style>
 </head>
 <body>
@@ -11744,6 +11755,199 @@ document.addEventListener("click", e=>{ const a = e.target.closest("[data-act]")
   const top = document.getElementById("svStage")?.closest(".ls"); const y = top ? top.getBoundingClientRect().top : null;
   svSelect(+a.dataset.i, +a.dataset.k); render(); const n = document.getElementById("svStage")?.closest(".ls"); if (n && y!==null) window.scrollBy(0, n.getBoundingClientRect().top - y); });
 (function(){ const base = afterRender; afterRender = function(){ base(); if (tab==='sysd' && SV.frames.length && document.getElementById('svStage')){ SV.fresh = true; pDraw(SV); } else pStop(SV); }; })();
+
+/* ===================== Code for every algorithm step ===================== */
+// rec2: like rec(), but every frame also records which code lines run in that step
+function rec2(){ const f = rec(); const g = (lines, msg, ...p)=>{ f(msg, ...p); g.lines.push(lines); }; g.lines = []; Object.defineProperty(g, "out", {get(){ const o = f.out; o.lines = g.lines; return o; }}); return g; }
+const RL_CODE = [
+`type Bucket struct {
+    tokens float64
+    last   time.Time
+}
+const capacity, rate = 4.0, 1.0 // tokens, tokens per second
+
+func (b *Bucket) Allow(now time.Time) bool {
+    elapsed := now.Sub(b.last).Seconds()
+    b.tokens = math.Min(capacity, b.tokens+elapsed*rate) // refill
+    b.last = now
+    if b.tokens >= 1 {
+        b.tokens-- // spend one token
+        return true // 200 OK
+    }
+    return false // 429 Too Many Requests
+}`,
+`type Leaky struct {
+    queue chan Request // buffered: capacity 4
+}
+
+func (l *Leaky) Add(r Request) bool {
+    select {
+    case l.queue <- r: // room in the queue
+        return true
+    default: // queue full: drop it
+        return false
+    }
+}
+
+func (l *Leaky) Run() {
+    tick := time.NewTicker(time.Second) // 1 per second
+    for range tick.C {
+        r := <-l.queue
+        handle(r) // steady output
+    }
+}`,
+`func Allow(rdb *redis.Client, user string, now time.Time) bool {
+    key := fmt.Sprintf("rl:%s:%d", user, now.Unix()/60) // one key per minute
+    n := rdb.Incr(ctx, key).Val()
+    if n == 1 {
+        rdb.Expire(ctx, key, time.Minute)
+    }
+    return n <= 3
+}`,
+`func Allow(log []int, now int) ([]int, bool) {
+    keep := log[:0]
+    for _, t := range log {
+        if t > now-60 { // still inside the last 60s
+            keep = append(keep, t)
+        }
+    }
+    if len(keep) < 3 {
+        return append(keep, now), true
+    }
+    return keep, false
+}`,
+`func Allow(prev, curr int, elapsed float64) bool {
+    overlap := 1 - elapsed/60 // share of last window still inside
+    estimate := float64(curr) + float64(prev)*overlap
+    return estimate < 10
+}`];
+SDA[3][0].code = RL_CODE[0]; SDA[3][0].gen = function(){ const f=rec2(); let tk=4; const jar=()=>A([0,1,2,3].map(i=>i<tk?'🪙':''),{title:'bucket (capacity 4, +1 token per second)'});
+  f([1,2,3,5],'Each user stores just two numbers: tokens and the last refill time. The bucket starts full.',jar(),V({time:'0s',tokens:tk}));
+  for(let r=1;r<=5;r++){ if(tk>0){ tk--; f([8,9,11,12,13],`Request ${r} at 0s: no time passed, so no refill. tokens ≥ 1, spend one. Allowed.`,jar(),V({time:'0s',tokens:tk,result:'200 OK'})); }
+    else f([11,15],`Request ${r} at 0s: tokens is 0, the if fails. Return false: 429.`,jar(),V({time:'0s',tokens:tk,result:'429'})); }
+  tk=2; f([8,9,10],'Next request at 2s: elapsed = 2, so tokens = min(4, 0 + 2×1) = 2.',jar(),V({time:'2s',elapsed:2,tokens:tk}));
+  tk--; f([11,12,13],'Spend one: allowed. Refill happens lazily on each request; no background timer needed.',jar(),V({time:'2s',tokens:tk,result:'200 OK'})); return f.out; };
+SDA[3][1].code = RL_CODE[1]; SDA[3][1].gen = function(){ const f=rec2(); let q=[]; const Q=()=>A([0,1,2,3].map(i=>q[i]||''),{title:'queue (capacity 4), leaks 1 per second'});
+  f([1,2],'The bucket is a buffered channel that holds 4 requests. A burst of 6 arrives.',Q(),V({incoming:6}));
+  for(let r=1;r<=6;r++){ if(q.length<4){ q.push('r'+r); f([5,6,7,8],`r${r}: the send succeeds because there is room. Queued.`,Q(),V({queued:q.length})); } else f([6,9,10],`r${r}: channel full, so select takes default. Dropped.`,Q(),V({queued:q.length,dropped:'r'+r})); }
+  for(let s=1;s<=2;s++){ const out=q.shift(); f([15,16,17,18],`Tick ${s}: take one request off the queue and handle it. Output is exactly 1 per second.`,Q(),V({processed:out,queued:q.length})); }
+  f([15],'Trade-off: the backend sees a smooth rate, but bursts wait in the queue.',Q()); return f.out; };
+SDA[3][2].code = RL_CODE[2]; SDA[3][2].gen = function(){ const f=rec2(); const W=(a,b)=>M([['rl:u42:0 (0:00–0:59)',a+' / 3'],['rl:u42:1 (1:00–1:59)',b+' / 3']],{title:'Redis keys (limit 3 per minute)'});
+  f([1,2],'The key is user + minute number: now / 60. Everyone in the same minute shares one counter.',W(0,0));
+  f([3,4,5,7],'Requests at 0:58, 0:59, 0:59: INCR gives 1, 2, 3. The first one also sets a 1-minute expiry. All ≤ 3: allowed.',W(3,0),R(['0:58 ✓','0:59 ✓','0:59 ✓']));
+  f([2],'At 1:00, now/60 changes, so the key changes. A fresh counter starts at 0.',W(3,0));
+  f([2,3,7],'Requests at 1:00, 1:00, 1:01: INCR gives 1, 2, 3. Allowed again.',W(3,3),R(['1:00 ✓','1:00 ✓','1:01 ✓']));
+  f([7],'6 requests in 3 seconds passed a 3-per-minute limit. That is the edge problem.',W(3,3),V({'requests in 3s':6,limit:'3/min'})); return f.out; };
+SDA[3][3].code = RL_CODE[3]; SDA[3][3].gen = function(){ const f=rec2(); let log=[]; const L=()=>A(log.length?log:[],{title:'log of request times (limit 3 per 60s)'});
+  [10,30,50,55,75].forEach(t=>{ log=log.filter(x=>x>t-60); const ok=log.length<3; if(ok) log.push(t);
+    f(ok?[2,3,4,5,8,9]:[3,4,8,11],`Request at ${t}s: keep only times after ${t-60}s. ${ok?`Fewer than 3 kept, so append ${t} and allow.`:'3 are still inside the window, so reject.'}`,L(),V({now:t+'s',inWindow:log.length,result:ok?'200':'429'})); });
+  f([1],'The window slides with each request, so there is no edge problem. Cost: every timestamp is stored (a Redis sorted set in production).',L()); return f.out; };
+SDA[3][4].code = RL_CODE[4]; SDA[3][4].gen = function(){ const f=rec2();
+  f([1],'Limit: 10 per minute. Store only two counters: previous minute (8) and current minute (3).',V({previous:8,current:3}));
+  f([2],'We are 15 seconds into this minute: overlap = 1 − 15/60 = 0.75 of the previous minute still counts.',V({elapsed:'15s',overlap:0.75}));
+  f([3],'estimate = 3 + 8 × 0.75 = 9.',V({estimate:9}));
+  f([4],'9 < 10, so allow (and increment current to 4).',V({previous:8,current:4,result:'200 OK'}));
+  f([3,4],'Next request: 4 + 6 = 10, not < 10, so reject with 429.',V({estimate:10,result:'429'})); return f.out; };
+
+/* ---- distributed cache: eviction algorithms ---- */
+SDA[15] = [
+ {n:"LRU (least recently used)", when:"Evict what nobody touched for the longest time. The default for most caches (Redis allkeys-lru).", cost:"O(1) get/put · map + linked list",
+  story:{t:"The Desk Drawer",cast:[["🗄️","A drawer with room for 3 files","cache capacity"],["⬆️","A file you just used goes on top","move to front"],["⬇️","The bottom file gets thrown out","evict least recent"]],
+   sc:[["🗄️ A B C","Three files fit in the drawer."],["⬆️ A","You use A, so it goes back on top."],["📄 D","A new file D arrives; the drawer is full."],["🗑️ B","The file at the bottom (B, untouched longest) is thrown out."]],hook:"Use it, move it to the top; full drawer, drop the bottom."},
+  code:`type LRU struct {
+    cap   int
+    ll    *list.List // front = most recently used
+    items map[string]*list.Element
+}
+
+func (c *LRU) Get(k string) (int, bool) {
+    if e, ok := c.items[k]; ok {
+        c.ll.MoveToFront(e) // mark as recently used
+        return e.Value.(*entry).v, true
+    }
+    return 0, false
+}
+
+func (c *LRU) Put(k string, v int) {
+    if e, ok := c.items[k]; ok { e.Value.(*entry).v = v; c.ll.MoveToFront(e); return }
+    if c.ll.Len() == c.cap {
+        old := c.ll.Back() // least recently used
+        c.ll.Remove(old); delete(c.items, old.Value.(*entry).k)
+    }
+    c.items[k] = c.ll.PushFront(&entry{k, v})
+}`,
+  gen(){ const f=rec2(); let l=[]; const S=(c)=>A(l.slice(),{title:'list: most recent → least recent',c});
+   ['C','B','A'].forEach(k=>{ l.unshift(k); f([15,21],`Put ${k}: push it to the front of the list and remember its node in the map.`,S({0:'a'})); });
+   l=['A','C','B']; f([7,8,9,10],'Get A: found in the map, so move its node to the front. O(1).',S({0:'a'}));
+   f([15,17,18,19],'Put D: the cache is full (3). The back of the list is B, the least recently used. Remove it.',S({2:'bad'}));
+   l=['D','A','C']; f([21],'Push D to the front.',S({0:'a'}));
+   f([7,12],'Get B: not in the map any more. Miss: read it from the database.',S()); return f.out; }},
+ {n:"LFU (least frequently used)", when:"Evict what is used least often. Better when a few keys are always hot; slow to forget old favourites.", cost:"O(1) with frequency lists (simple version below is O(n) evict)",
+  story:{t:"The Library Shelf",cast:[["📚","A shelf with room for 3 books","cache capacity"],["🔢","A borrow count on each book","frequency"],["🗑️","The least-borrowed book leaves","evict least frequent"]],
+   sc:[["📚 A B C","Three books on the shelf."],["🔢 A×3 B×2 C×1","A is borrowed 3 times, B twice, C once."],["📕 D","A new book D needs space."],["🗑️ C","C, borrowed least, leaves the shelf."]],hook:"Count every use; when full, drop the least used."},
+  code:`type LFU struct {
+    cap  int
+    val  map[string]int
+    freq map[string]int
+}
+
+func (c *LFU) Get(k string) (int, bool) {
+    v, ok := c.val[k]
+    if ok { c.freq[k]++ } // used once more
+    return v, ok
+}
+
+func (c *LFU) Put(k string, v int) {
+    if _, ok := c.val[k]; !ok && len(c.val) == c.cap {
+        victim, min := "", math.MaxInt
+        for key, f := range c.freq { // find the least used
+            if f < min { victim, min = key, f }
+        }
+        delete(c.val, victim); delete(c.freq, victim)
+    }
+    c.val[k] = v; c.freq[k]++
+}`,
+  gen(){ const f=rec2(); let fr={}; const S=(hl)=>M(Object.entries(fr).map(([k,v])=>[k,'used '+v+'×']),{title:'key → use count',hl});
+   ['A','B','C'].forEach(k=>{ fr[k]=1; f([13,21],`Put ${k}: store it with a use count of 1.`,S(k)); });
+   fr.A=3; f([7,8,9],'Get A twice: its count rises to 3.',S('A'));
+   fr.B=2; f([7,8,9],'Get B once: its count is 2.',S('B'));
+   f([13,14,15,16,17],'Put D: cache full. Scan the counts for the smallest: C has 1.',S('C'));
+   delete fr.C; fr.D=1; f([19,21],'Delete C, then store D with count 1.',S('D'));
+   f([16],'Production LFU keeps keys grouped by count (a list per count) so eviction is O(1) instead of a scan.',S()); return f.out; }},
+ {n:"FIFO (first in, first out)", when:"Evict the oldest entry regardless of use. Simplest; fine when every entry is equally likely to be reused.", cost:"O(1) · a queue",
+  story:{t:"The Bakery Counter",cast:[["🥐","3 trays on the counter","cache capacity"],["⏳","The oldest tray","first in"],["🗑️","Removed first, even if popular","first out"]],
+   sc:[["🥐 A B C","Trays A, B, C are put out in that order."],["😋 A","Customers love A."],["🥖 D","A fresh tray D arrives; no room."],["🗑️ A","The oldest tray A is removed, even though it was popular."]],hook:"Oldest out first, no matter how popular."},
+  code:`type FIFO struct {
+    cap   int
+    order []string // oldest first
+    val   map[string]int
+}
+
+func (c *FIFO) Put(k string, v int) {
+    if _, ok := c.val[k]; !ok {
+        if len(c.order) == c.cap {
+            oldest := c.order[0] // first in
+            c.order = c.order[1:]
+            delete(c.val, oldest) // first out
+        }
+        c.order = append(c.order, k)
+    }
+    c.val[k] = v
+}`,
+  gen(){ const f=rec2(); let o=[]; const S=(c)=>A(o.slice(),{title:'order: oldest → newest',c});
+   ['A','B','C'].forEach(k=>{ o.push(k); f([7,8,14,16],`Put ${k}: new key, append it to the end.`,S({[o.length-1]:'a'})); });
+   f([16],'Get A many times: FIFO does not track use, so the order does not change.',S({0:'b'}));
+   f([7,8,9,10],'Put D: full. The oldest key is at the front: A.',S({0:'bad'}));
+   o=['B','C','D']; f([11,12,14],'Remove A and append D. A popular key was evicted: this is FIFO\'s weakness.',S({2:'a'})); return f.out; }},
+];
+/* code panel next to the player, highlighted per step */
+(function(){ const base = sdAlgosHTML; sdAlgosHTML = function(i){ let h = base(i); const a = SDA[i] && SDA[i][SV.k]; if (!h || !a || !a.code) return h;
+  const code = `<div class="codex-w"><div class="codex-h"><span class="plain-l">Go code · lines light up as each step runs</span></div><pre class="codex" id="svCode">${a.code.split("\n").map((l,n)=>`<span class="cxl" data-n="${n+1}"><i>${n+1}</i>${esc(l)||" "}</span>`).join("")}</pre></div>`;
+  return h.replace(playerHTML(SV), `<div class="alg-grid">${playerHTML(SV)}${code}</div>`); }; })();
+(function(){ const base = pDraw; pDraw = function(P){ base(P); if (P!==SV) return; const box = document.getElementById("svCode"); if (!box) return;
+  const ln = (P.frames.lines||[])[P.i] || []; let first = null;
+  box.querySelectorAll(".cxl").forEach(el=>{ const on = ln.includes(+el.dataset.n); el.classList.toggle("on", on); if (on && !first) first = el; });
+  if (first) box.scrollTop = Math.max(0, first.offsetTop - box.clientHeight/3); }; })();
 
 /* ---------- boot ---------- */
 load();
