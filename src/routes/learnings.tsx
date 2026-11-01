@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { profile } from "@/data/portfolio";
+import { MobileNav } from "@/components/mobile-nav";
 
 const siteUrl = profile.site;
 const pageTitle = "Learnings & resources — Manikanta Gopi";
@@ -100,18 +101,21 @@ function Learnings() {
           <a href="/" className="shrink-0 font-mono text-sm font-medium tracking-tight">
             <span className="text-primary">~/</span>manikanta
           </a>
-          <nav className="flex gap-5 overflow-x-auto">
+          <nav className="hidden gap-5 md:flex">
             {nav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 aria-current={item.current ? "page" : undefined}
-                className={`${item.current ? "text-foreground" : "hidden text-muted-foreground md:inline"} font-mono text-[11px] uppercase tracking-widest transition-colors hover:text-foreground`}
+                className={`${item.current ? "text-foreground" : "text-muted-foreground"} font-mono text-[11px] uppercase tracking-widest transition-colors hover:text-foreground`}
               >
                 {item.label}
               </a>
             ))}
           </nav>
+          <MobileNav
+            items={[{ href: "/", label: "Home" }, ...nav, { href: "/resume.pdf", label: "Resume" }]}
+          />
         </div>
       </header>
 
