@@ -1277,6 +1277,37 @@ details.legend-d{display:none}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.4);animation:capIn .3s ease}
 @media (max-width:600px){.gh-tools .btn{font-size:12px;padding:0 10px}}
 </style>
+
+<style id="ui-wide">
+/* full-width layout: use the whole screen, keep a comfortable gutter */
+.wrap, html[data-site] .wrap{max-width:none!important;padding-left:clamp(16px,2.6vw,48px)!important;padding-right:clamp(16px,2.6vw,48px)!important}
+.vz{grid-template-columns:clamp(240px,17vw,300px) minmax(0,1fr);gap:clamp(20px,2vw,36px);transition:grid-template-columns .25s ease}
+.vz-main .ls-b > p, .vz-main .vz-head p, .page-h p{max-width:88ch}
+/* side list collapse */
+.side-tog{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:8px;width:100%;margin:0 0 10px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--muted);font:500 12.5px var(--sans,inherit);cursor:pointer;text-align:left}
+.side-tog:hover{color:var(--ink);border-color:var(--ink)}
+.side-tog svg{flex:none}
+.side-tog .k{margin-left:auto;font:11px var(--mono);opacity:.6;border:1px solid var(--line);border-radius:4px;padding:0 5px}
+html.side-off .vz{grid-template-columns:44px minmax(0,1fr)}
+html.side-off .vz-list{overflow:visible;padding-right:0}
+html.side-off .vz-list > :not(.side-tog){display:none!important}
+html.side-off .side-tog{writing-mode:vertical-rl;width:44px;height:auto;padding:12px 0;justify-content:flex-start;gap:10px}
+html.side-off .side-tog svg{transform:rotate(180deg)}
+html.side-off .side-tog .k{display:none}
+html.side-off .side-tog .t-hide{display:none}
+html:not(.side-off) .side-tog .t-show{display:none}
+/* today: the two panels sit side by side instead of leaving the right half empty */
+.today-cols{columns:auto!important;display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:20px;align-items:start}
+.today-cols>.panel{margin-bottom:0!important}
+@media (max-width:980px){.today-cols{grid-template-columns:minmax(0,1fr)}}
+@media (min-width:821px){
+  .ag-grid{width:100%}
+  .ag-grid > .ag-w{flex:1 1 0;min-width:0}
+  .ag-grid .ag-c{width:100%;height:auto;aspect-ratio:1;max-height:22px}
+}
+.hero>*, html[data-site] .hero>*{max-width:none!important;padding-left:0!important;padding-right:0!important}
+.hero .gh-bar{padding:0!important}
+</style>
 </head>
 <body>
 <header class="site-head"><div class="wrap">
@@ -4897,7 +4928,7 @@ function viewDeck(){
   const w=VZ.deckWeek||0;
   const probs=PROBS.filter(p=>!w||p.w===w);
   const card=(front,emoji,sub,title,hook)=>`<button class="card story-card" aria-expanded="false" data-act="flip"><div class="q"><span class="deck-e" aria-hidden="true">${emoji}</span><span>${esc(front)}</span><span class="note">${esc(sub)}</span></div><div class="a"><b>📖 ${esc(title)}</b><br>🧠 ${esc(hook)}</div></button>`;
-  return `<div class="vz"><aside class="vz-list" aria-label="Problems">${vizList()}</aside><section class="vz-main">
+  return `<div class="vz"><aside class="vz-list" aria-label="Problems">${sideTog()}${vizList()}</aside><section class="vz-main">
     <select class="vz-sel" id="vzSel" aria-label="Choose a problem"><option value="__deck" selected>🧠 Memory deck</option>${vizOpts()}</select>
     <h2 class="vz-title">🧠 Memory deck</h2>
     <p class="big">Look at the problem, say its story and memory line out loud, then tap to check. Do this on Sundays and before a big day.</p>
@@ -4957,7 +4988,7 @@ function viewViz(){
   const p=PBY[VZ.id], P=PROBLEMS[VZ.id], B=BEGIN[VZ.id]||{}, S=STORY[VZ.id], pt=PATTERNS[p.pi], idx=PROBS.indexOf(p);
   const sec=(n,title,body)=>`<li class="ls"><span class="ls-n">${n}</span><div class="ls-b"><h3>${title}</h3>${body}</div></li>`;
   return `<div class="vz">
-   <aside class="vz-list" aria-label="Problems">${vizList()}</aside>
+   <aside class="vz-list" aria-label="Problems">${sideTog()}${vizList()}</aside>
    <section class="vz-main">
     <select class="vz-sel" id="vzSel" aria-label="Choose a problem">${vizOpts()}</select>
     <div class="vz-head">
@@ -5025,7 +5056,7 @@ function viewGo(){
   const opts=order.map(k=>{ const l=GO_LESSONS[k]; return `<option value="${k}" ${k===i?'selected':''}>${l.pyToolkit?'Python':l.toolkit?'Go toolkit':'Go day '+(k+1)}: ${esc(l.t)}</option>`; }).join('');
   const done=(!isTK||L.pyToolkit)&&!!state.go[day];
   return `<div class="vz">
-   <aside class="vz-list" aria-label="Lessons"><div class="vl-h">${isPy()?"Python first, then Go (optional)":"Go basics, 14 days"}</div>${list}</aside>
+   <aside class="vz-list" aria-label="Lessons">${sideTog()}<div class="vl-h">${isPy()?"Python first, then Go (optional)":"Go basics, 14 days"}</div>${list}</aside>
    <section class="vz-main">
     <select class="vz-sel" id="goSel" aria-label="Choose a lesson">${opts}</select>
     <div class="vz-head">
@@ -10954,7 +10985,7 @@ function viewFaang(){
       <ol class="pts"><li>Pick a medium you haven't solved. Set a 45-minute timer.</li><li>Say your approach out loud first, then ask an assistant for a specific piece (e.g. "write the heap type").</li><li>Review its code out loud; write 3 test cases including an edge case.</li><li>Fix one thing by hand. Explain the time and space complexity at the end.</li></ol>
       <div class="warnbox"><span class="plain-l">⚠️ Know the rules</span><p>Using AI in a round where it isn't allowed is treated as cheating, and companies use detection tools. Always ask the recruiter which rounds allow it.</p></div>
     </div>`;
-  return `<div class="vz"><aside class="vz-list" aria-label="FAANG track">${list}</aside><section class="vz-main"><select class="vz-sel" id="fgSel" aria-label="Choose a lesson">${opts}</select>${body}</section></div>`;
+  return `<div class="vz"><aside class="vz-list" aria-label="FAANG track">${sideTog()}${list}</aside><section class="vz-main"><select class="vz-sel" id="fgSel" aria-label="Choose a lesson">${opts}</select>${body}</section></div>`;
 }
 
 /* ===================== UI v2: GitHub-style header, language, Review / Interview / Progress ===================== */
@@ -11104,7 +11135,7 @@ function viewInterview(){
 /* ---- PROGRESS ---- */
 let probQuery = "";
 function activityGraph(){
-  const weeks = 18, end = parse(today()), start = new Date(end); start.setDate(start.getDate() - (weeks*7 - 1) - end.getDay());
+  const weeks = window.innerWidth > 1100 ? 52 : window.innerWidth > 820 ? 30 : 18, end = parse(today()), start = new Date(end); start.setDate(start.getDate() - (weeks*7 - 1) - end.getDay());
   let cols = "", total = 0;
   for (let w=0; w<weeks+1; w++){
     let col = "";
@@ -11344,7 +11375,7 @@ function viewSysd(){
     body = `<div class="vz-head"><h2 class="vz-title">Your stories → designs</h2><p class="big">Senior design rounds reward "I've run this in production". Each story below is the anchor for the designs it unlocks.</p></div>
     <div class="gl">${Object.entries(MY_STORIES).map(([k,[t,d]])=>`<div class="sdst"><b>${k} · ${esc(t)}</b><span>${esc(d)}</span>${by[k]?`<div class="row" style="margin-top:6px">${by[k].map(i=>`<button class="btn" data-act="sdt" data-m="sd${i}">${SD[i].story.cast[0][0]} ${esc(SD[i].t)}</button>`).join("")}</div>`:""}</div>`).join("")}</div>`;
   }
-  return `<div class="vz"><aside class="vz-list" aria-label="System design">${list}</aside><section class="vz-main"><select class="vz-sel" id="sdtSel" aria-label="Choose a section">${opts}</select>${body}</section></div>`;
+  return `<div class="vz"><aside class="vz-list" aria-label="System design">${sideTog()}${list}</aside><section class="vz-main"><select class="vz-sel" id="sdtSel" aria-label="Choose a section">${opts}</select>${body}</section></div>`;
 }
 document.addEventListener("click", e=>{
   const a = e.target.closest("[data-act]"); if (!a) return; const act = a.dataset.act;
@@ -14227,6 +14258,16 @@ document.addEventListener("change", e=>{ if (e.target.id!=="loadProg" || !e.targ
       state = deepMerge(blank(), x); state.onboarded = true; saveNow(); RV = null; { const od = document.getElementById("onbDlg"); if (od && od.open) od.close(); } render(); toast("Progress loaded" + (state.name ? ", welcome back " + state.name : "") + "."); }
     catch(err){ toast("That file isn't an Upskill progress file."); } };
   rd.readAsText(f); e.target.value = ""; });
+
+/* ---------- collapsible side list ---------- */
+function sideTog(){ return `<button type="button" class="side-tog" data-ui="sideTog" aria-label="Show or hide the list" title="Show or hide the list ( [ )"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M6 2.5v11"/><path d="M11 6l-2 2 2 2"/></svg><span class="t-hide">Hide list</span><span class="t-show">Show list</span><span class="k">[</span></button>`; }
+(function(){
+  const KEY="upskill-side-off";
+  try{ if(localStorage.getItem(KEY)==="1") document.documentElement.classList.add("side-off"); }catch(e){}
+  const flip=()=>{ const on=document.documentElement.classList.toggle("side-off"); try{ localStorage.setItem(KEY,on?"1":"0"); }catch(e){} };
+  document.addEventListener("click",e=>{ if(e.target.closest('[data-ui="sideTog"]')){ e.preventDefault(); e.stopPropagation(); flip(); } }, true);
+  document.addEventListener("keydown",e=>{ if(e.key!=="[" || e.metaKey||e.ctrlKey||e.altKey) return; const t=e.target; if(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; if(!document.querySelector(".vz-list")) return; flip(); });
+})();
 
 /* ---------- boot ---------- */
 load();
