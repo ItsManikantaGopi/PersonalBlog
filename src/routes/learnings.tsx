@@ -35,17 +35,18 @@ const nav = [
 ];
 
 const primaryCtaClass =
-  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md bg-foreground px-5 py-2.5 font-mono text-sm font-medium text-background shadow-sm transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-lg bg-gradient-to-br from-[#FFC56E] via-[#FFB547] to-[#FF9F43] px-5 py-2.5 font-mono text-sm font-semibold text-[#1A1205] shadow-sm transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 const secondaryCtaClass =
-  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md border border-border bg-background/50 px-5 py-2.5 font-mono text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-foreground hover:bg-surface hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+  "inline-flex min-h-11 items-center justify-center whitespace-nowrap rounded-md border border-border bg-background/50 px-5 py-2.5 font-mono text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-[#60A5FA] hover:bg-surface hover:text-[#60A5FA] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 const tabTriggerClass =
-  "rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 font-mono text-[11px] uppercase tracking-widest text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none";
+  "rounded-none border-b-2 border-transparent bg-transparent px-0 pb-3 font-mono text-[11px] uppercase tracking-widest text-muted-foreground shadow-none transition-colors hover:text-foreground data-[state=active]:border-[#FFB547] data-[state=active]:bg-transparent data-[state=active]:text-[#FFB547] data-[state=active]:shadow-none";
 
 const modules = [
   {
     tab: "viz",
+    color: "#A78BFA",
     index: "01",
     title: "DSA stories",
     detail:
@@ -54,6 +55,7 @@ const modules = [
   },
   {
     tab: "sysd",
+    color: "#60A5FA",
     index: "02",
     title: "System design",
     detail:
@@ -62,6 +64,7 @@ const modules = [
   },
   {
     tab: "go",
+    color: "#2DD4BF",
     index: "03",
     title: "Go basics",
     detail:
@@ -70,6 +73,7 @@ const modules = [
   },
   {
     tab: "plan",
+    color: "#FFB547",
     index: "04",
     title: "6-week plan",
     detail:
@@ -78,6 +82,7 @@ const modules = [
   },
   {
     tab: "practice",
+    color: "#FB7185",
     index: "05",
     title: "Practice rounds",
     detail: "Timed coding and 42-minute design mocks with phase timers, self-scoring and a log.",
@@ -85,6 +90,7 @@ const modules = [
   },
   {
     tab: "faang",
+    color: "#F472B6",
     index: "06",
     title: "FAANG track",
     detail:
@@ -97,7 +103,7 @@ function Learnings() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-6 py-4">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <a href="/" className="shrink-0 font-mono text-sm font-medium tracking-tight">
             <span className="text-primary">~/</span>manikanta
           </a>
@@ -107,7 +113,7 @@ function Learnings() {
                 key={item.href}
                 href={item.href}
                 aria-current={item.current ? "page" : undefined}
-                className={`${item.current ? "text-foreground" : "text-muted-foreground"} font-mono text-[11px] uppercase tracking-widest transition-colors hover:text-foreground`}
+                className={`${item.current ? "text-[#FFB547]" : "text-muted-foreground"} font-mono text-[11px] uppercase tracking-widest transition-colors hover:text-foreground`}
               >
                 {item.label}
               </a>
@@ -121,9 +127,9 @@ function Learnings() {
 
       <main>
         <section className="hero-glow">
-          <div className="mx-auto w-full max-w-5xl px-6 pb-12 pt-16 md:pb-16 md:pt-24">
+          <div className="mx-auto w-full max-w-6xl px-6 pb-12 pt-16 md:pb-16 md:pt-24">
             <span className="rule-label">Resources / Learnings</span>
-            <h1 className="mt-4 max-w-3xl text-4xl font-semibold tracking-tight md:text-5xl">
+            <h1 className="mt-4 max-w-3xl bg-gradient-to-r from-[#FFD18A] via-[#FFB547] to-[#F472B6] bg-clip-text text-4xl font-semibold tracking-tight text-transparent md:text-5xl">
               Learnings
             </h1>
             <p className="mt-4 max-w-2xl text-muted-foreground">
@@ -133,7 +139,7 @@ function Learnings() {
           </div>
         </section>
 
-        <div className="mx-auto w-full max-w-5xl px-6 py-12 md:py-16">
+        <div className="mx-auto w-full max-w-6xl px-6 py-12 md:py-16">
           <Tabs defaultValue="upskill">
             <TabsList className="h-auto w-full justify-start gap-8 rounded-none border-b border-border bg-transparent p-0">
               <TabsTrigger value="upskill" className={tabTriggerClass}>
@@ -170,23 +176,37 @@ function Learnings() {
                   <a
                     key={m.tab}
                     href={`${kitUrl}?tab=${m.tab}`}
-                    className="panel group flex flex-col p-5 transition-all hover:-translate-y-0.5 hover:border-foreground"
+                    style={{ ["--c" as string]: m.color }}
+                    className="panel group relative flex flex-col overflow-hidden rounded-2xl border-t-[3px] border-t-[var(--c)] p-5 transition-all hover:-translate-y-1 hover:border-[var(--c)] hover:shadow-[0_14px_30px_-18px_var(--c)]"
                   >
-                    <span className="font-mono text-xs text-muted-foreground">{m.index}</span>
-                    <h3 className="mt-3 text-lg font-semibold tracking-tight group-hover:text-foreground">
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full opacity-20 blur-2xl transition-opacity group-hover:opacity-40"
+                      style={{ background: m.color }}
+                    />
+                    <span
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-full border font-mono text-xs font-semibold"
+                      style={{ color: m.color, borderColor: m.color, background: `${m.color}22` }}
+                    >
+                      {m.index}
+                    </span>
+                    <h3 className="mt-3 text-lg font-semibold tracking-tight" style={{ color: m.color }}>
                       {m.title}
                     </h3>
                     <p className="mt-2 flex-1 text-sm text-muted-foreground">{m.detail}</p>
                     <span className="mt-4 font-mono text-[11px] uppercase tracking-widest text-muted-foreground">
-                      {m.meta} <span className="text-foreground">→</span>
+                      {m.meta}{" "}
+                      <span className="inline-block transition-transform group-hover:translate-x-1" style={{ color: m.color }}>
+                        →
+                      </span>
                     </span>
                   </a>
                 ))}
               </div>
 
               <p className="mt-8 font-mono text-xs text-muted-foreground">
-                Progress is saved in your browser only. Export or import it from Progress → Settings
-                inside the app.
+                Progress is saved in your browser. Use Save progress at the top of the app to download it as
+                a file, and Load progress to pick up where you left off on any device.
               </p>
             </TabsContent>
 
@@ -209,7 +229,7 @@ function Learnings() {
       </main>
 
       <footer className="border-t border-border">
-        <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-8">
+        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-8">
           <a href="/" className="font-mono text-xs text-muted-foreground hover:text-foreground">
             ← Back to portfolio
           </a>

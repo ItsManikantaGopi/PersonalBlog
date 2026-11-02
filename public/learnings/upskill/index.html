@@ -1308,6 +1308,183 @@ html:not(.side-off) .side-tog .t-show{display:none}
 .hero>*, html[data-site] .hero>*{max-width:none!important;padding-left:0!important;padding-right:0!important}
 .hero .gh-bar{padding:0!important}
 </style>
+
+<style id="ui-colour">
+/* =================== Colour layer: dark + vivid accents (overrides the monochrome look) =================== */
+html[data-site][data-site][data-site][data-site]{
+  --bg:#0B0D13; --canvas:#0B0D13; --surface:#12151D; --surface2:#171B26; --ink:#F3F4F7; --muted:#9AA3B5; --line:#232838; --line2:#1B1F2B;
+  --amber:#FFB547; --teal:#2DD4BF; --violet:#A78BFA; --sky:#60A5FA; --coral:#FB7185; --lime:#A3E635; --pink:#F472B6;
+  --go:var(--amber); --go-soft:rgba(255,181,71,.14);
+  --ok:var(--teal); --ok-soft:rgba(45,212,191,.14);
+  --warn:var(--amber); --warn-soft:rgba(255,181,71,.12);
+  --bad:var(--coral); --bad-soft:rgba(251,113,133,.14);
+  --cell0:#1A1F2B; --cell1:rgba(255,181,71,.35); --cell2:rgba(255,181,71,.65); --cell3:#FFB547;
+  --ag0:#1A1F2B; --ag1:#1F5F57; --ag2:#23978A; --ag3:#2DD4BF; --ag4:#9FF5E9;
+  --btn:#151925; --btn-h:#1C2130; --btn-b:#2A3043; --prim:var(--amber); --prim-h:#FFC56E; --tabline:var(--amber);
+  --hover:#181C28; --sel:rgba(255,181,71,.10);
+  --tc:var(--amber);
+}
+/* colour comes back: remove the greyscale filters */
+html[data-site][data-site][data-site][data-site] :is(#view,#hero,.cm-stagewrap,.cm-card,.art,.sye-e,.hotm,.deck-e,.cast-e,.hook-e,.cl2,.it-e,.banner-e,.cine-art,.cm-art,.cc > span:first-child,.sdw-i span:first-child){filter:none!important}
+html[data-site] body{background:radial-gradient(1200px 600px at 85% -10%, rgba(167,139,250,.08), transparent 60%), radial-gradient(900px 500px at -10% 10%, rgba(45,212,191,.06), transparent 60%), var(--bg);background-attachment:fixed}
+
+/* header: solid, so the panel underneath never shows through while scrolling */
+html[data-site] .site-head{background:var(--bg)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html[data-site] .site-nav a[aria-current]{color:var(--amber)!important}
+html[data-site][data-site][data-site][data-site] .hero{background:linear-gradient(135deg, rgba(255,181,71,.10), rgba(167,139,250,.08) 45%, rgba(45,212,191,.06));border-bottom:1px solid var(--line)}
+html[data-site] .gh-title h1{background:linear-gradient(90deg,#FFD18A,#FFB547 40%,#F472B6);-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-site] .gh-bar span{background:linear-gradient(90deg,var(--teal),var(--sky),var(--violet))!important}
+html[data-site] .gh-counter{border-radius:999px;border-color:var(--line);background:var(--surface)}
+html[data-site] .gh-counter:nth-child(5n+1) b{color:var(--teal)} html[data-site] .gh-counter:nth-child(5n+2) b{color:var(--sky)}
+html[data-site] .gh-counter:nth-child(5n+3) b{color:var(--violet)} html[data-site] .gh-counter:nth-child(5n+4) b{color:var(--amber)} html[data-site] .gh-counter:nth-child(5n+5) b{color:var(--coral)}
+/* collapsible summary panel */
+.hero-tog{display:inline-flex;align-items:center;gap:6px}
+.hero-tog svg{transition:transform .2s}
+html.hero-off .hero-tog svg{transform:rotate(180deg)}
+html.hero-off .hero .gh-sub, html.hero-off .hero .gh-bar{display:none!important}
+html.hero-off .hero .gh-top{padding-bottom:10px}
+
+/* tabs: each section has its own colour */
+html[data-site] .tabs{background:var(--bg)!important}
+.tabs [data-tab="today"]{--tc:var(--amber)} .tabs [data-tab="plan"]{--tc:var(--sky)} .tabs [data-tab="viz"]{--tc:var(--violet)}
+.tabs [data-tab="go"]{--tc:var(--teal)} .tabs [data-tab="faang"]{--tc:var(--pink)} .tabs [data-tab="sysd"]{--tc:var(--sky)}
+.tabs [data-tab="review"]{--tc:var(--lime)} .tabs [data-tab="interview"]{--tc:var(--coral)} .tabs [data-tab="progress"]{--tc:var(--teal)}
+html[data-site][data-site] .tabs button{border-radius:8px 8px 0 0;transition:color .15s, background .15s}
+html[data-site][data-site] .tabs button:hover{color:var(--tc)}
+html[data-site][data-site][data-site] .tabs button[aria-selected="true"]{color:var(--tc)!important;background:color-mix(in oklab, var(--tc) 12%, transparent);box-shadow:inset 0 -2px 0 var(--tc)}
+html[data-site][data-site][data-site][data-site] .tabs button::before{background:transparent!important}
+html[data-site][data-site][data-site][data-site] .tabs button::after{background:var(--tc)!important}
+html[data-site][data-site][data-site][data-site] .tabs button{--tabline:var(--tc)}
+
+/* buttons: friendlier, with a little lift */
+html[data-site][data-site] .btn{border-radius:10px;transition:transform .12s, background .15s, border-color .15s}
+html[data-site][data-site] .btn:hover{transform:translateY(-1px);border-color:color-mix(in oklab, var(--amber) 45%, var(--btn-b))}
+html[data-site][data-site] .btn:active{transform:translateY(0) scale(.98)}
+html[data-site][data-site] .btn.primary{background:linear-gradient(135deg,#FFC56E,#FFB547 55%,#FF9F43);border-color:transparent;color:#1A1205;font-weight:600;box-shadow:0 6px 18px -8px rgba(255,181,71,.6)}
+
+/* panels and boxes: clear edges, coloured top stripe */
+html[data-site][data-site] :is(.panel,.box,.kpi,.loop-c,.tier,.story,.stage-wrap){background:var(--surface);border:1px solid var(--line);border-radius:16px}
+html[data-site][data-site] :is(.panel,.box){position:relative;overflow:hidden}
+html[data-site][data-site] :is(.panel,.box)::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--stripe,linear-gradient(90deg,var(--amber),var(--pink)))}
+html[data-site] :is(.panel,.box):nth-of-type(4n+2){--stripe:linear-gradient(90deg,var(--teal),var(--sky))}
+html[data-site] :is(.panel,.box):nth-of-type(4n+3){--stripe:linear-gradient(90deg,var(--violet),var(--pink))}
+html[data-site] :is(.panel,.box):nth-of-type(4n+4){--stripe:linear-gradient(90deg,var(--sky),var(--violet))}
+html[data-site][data-site] .box-h{border-bottom:1px solid var(--line);background:var(--surface2)}
+html[data-site][data-site] :is(.kpi,.loop-c,.prob,.sdw-i,.vl-i,.tier){transition:transform .15s, border-color .15s, box-shadow .15s}
+html[data-site][data-site] :is(.kpi,.loop-c):hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(0,0,0,.8)}
+html[data-site] .kpi:nth-child(6n+1) b{color:var(--teal)} html[data-site] .kpi:nth-child(6n+2) b{color:var(--sky)} html[data-site] .kpi:nth-child(6n+3) b{color:var(--violet)}
+html[data-site] .kpi:nth-child(6n+4) b{color:var(--amber)} html[data-site] .kpi:nth-child(6n+5) b{color:var(--pink)} html[data-site] .kpi:nth-child(6n+6) b{color:var(--lime)}
+html[data-site] .loop-c:nth-child(1){--tc:var(--sky)} html[data-site] .loop-c:nth-child(2){--tc:var(--violet)} html[data-site] .loop-c:nth-child(3){--tc:var(--teal)}
+html[data-site][data-site] .loop-c{border-top:3px solid var(--tc,var(--amber))}
+html[data-site][data-site] .loop-l{color:var(--tc,var(--amber))}
+html[data-site][data-site][data-site] .loop-c .t{color:var(--muted)!important}
+html[data-site][data-site] .loop-clock{color:var(--amber)}
+html[data-site][data-site] .loop-wk i.on, html[data-site][data-site] .loop-bar i{background:linear-gradient(90deg,var(--teal),var(--sky))}
+
+/* page and section headings */
+html[data-site][data-site] .page-h h2, html[data-site][data-site] .vz-title, html[data-site][data-site] .vz-main h1, html[data-site][data-site] .vz-main > h2{background:linear-gradient(90deg,#FFFFFF,#FFD18A 55%,#F9A8D4);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* numbered lesson sections: line + coloured badge separate every section */
+html[data-site][data-site] .lesson{gap:0!important}
+html[data-site][data-site] .ls{padding:26px 0;border-top:1px solid var(--line)}
+html[data-site][data-site] .ls:first-child{border-top:0;padding-top:8px}
+html[data-site] .ls:nth-child(6n+1){--sc:var(--amber)} html[data-site] .ls:nth-child(6n+2){--sc:var(--sky)} html[data-site] .ls:nth-child(6n+3){--sc:var(--violet)}
+html[data-site] .ls:nth-child(6n+4){--sc:var(--teal)} html[data-site] .ls:nth-child(6n+5){--sc:var(--pink)} html[data-site] .ls:nth-child(6n+6){--sc:var(--lime)}
+html[data-site][data-site][data-site] .ls-n{background:color-mix(in oklab, var(--sc) 18%, transparent)!important;border:1.5px solid var(--sc)!important;color:var(--sc)!important;font-weight:700}
+html[data-site][data-site] .ls-b > h3, html[data-site][data-site] .ls-b .h3row h3{color:var(--ink);position:relative;padding-left:12px}
+html[data-site][data-site] .ls-b > h3::before, html[data-site][data-site] .ls-b .h3row h3::before{content:"";position:absolute;left:0;top:.2em;bottom:.2em;width:4px;border-radius:4px;background:var(--sc)}
+html[data-site][data-site] .jump a, html[data-site][data-site] .jump button{border-radius:999px}
+html[data-site] .jump :is(a,button):nth-child(6n+1){color:var(--amber)} html[data-site] .jump :is(a,button):nth-child(6n+2){color:var(--sky)}
+html[data-site] .jump :is(a,button):nth-child(6n+3){color:var(--violet)} html[data-site] .jump :is(a,button):nth-child(6n+4){color:var(--teal)}
+html[data-site] .jump :is(a,button):nth-child(6n+5){color:var(--pink)} html[data-site] .jump :is(a,button):nth-child(6n+6){color:var(--lime)}
+
+/* worst → better → best */
+html[data-site] .tier:nth-child(1){--tc:var(--coral)} html[data-site] .tier:nth-child(2){--tc:var(--amber)} html[data-site] .tier:nth-child(3){--tc:var(--teal)}
+html[data-site][data-site][data-site] .tier{border-top:3px solid var(--tc)}
+html[data-site][data-site] .tier-k{color:var(--tc)!important}
+html[data-site][data-site][data-site] .tier.on{background:color-mix(in oklab, var(--tc) 12%, var(--surface));border-color:var(--tc)}
+
+/* side list */
+html[data-site][data-site][data-site] .vl-i.on{background:color-mix(in oklab, var(--violet) 16%, transparent);border-color:var(--violet);color:var(--ink)}
+html[data-site][data-site] .vl-i:hover{background:var(--hover)}
+html[data-site][data-site] .vl-h{color:var(--violet)}
+html[data-site][data-site] .side-tog:hover{border-color:var(--violet);color:var(--violet)}
+
+/* animation states, in colour: amber = now, sky = comparing, violet = range, teal = done, coral = removed */
+html[data-site][data-site][data-site] .cl .bx{background:var(--surface2);border-color:var(--line);color:var(--ink)}
+html[data-site][data-site][data-site] .cl.a .bx{background:var(--amber);border-color:var(--amber);color:#1A1205;box-shadow:0 0 0 4px rgba(255,181,71,.18)}
+html[data-site][data-site][data-site] .cl.b .bx{background:rgba(96,165,250,.16);border-color:var(--sky);color:#DBEAFE}
+html[data-site][data-site][data-site] .cl.w .bx{background:rgba(167,139,250,.16);border-color:rgba(167,139,250,.6)}
+html[data-site][data-site][data-site] .cl.ok .bx{background:rgba(45,212,191,.18);border-color:var(--teal);color:#CCFBF1}
+html[data-site][data-site][data-site] .cl.bad .bx{background:rgba(251,113,133,.14);border-color:var(--coral);color:#FECDD3;border-style:dashed}
+html[data-site][data-site][data-site] .cl.barmode .bar{background:#3A4157} html[data-site][data-site][data-site] .cl.barmode.a .bar{background:var(--amber)}
+html[data-site][data-site][data-site] .cl.barmode.ok .bar{background:var(--teal)} html[data-site][data-site][data-site] .cl.barmode.b .bar{background:var(--sky)}
+html[data-site][data-site][data-site] .cl.barmode.bad .bar{background:var(--coral)} html[data-site][data-site][data-site] .cl.barmode.w .bar{background:var(--violet)}
+html[data-site][data-site][data-site] :is(.gc,.ivb){background:var(--surface2);border-color:var(--line);color:var(--ink)}
+html[data-site][data-site][data-site] :is(.gc,.ivb).a{background:var(--amber);border-color:var(--amber);color:#1A1205}
+html[data-site][data-site][data-site] :is(.gc,.ivb).b{background:rgba(96,165,250,.18);border-color:var(--sky)}
+html[data-site][data-site][data-site] :is(.gc,.ivb).w{background:rgba(167,139,250,.18);border-color:var(--violet)}
+html[data-site][data-site][data-site] :is(.gc,.ivb).ok{background:rgba(45,212,191,.2);border-color:var(--teal);border-width:1px}
+html[data-site][data-site][data-site] :is(.gc,.ivb).bad{background:rgba(251,113,133,.14);border-color:var(--coral);color:#FECDD3}
+html[data-site][data-site][data-site] .nd circle{fill:var(--surface2);stroke:#3A4157}
+html[data-site][data-site][data-site] .nd.a circle{fill:var(--amber);stroke:var(--amber)} html[data-site][data-site][data-site] .nd.a .tv{fill:#1A1205}
+html[data-site][data-site][data-site] .nd.b circle{fill:rgba(96,165,250,.25);stroke:var(--sky)}
+html[data-site][data-site][data-site] .nd.w circle{fill:rgba(167,139,250,.25);stroke:var(--violet)}
+html[data-site][data-site][data-site] .nd.ok circle{fill:rgba(45,212,191,.25);stroke:var(--teal)}
+html[data-site][data-site][data-site] .nd.bad circle{fill:rgba(251,113,133,.2);stroke:var(--coral)}
+html[data-site][data-site][data-site] .ge.flow, html[data-site][data-site][data-site] .ge.a{stroke:var(--amber)}
+html[data-site][data-site][data-site] .chip2{background:var(--surface2);border-color:var(--line)}
+html[data-site][data-site][data-site] .chip2.hl{background:rgba(255,181,71,.16);border-color:var(--amber)}
+html[data-site][data-site][data-site] .chip2.res{background:rgba(45,212,191,.16);border-color:var(--teal);color:#CCFBF1}
+html[data-site][data-site][data-site] .chip2.var .v{color:var(--sky)}
+html[data-site][data-site][data-site] .ptr{color:var(--amber)}
+html[data-site][data-site][data-site] .pn-t{color:var(--violet)!important}
+html[data-site][data-site] .sw.a{background:var(--amber)} html[data-site][data-site] .sw.b{background:var(--sky)} html[data-site][data-site] .sw.w{background:var(--violet)}
+html[data-site][data-site] .sw.ok{background:var(--teal)} html[data-site][data-site] .sw.bad{background:var(--coral)}
+/* system diagrams */
+html[data-site][data-site][data-site] .sysn rect{fill:var(--surface2);stroke:#3A4157}
+html[data-site][data-site][data-site] .sysn.a rect{fill:var(--amber);stroke:var(--amber)} html[data-site][data-site][data-site] .sysn.a .sye-t{fill:#1A1205}
+html[data-site][data-site][data-site] .sysn.ok rect{stroke:var(--teal)} html[data-site][data-site][data-site] .sysn.b rect{stroke:var(--sky)}
+html[data-site][data-site][data-site] .sysn.bad rect{stroke:var(--coral)}
+html[data-site][data-site][data-site] .sye.flow{stroke:var(--amber)} html[data-site][data-site][data-site] .syl.flow{fill:var(--amber)}
+
+/* stories and player */
+html[data-site][data-site][data-site] .story{background:linear-gradient(160deg, rgba(167,139,250,.08), var(--surface) 40%)}
+html[data-site][data-site][data-site] .art{background:radial-gradient(70% 90% at 50% 40%, rgba(255,181,71,.10), var(--bg))!important;border-color:var(--line)!important}
+html[data-site][data-site][data-site] .story .plain-l, html[data-site][data-site][data-site] .scene-step{color:var(--violet)!important}
+html[data-site][data-site][data-site] .sdot.on, html[data-site][data-site][data-site] .sdot.done{background:var(--amber)!important}
+html[data-site][data-site][data-site] .cap-n{border-color:var(--amber)!important;color:var(--amber)!important}
+html[data-site][data-site][data-site] .stage-wrap{background:var(--bg)!important}
+html[data-site][data-site] .cm-stagewrap{display:flex;align-items:center;justify-content:center;overflow:auto;padding:18px}
+html[data-site][data-site] .cm-stagewrap > .stage{margin:auto}
+html[data-site][data-site] input[type=range]{accent-color:var(--amber)}
+
+/* chips */
+html[data-site][data-site] .chip.solved{color:var(--teal);border-color:var(--teal)}
+html[data-site][data-site] .chip.struggled{color:var(--amber);border-color:var(--amber)}
+html[data-site][data-site] .chip.hot{color:var(--pink);border-color:var(--pink)}
+
+
+/* side list: bordered panel + clearly visible collapse control */
+html[data-site][data-site][data-site][data-site] .vz-list{background:var(--surface);border:1px solid #2E3550;border-radius:16px;padding:10px 10px 12px;box-shadow:0 10px 30px -20px rgba(0,0,0,.9)}
+html[data-site][data-site][data-site][data-site] .side-tog{margin:0 0 12px;padding:9px 10px;border:1.5px solid var(--violet);border-radius:10px;background:rgba(167,139,250,.14);color:#E4DCFF;font-weight:600;font-size:13px;gap:10px}
+html[data-site][data-site][data-site][data-site] .side-tog:hover{background:var(--violet);color:#160F2E;border-color:var(--violet)}
+.side-tog .st-ic{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--violet);color:#160F2E;flex:none;transition:transform .2s}
+html[data-site][data-site][data-site][data-site] .side-tog:hover .st-ic{background:#160F2E;color:var(--violet)}
+html[data-site][data-site][data-site][data-site] .side-tog .k{border-color:rgba(167,139,250,.5);color:#C4B5FD;opacity:1}
+html.side-off .side-tog .st-ic{transform:rotate(180deg)}
+html.side-off .side-tog .st-ic svg{transform:none!important}
+html[data-site][data-site][data-site][data-site].side-off .vz-list{padding:6px;border-radius:14px}
+html[data-site][data-site][data-site][data-site].side-off .vz{grid-template-columns:54px minmax(0,1fr)}
+html[data-site][data-site][data-site][data-site].side-off .side-tog{width:40px;margin:0;padding:10px 0 14px;align-items:center;font-size:12.5px}
+html.side-off .side-tog .st-ic{writing-mode:horizontal-tb}
+/* small screens: tidy alignment */
+@media (max-width:820px){
+  html[data-site][data-site] .ls{padding:20px 0}
+  html[data-site][data-site] :is(.panel,.box,.story,.stage-wrap){border-radius:14px}
+}
+@media (prefers-reduced-motion:reduce){ html[data-site][data-site] :is(.btn,.kpi,.loop-c){transition:none} }
+</style>
 </head>
 <body>
 <header class="site-head"><div class="wrap">
@@ -14260,13 +14437,253 @@ document.addEventListener("change", e=>{ if (e.target.id!=="loadProg" || !e.targ
   rd.readAsText(f); e.target.value = ""; });
 
 /* ---------- collapsible side list ---------- */
-function sideTog(){ return `<button type="button" class="side-tog" data-ui="sideTog" aria-label="Show or hide the list" title="Show or hide the list ( [ )"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M6 2.5v11"/><path d="M11 6l-2 2 2 2"/></svg><span class="t-hide">Hide list</span><span class="t-show">Show list</span><span class="k">[</span></button>`; }
+function sideTog(){ return `<button type="button" class="side-tog" data-ui="sideTog" aria-label="Show or hide the list" title="Show or hide the list ( [ )"><span class="st-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5 5 8l4.5 4.5"/><path d="M13 3.5 8.5 8l4.5 4.5" opacity=".55"/></svg></span><span class="t-hide">Hide list</span><span class="t-show">Show list</span><span class="k">[</span></button>`; }
 (function(){
   const KEY="upskill-side-off";
   try{ if(localStorage.getItem(KEY)==="1") document.documentElement.classList.add("side-off"); }catch(e){}
   const flip=()=>{ const on=document.documentElement.classList.toggle("side-off"); try{ localStorage.setItem(KEY,on?"1":"0"); }catch(e){} };
   document.addEventListener("click",e=>{ if(e.target.closest('[data-ui="sideTog"]')){ e.preventDefault(); e.stopPropagation(); flip(); } }, true);
   document.addEventListener("keydown",e=>{ if(e.key!=="[" || e.metaKey||e.ctrlKey||e.altKey) return; const t=e.target; if(t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return; if(!document.querySelector(".vz-list")) return; flip(); });
+})();
+
+/* ===================== "Better" approach animations (one per problem) ===================== */
+const IN = id => JSON.parse(JSON.stringify(PROBLEMS[id].input));
+const BTR = {
+"two-sum"(){ const f=rec(), {nums,target}=IN("two-sum");
+  const pairs=nums.map((v,i)=>[v,i]); f(`Pair each value with its original index so we don't lose it when we sort.`, A(nums,{title:'nums'}), R(pairs.map(p=>`${p[0]}@${p[1]}`),{title:'(value @ index)'}));
+  pairs.sort((a,b)=>a[0]-b[0]); const sv=pairs.map(p=>p[0]);
+  f(`Sort by value: ${sv.join(', ')}. Now small numbers sit on the left, big ones on the right.`, A(sv,{title:'sorted values'}));
+  let l=0, r=sv.length-1;
+  while(l<r){ const s=sv[l]+sv[r];
+    if(s===target){ f(`${sv[l]} + ${sv[r]} = ${s}. Found it! Their original indexes are ${pairs[l][1]} and ${pairs[r][1]}.`, A(sv,{title:'sorted values',c:{[l]:'ok',[r]:'ok'},p:{l,r}}), V({sum:s,target}), R([`[${[pairs[l][1],pairs[r][1]].sort((a,b)=>a-b).join(', ')}]`],{title:'answer'})); break; }
+    if(s<target){ f(`${sv[l]} + ${sv[r]} = ${s} is too small, so move the left pointer up to a bigger number.`, A(sv,{title:'sorted values',c:{[l]:'a',[r]:'b'},p:{l,r}}), V({sum:s,target})); l++; }
+    else { f(`${sv[l]} + ${sv[r]} = ${s} is too big, so move the right pointer down to a smaller number.`, A(sv,{title:'sorted values',c:{[l]:'b',[r]:'a'},p:{l,r}}), V({sum:s,target})); r--; } }
+  return f.out; },
+"contains-duplicate"(){ const f=rec(), {nums}=IN("contains-duplicate");
+  f(`Start with the numbers in any order.`, A(nums,{title:'nums'})); const s=[...nums].sort((a,b)=>a-b);
+  f(`Sort them. Equal numbers must now sit side by side.`, A(s,{title:'sorted'}));
+  for(let i=1;i<s.length;i++){ if(s[i]===s[i-1]){ f(`${s[i-1]} and ${s[i]} are neighbours and equal: a duplicate!`, A(s,{title:'sorted',c:{[i-1]:'ok',[i]:'ok'},p:{i}}), R(['true'],{title:'answer'})); break; }
+    f(`Compare neighbours ${s[i-1]} and ${s[i]}: different, keep going.`, A(s,{title:'sorted',c:{[i-1]:'b',[i]:'a'},p:{i}})); }
+  return f.out; },
+"product-of-array-except-self"(){ const f=rec(), {nums}=IN("product-of-array-except-self"), n=nums.length;
+  const L=Array(n).fill('·'), Rr=Array(n).fill('·');
+  f(`Build two helper rows. left[i] = product of everything before i.`, A(nums,{title:'nums'}), A(L,{title:'left'}));
+  let p=1; for(let i=0;i<n;i++){ L[i]=p; f(`left[${i}] = ${p} (everything before index ${i}).`, A(nums,{title:'nums',c:cr(0,i-1,'w',{[i]:'a'})}), A(L,{title:'left',c:{[i]:'ok'}})); p*=nums[i]; }
+  p=1; for(let i=n-1;i>=0;i--){ Rr[i]=p; f(`right[${i}] = ${p} (everything after index ${i}).`, A(nums,{title:'nums',c:cr(i+1,n-1,'w',{[i]:'a'})}), A(L,{title:'left'}), A(Rr,{title:'right',c:{[i]:'ok'}})); p*=nums[i]; }
+  const out=L.map((x,i)=>x*Rr[i]); f(`answer[i] = left[i] × right[i] → ${out.join(', ')}.`, A(L,{title:'left'}), A(Rr,{title:'right'}), A(out,{title:'answer',c:cr(0,n-1,'ok')}));
+  return f.out; },
+"maximum-subarray"(){ const f=rec(), {nums}=IN("maximum-subarray"), n=nums.length;
+  const P=[0]; nums.forEach(x=>P.push(P.at(-1)+x));
+  f(`Prefix sums: P[i] = sum of the first i numbers. Any subarray sum is P[j] − P[i].`, A(nums,{title:'nums'}), A(P,{title:'prefix P',c:{0:'ok'}}));
+  let mn=0, mi=0, best=-Infinity, bi=0, bj=0;
+  for(let j=1;j<=n;j++){ const s=P[j]-P[mi]; if(s>best){ best=s; bi=mi; bj=j; }
+    f(`At P[${j}] = ${P[j]}: best start is the smallest prefix so far (P[${mi}] = ${P[mi]}), giving ${s}.`, A(P,{title:'prefix P',c:{[mi]:'b',[j]:'a'},p:{min:mi,j}}), V({sum:s,best}));
+    if(P[j]<mn){ mn=P[j]; mi=j; } }
+  f(`Best subarray is nums[${bi}..${bj-1}] with sum ${best}.`, A(nums,{title:'nums',c:cr(bi,bj-1,'ok')}), R([best],{title:'answer'}));
+  return f.out; },
+"group-anagrams"(){ const f=rec(), {strs}=IN("group-anagrams"), g=new Map();
+  f(`Anagrams have the same letters, so sorting each word gives them the same key.`, R(strs,{title:'words'}));
+  strs.forEach((w,i)=>{ const k=[...w].sort().join(''); g.set(k,[...(g.get(k)||[]),w]);
+    f(`"${w}" sorted is "${k}", so it goes in the "${k}" group.`, A(strs,{title:'words',c:{[i]:'a'}}), M(g,{title:'key → group',hl:k})); });
+  f(`Each group is one answer: ${[...g.values()].map(v=>'['+v.join(', ')+']').join(' ')}.`, M(g,{title:'key → group'}));
+  return f.out; },
+"top-k-frequent-elements"(){ const f=rec(), {nums,k}=IN("top-k-frequent-elements"), cnt=new Map();
+  nums.forEach((x,i)=>{ cnt.set(x,(cnt.get(x)||0)+1); f(`Count ${x}: now seen ${cnt.get(x)} time(s).`, A(nums,{title:'nums',c:{[i]:'a'}}), M(cnt,{title:'counts',hl:x})); });
+  const h=[]; for(const [v,c] of cnt){ h.push([c,v]); h.sort((a,b)=>a[0]-b[0]);
+    f(`Push ${v} (count ${c}) into a min-heap ordered by count.`, K(h.map(x=>`${x[1]}×${x[0]}`),{title:'min-heap (smallest count first)'}));
+    if(h.length>k){ const out=h.shift(); f(`Heap has more than k = ${k}; drop the least frequent, ${out[1]}.`, K(h.map(x=>`${x[1]}×${x[0]}`),{title:'min-heap (smallest count first)'})); } }
+  f(`What's left are the top ${k}: ${h.map(x=>x[1]).join(', ')}.`, R(h.map(x=>x[1]),{title:'answer'}));
+  return f.out; },
+"longest-consecutive-sequence"(){ const f=rec(), {nums}=IN("longest-consecutive-sequence");
+  f(`Start unsorted.`, A(nums,{title:'nums'})); const s=[...nums].sort((a,b)=>a-b); f(`Sort: runs of consecutive numbers now sit together.`, A(s,{title:'sorted'}));
+  let run=1, best=1, st=0, bs=0;
+  for(let i=1;i<s.length;i++){ if(s[i]===s[i-1]+1){ run++; } else { run=1; st=i; }
+    if(run>best){ best=run; bs=st; }
+    f(s[i]===s[i-1]+1?`${s[i]} follows ${s[i-1]}: the run grows to ${run}.`:`${s[i]} doesn't follow ${s[i-1]}: start a new run.`, A(s,{title:'sorted',c:cr(st,i,'w',{[i]:'a'})}), V({run,best})); }
+  f(`Longest run: ${s.slice(bs,bs+best).join(', ')} (length ${best}).`, A(s,{title:'sorted',c:cr(bs,bs+best-1,'ok')}), R([best],{title:'answer'}));
+  return f.out; },
+"subarray-sum-equals-k"(){ const f=rec(), {nums,k}=IN("subarray-sum-equals-k"), n=nums.length, P=[0]; nums.forEach(x=>P.push(P.at(-1)+x));
+  f(`Build prefix sums so any subarray sum is one subtraction: P[j] − P[i].`, A(nums,{title:'nums'}), A(P,{title:'prefix P'}));
+  let c=0, shown=0;
+  for(let i=0;i<n;i++) for(let j=i+1;j<=n;j++){ const s=P[j]-P[i]; if(s===k) c++;
+    if(shown<10 || s===k){ shown++; f(`nums[${i}..${j-1}]: P[${j}] − P[${i}] = ${s}${s===k?` = k, count it!`:''}`, A(nums,{title:'nums',c:cr(i,j-1,s===k?'ok':'w')}), V({sum:s,k,count:c})); } }
+  f(`Every pair checked with O(1) maths each: ${c} subarrays sum to ${k}. Still O(n²) pairs though.`, R([c],{title:'answer'}));
+  return f.out; },
+"3sum"(){ const f=rec(), {nums}=IN("3sum"), out=new Set();
+  f(`Fix one number, then solve "two sum to −that number" on the rest with a set.`, A(nums,{title:'nums'}));
+  for(let i=0;i<nums.length && f.out.length<22;i++){ const seen=new Set(), need=-nums[i];
+    for(let j=i+1;j<nums.length;j++){ const want=need-nums[j];
+      if(seen.has(want)){ const t=[nums[i],want,nums[j]].sort((a,b)=>a-b).join(','); const fresh=!out.has(t); out.add(t);
+        f(`First ${nums[i]}: at ${nums[j]} we need ${want}, and it's in the set → [${t}]${fresh?'':' (already found)'}.`, A(nums,{title:'nums',c:{[i]:'b',[j]:'ok'}}), K([...seen],{title:'seen'}), R([...out].map(x=>'['+x+']'),{title:'triplets'})); }
+      else f(`First ${nums[i]}: at ${nums[j]} we need ${want}. Not seen yet; add ${nums[j]}.`, A(nums,{title:'nums',c:{[i]:'b',[j]:'a'}}), K([...seen, nums[j]],{title:'seen'}));
+      seen.add(nums[j]); } }
+  f(`Unique triplets: ${[...out].map(x=>'['+x+']').join(' ')}.`, R([...out].map(x=>'['+x+']'),{title:'answer'}));
+  return f.out; },
+"move-zeroes"(){ const f=rec(), {nums}=IN("move-zeroes"), out=[];
+  f(`Make a new array. Copy every non-zero first, in order.`, A(nums,{title:'nums'}), A(out,{title:'new array'}));
+  nums.forEach((x,i)=>{ if(x!==0){ out.push(x); f(`${x} is non-zero: copy it.`, A(nums,{title:'nums',c:{[i]:'a'}}), A(out,{title:'new array',c:{[out.length-1]:'ok'}})); } else f(`Skip the 0 for now.`, A(nums,{title:'nums',c:{[i]:'x'}}), A(out,{title:'new array'})); });
+  while(out.length<nums.length){ out.push(0); } f(`Fill the rest with zeros: ${out.join(', ')}. Works, but uses O(n) extra memory.`, A(out,{title:'new array',c:cr(0,out.length-1,'ok')}));
+  return f.out; },
+"longest-substring-without-repeating-characters"(){ const f=rec(), {s}=IN("longest-substring-without-repeating-characters"), c=chars(s); let best=0, bs=0;
+  for(let i=0;i<c.length;i++){ const set=new Set(); let j=i;
+    while(j<c.length && !set.has(c[j])){ set.add(c[j]); j++; }
+    if(j-i>best){ best=j-i; bs=i; }
+    f(`Start at ${i} ("${c[i]}"): add letters to a set until one repeats${j<c.length?` ("${c[j]}")`:''}. Length ${j-i}.`, A(c,{title:'s',c:cr(i,j-1,'w',j<c.length?{[j]:'bad'}:{}),p:{start:i}}), K([...set],{title:'set'}), V({len:j-i,best})); }
+  f(`Longest: "${c.slice(bs,bs+best).join('')}" (${best}). Each start rescans, so O(n²).`, A(c,{title:'s',c:cr(bs,bs+best-1,'ok')}), R([best],{title:'answer'}));
+  return f.out; },
+"permutation-in-string"(){ const f=rec(), {s1,s2}=IN("permutation-in-string"), m=s1.length, key=[...s1].sort().join(''), c=chars(s2);
+  f(`Sort s1 once: "${key}". Any permutation of s1 sorts to the same thing.`, R([s1],{title:'s1'}), V({key}));
+  for(let i=0;i+m<=c.length;i++){ const w=c.slice(i,i+m).join(''), sw=[...w].sort().join('');
+    f(`Window "${w}" sorts to "${sw}"${sw===key?` = "${key}". Match!`:'. No match.'}`, A(c,{title:'s2',c:cr(i,i+m-1,sw===key?'ok':'w')}), V({window:sw,key}));
+    if(sw===key){ f(`Found a permutation of "${s1}" inside s2.`, R(['true'],{title:'answer'})); break; } }
+  return f.out; },
+"search-in-rotated-sorted-array"(){ const f=rec(), {nums,target}=IN("search-in-rotated-sorted-array"); let lo=0, hi=nums.length-1;
+  f(`Step 1: binary-search for the pivot, the smallest value where the rotation happened.`, A(nums,{title:'nums'}));
+  while(lo<hi){ const mid=(lo+hi)>>1; const right=nums[mid]>nums[hi];
+    f(`mid ${mid} = ${nums[mid]} ${right?'>':'≤'} last ${nums[hi]}, so the pivot is ${right?'right of mid':'at or left of mid'}.`, A(nums,{title:'nums',c:cr(lo,hi,'w',{[mid]:'a'}),p:{lo,mid,hi}}));
+    if(right) lo=mid+1; else hi=mid; }
+  const pv=lo; f(`Pivot at index ${pv} (value ${nums[pv]}). Each side is sorted.`, A(nums,{title:'nums',c:{[pv]:'ok'}}));
+  let L=target>=nums[pv]&&target<=nums.at(-1)?pv:0, H=L===pv?nums.length-1:pv-1;
+  f(`Step 2: ${target} belongs in [${L}..${H}]. Binary search only there.`, A(nums,{title:'nums',c:cr(L,H,'w')}));
+  while(L<=H){ const mid=(L+H)>>1;
+    if(nums[mid]===target){ f(`nums[${mid}] = ${target}. Found!`, A(nums,{title:'nums',c:{[mid]:'ok'},p:{mid}}), R([mid],{title:'answer'})); break; }
+    f(`nums[${mid}] = ${nums[mid]} is ${nums[mid]<target?'too small → go right':'too big → go left'}.`, A(nums,{title:'nums',c:cr(L,H,'w',{[mid]:'a'}),p:{L,mid,H}}));
+    if(nums[mid]<target) L=mid+1; else H=mid-1; }
+  return f.out; },
+"reverse-linked-list"(){ const f=rec(), {vals}=IN("reverse-linked-list"), n=vals.length, nx=vals.map((_,i)=>i+1<n?i+1:-1), st=[];
+  for(let i=0;i<n;i++){ st.push(vals[i]); f(`Recurse into node ${vals[i]}${i<n-1?' and keep going to the end':' — the last node becomes the new head'}.`, L(vals,nx,{c:{[i]:'a'},p:{call:i}}), K(st,{title:'call stack'})); }
+  for(let i=n-2;i>=0;i--){ nx[i+1]=i; nx[i]=-1; st.pop();
+    f(`Back in node ${vals[i]}: make ${vals[i+1]} point back to ${vals[i]}, then cut ${vals[i]}'s old link.`, L(vals,nx,{c:{[i]:'a',[i+1]:'ok'}}), K(st,{title:'call stack'})); }
+  f(`Reversed. Same O(n) time, but the call stack used O(n) memory.`, L(vals,nx,{c:cr(0,n-1,'ok')}));
+  return f.out; },
+"validate-binary-search-tree"(){ const f=rec(), {root}=IN("validate-binary-search-tree"), t=fromLevel(root), out=[], seen=[];
+  const walk=id=>{ if(id<0||!t.n[id]) return; walk(t.n[id][1]); out.push(t.n[id][0]); seen.push(id);
+    f(`In-order (left, node, right) visits ${t.n[id][0]}.`, TR(t,{c:Object.fromEntries(seen.map(x=>[x,x===id?'a':'ok']))}), A(out,{title:'in-order list'})); walk(t.n[id][2]); };
+  walk(t.root);
+  for(let i=1;i<out.length;i++){ if(out[i]<=out[i-1]){ f(`${out[i-1]} then ${out[i]}: not increasing, so this is NOT a valid BST.`, A(out,{title:'in-order list',c:{[i-1]:'bad',[i]:'bad'}}), R(['false'],{title:'answer'})); return f.out; }
+    f(`${out[i-1]} < ${out[i]}: still increasing.`, A(out,{title:'in-order list',c:{[i-1]:'ok',[i]:'a'}})); }
+  f(`The whole list is increasing: valid BST.`, R(['true'],{title:'answer'})); return f.out; },
+"kth-largest-element-in-an-array"(){ const f=rec(), {nums,k}=IN("kth-largest-element-in-an-array"), h=[];
+  nums.forEach((x,i)=>{ h.push(x); h.sort((a,b)=>a-b); let msg=`Push ${x}.`;
+    if(h.length>k){ const o=h.shift(); msg+=` More than k = ${k}, so pop the smallest (${o}).`; }
+    f(msg, A(nums,{title:'nums',c:{[i]:'a'}}), TR(heapTree(h),{c:{0:'b'}}), V({top:h[0]})); });
+  f(`The heap holds the ${k} largest. Its top, ${h[0]}, is the ${ord(k)} largest.`, TR(heapTree(h),{c:{0:'ok'}}), R([h[0]],{title:'answer'}));
+  return f.out; },
+"k-closest-points-to-origin"(){ const f=rec(), {points,k}=IN("k-closest-points-to-origin"), d=p=>p[0]*p[0]+p[1]*p[1]; let h=[];
+  points.forEach((p,i)=>{ h.push(i); h.sort((a,b)=>d(points[b])-d(points[a])); let msg=`Add (${p}) with distance² ${d(p)}.`;
+    if(h.length>k){ const o=h.shift(); msg+=` Too many: drop the farthest, (${points[o]}).`; }
+    f(msg, PT(points,{c:Object.fromEntries(h.map(x=>[x,'ok']).concat([[i,h.includes(i)?'a':'x']]))}), K(h.map(x=>`(${points[x]})·${d(points[x])}`),{title:'max-heap (farthest on top)'})); });
+  f(`Closest ${k}: ${h.map(x=>'('+points[x]+')').join(', ')}.`, PT(points,{c:Object.fromEntries(h.map(x=>[x,'ok']))}), R(h.map(x=>points[x]),{title:'answer'}));
+  return f.out; },
+"merge-k-sorted-lists"(){ const f=rec(), {lists}=IN("merge-k-sorted-lists"); let acc=[...lists[0]];
+  f(`Start with the first list.`, A(acc,{title:'merged so far'}));
+  for(let li=1;li<lists.length;li++){ const b=lists[li], out=[]; let i=0,j=0;
+    while(i<acc.length||j<b.length){ if(j>=b.length||(i<acc.length&&acc[i]<=b[j])) out.push(acc[i++]); else out.push(b[j++]); }
+    f(`Merge in list ${li+1} [${b.join(', ')}] like merging two sorted lists.`, A(acc,{title:'merged so far'}), A(b,{title:`list ${li+1}`}), A(out,{title:'result',c:cr(0,out.length-1,'w')}));
+    acc=out; }
+  f(`Done: ${acc.join(' → ')}. Early items get re-copied every merge, so it costs O(N·k).`, A(acc,{title:'merged',c:cr(0,acc.length-1,'ok')}));
+  return f.out; },
+"task-scheduler"(){ const f=rec(), {tasks,n}=IN("task-scheduler"), cnt=new Map(); tasks.forEach(t=>cnt.set(t,(cnt.get(t)||0)+1));
+  const timeline=[]; let time=0;
+  f(`Count tasks, then each round pick the most-remaining tasks from a max-heap.`, M(cnt,{title:'remaining'}));
+  while([...cnt.values()].some(v=>v>0) && time<30){ const order=[...cnt.entries()].filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+    for(let s=0;s<=n;s++){ const pick=order[s]; if(pick){ cnt.set(pick[0],pick[1]-1); timeline.push(pick[0]); } else if([...cnt.values()].some(v=>v>0)) timeline.push('idle'); else break; time++; }
+    f(`Fill one round of ${n+1} slots with the most frequent tasks; idle if nothing is allowed.`, M(cnt,{title:'remaining'}), A(timeline,{title:'timeline',c:Object.fromEntries(timeline.map((x,i)=>[i,x==='idle'?'x':'ok']))})); }
+  f(`Total time: ${timeline.length} slots.`, R([timeline.length],{title:'answer'})); return f.out; },
+"meeting-rooms-ii"(){ const f=rec(), {intervals}=IN("meeting-rooms-ii"), iv=[...intervals].sort((a,b)=>a[0]-b[0]); const h=[]; let best=0;
+  f(`Sort meetings by start time.`, IV(iv));
+  iv.forEach((m,i)=>{ let msg=`Meeting [${m}] starts at ${m[0]}.`;
+    if(h.length && h[0]<=m[0]){ msg+=` The earliest-ending room is free at ${h[0]}: reuse it.`; h.shift(); } else msg+=` No room is free yet: open a new one.`;
+    h.push(m[1]); h.sort((a,b)=>a-b); best=Math.max(best,h.length);
+    f(msg, IV(iv,{c:{[i]:'a',...Object.fromEntries([...Array(i).keys()].map(x=>[x,'w']))}}), K(h,{title:'room end times (min-heap)'}), V({rooms:h.length,max:best})); });
+  f(`At most ${best} rooms were busy at once.`, R([best],{title:'answer'})); return f.out; },
+"climbing-stairs"(){ const f=rec(), {n}=IN("climbing-stairs"), memo=new Map(), st=[];
+  const go=i=>{ if(i<=1) return 1; if(memo.has(i)){ f(`ways(${i}) is already in the memo: ${memo.get(i)}. No repeat work.`, K(st,{title:'call stack'}), M(memo,{title:'memo',hl:i})); return memo.get(i); }
+    st.push(`ways(${i})`); f(`ways(${i}) = ways(${i-1}) + ways(${i-2}). Ask both.`, K(st,{title:'call stack',hl:st.length-1}), M(memo,{title:'memo'}));
+    const v=go(i-1)+go(i-2); memo.set(i,v); st.pop(); f(`Save ways(${i}) = ${v}.`, K(st,{title:'call stack'}), M(memo,{title:'memo',hl:i})); return v; };
+  const ans=go(n); f(`ways(${n}) = ${ans}. Each value computed once: O(n).`, R([ans],{title:'answer'})); return f.out; },
+"house-robber"(){ const f=rec(), {nums}=IN("house-robber"), memo=new Map(), st=[];
+  const go=i=>{ if(i<0) return 0; if(memo.has(i)){ f(`best(${i}) from memo: ${memo.get(i)}.`, A(nums,{title:'houses',c:{[i]:'b'}}), M(memo,{title:'memo',hl:i})); return memo.get(i); }
+    st.push(`best(${i})`); f(`best(${i}) = max(skip → best(${i-1}), rob ${nums[i]} + best(${i-2})).`, A(nums,{title:'houses',c:{[i]:'a'}}), K(st,{title:'call stack'}));
+    const v=Math.max(go(i-1), nums[i]+go(i-2)); memo.set(i,v); st.pop(); f(`best(${i}) = ${v}. Saved.`, A(nums,{title:'houses',c:{[i]:'ok'}}), M(memo,{title:'memo',hl:i})); return v; };
+  const ans=go(nums.length-1); f(`Most money: ${ans}.`, R([ans],{title:'answer'})); return f.out; },
+"coin-change"(){ const f=rec(), {coins,amount}=IN("coin-change"), memo=new Map(); let calls=0;
+  const go=a=>{ if(a===0) return 0; if(a<0) return Infinity; if(memo.has(a)) return memo.get(a); calls++;
+    let best=Infinity; for(const c of coins) best=Math.min(best, go(a-c)+1); memo.set(a,best);
+    if(f.out.length<14 || a===amount) f(`fewest(${a}) = 1 + min(${coins.map(c=>`fewest(${a-c})`).join(', ')}) = ${best===Infinity?'∞':best}.`, M([...memo].sort((x,y)=>x[0]-y[0]),{title:'memo: amount → coins',hl:a}), V({calls}));
+    return best; };
+  const ans=go(amount); f(`Fewest coins for ${amount}: ${ans===Infinity?-1:ans}. Each amount solved once.`, R([ans===Infinity?-1:ans],{title:'answer'})); return f.out; },
+"longest-increasing-subsequence"(){ const f=rec(), {nums}=IN("longest-increasing-subsequence"), dp=nums.map(()=>1);
+  f(`dp[i] = longest rising chain ending at i. Everyone starts at 1.`, A(nums,{title:'nums'}), A(dp,{title:'dp'}));
+  for(let i=1;i<nums.length;i++){ for(let j=0;j<i;j++) if(nums[j]<nums[i]) dp[i]=Math.max(dp[i],dp[j]+1);
+    const from=[...Array(i).keys()].filter(j=>nums[j]<nums[i]);
+    f(from.length?`${nums[i]} can extend chains ending at ${from.map(j=>nums[j]).join(', ')} → dp[${i}] = ${dp[i]}.`:`Nothing smaller before ${nums[i]}: dp[${i}] stays 1.`, A(nums,{title:'nums',c:Object.fromEntries(from.map(j=>[j,'b']).concat([[i,'a']]))}), A(dp,{title:'dp',c:{[i]:'ok'}})); }
+  const best=Math.max(...dp); f(`Longest is the biggest dp value: ${best}.`, A(dp,{title:'dp',c:{[dp.indexOf(best)]:'ok'}}), R([best],{title:'answer'})); return f.out; },
+"word-break"(){ const f=rec(), {s,wordDict}=IN("word-break"), memo=new Map(), c=chars(s);
+  const go=i=>{ if(i===s.length) return true; if(memo.has(i)){ f(`can(${i}) from memo: ${memo.get(i)}.`, A(c,{title:'s',c:cr(i,c.length-1,'b')}), M(memo,{title:'memo',hl:i})); return memo.get(i); }
+    for(const w of wordDict){ if(s.startsWith(w,i)){ f(`At ${i}, "${w}" fits. Try the rest from ${i+w.length}.`, A(c,{title:'s',c:cr(i,i+w.length-1,'ok')}), M(memo,{title:'memo'})); if(go(i+w.length)){ memo.set(i,true); return true; } } }
+    memo.set(i,false); f(`Nothing works from ${i}: remember can(${i}) = false.`, A(c,{title:'s',c:{[i]:'bad'}}), M(memo,{title:'memo',hl:i})); return false; };
+  const ans=go(0); f(`Can "${s}" be split? ${ans}.`, R([String(ans)],{title:'answer'})); return f.out; },
+"network-delay-time"(){ const f=rec(), {times,n,k}=IN("network-delay-time"), d={}; for(let i=1;i<=n;i++) d[i]=Infinity; d[k]=0; const nodes=[...Array(n)].map((_,i)=>i+1), E=times.map(t=>[t[0],t[1]]);
+  f(`Bellman-Ford: start node ${k} at 0, everyone else at ∞.`, GR(nodes,E,{dir:1,c:{[k]:'ok'},lab:Object.fromEntries(nodes.map(x=>[x,d[x]===Infinity?'∞':d[x]]))}));
+  for(let r=1;r<n;r++){ let ch=false;
+    for(const [u,v,w] of times){ if(d[u]+w<d[v]){ d[v]=d[u]+w; ch=true;
+      f(`Round ${r}: edge ${u}→${v} (${w}) improves node ${v} to ${d[v]}.`, GR(nodes,E,{dir:1,c:{[v]:'a',[u]:'b'},ec:{[u+'-'+v]:'a'},lab:Object.fromEntries(nodes.map(x=>[x,d[x]===Infinity?'∞':d[x]]))})); } }
+    if(!ch){ f(`Round ${r}: nothing changed, so we can stop early.`, GR(nodes,E,{dir:1,lab:Object.fromEntries(nodes.map(x=>[x,d[x]]))})); break; } }
+  const ans=Math.max(...Object.values(d)); f(`The slowest node hears it at ${ans}.`, R([ans===Infinity?-1:ans],{title:'answer'})); return f.out; },
+"unique-paths"(){ const f=rec(), {m,n}=IN("unique-paths"), memo=new Map(), g=[...Array(m)].map(()=>Array(n).fill('·'));
+  const go=(r,c)=>{ if(r===0||c===0){ g[r][c]=1; return 1; } const key=r+','+c; if(memo.has(key)) return memo.get(key);
+    const v=go(r-1,c)+go(r,c-1); memo.set(key,v); g[r][c]=v;
+    f(`paths(${r},${c}) = from above ${g[r-1][c]} + from the left ${g[r][c-1]} = ${v}. Saved in the memo.`, G(g,{c:{[key]:'a',[(r-1)+','+c]:'b',[r+','+(c-1)]:'b'}})); return v; };
+  const ans=go(m-1,n-1); f(`${ans} unique paths to the bottom-right.`, G(g,{c:{[(m-1)+','+(n-1)]:'ok'}}), R([ans],{title:'answer'})); return f.out; },
+"longest-common-subsequence"(){ const f=rec(), {text1:a,text2:b}=IN("longest-common-subsequence"), memo=new Map();
+  const go=(i,j)=>{ if(i===a.length||j===b.length) return 0; const key=i+','+j; if(memo.has(key)) return memo.get(key); let v, msg;
+    if(a[i]===b[j]){ v=1+go(i+1,j+1); msg=`"${a[i]}" matches: 1 + lcs(${i+1},${j+1}) = ${v}.`; }
+    else { v=Math.max(go(i+1,j),go(i,j+1)); msg=`"${a[i]}" ≠ "${b[j]}": best of skipping one side = ${v}.`; }
+    memo.set(key,v); f(msg, A(chars(a),{title:'text1',c:{[i]:a[i]===b[j]?'ok':'a'}}), A(chars(b),{title:'text2',c:{[j]:a[i]===b[j]?'ok':'b'}}), V({['lcs('+i+','+j+')']:v, saved:memo.size})); return v; };
+  const ans=go(0,0); f(`Longest common subsequence length: ${ans}.`, R([ans],{title:'answer'})); return f.out; },
+"edit-distance"(){ const f=rec(), {word1:a,word2:b}=IN("edit-distance"), memo=new Map();
+  const go=(i,j)=>{ if(i===a.length) return b.length-j; if(j===b.length) return a.length-i; const key=i+','+j; if(memo.has(key)) return memo.get(key); let v, msg;
+    if(a[i]===b[j]){ v=go(i+1,j+1); msg=`"${a[i]}" = "${b[j]}": free, move both. ed(${i},${j}) = ${v}.`; }
+    else { const ins=go(i,j+1), del=go(i+1,j), rep=go(i+1,j+1); v=1+Math.min(ins,del,rep); msg=`"${a[i]}" vs "${b[j]}": 1 + min(insert ${ins}, delete ${del}, replace ${rep}) = ${v}.`; }
+    memo.set(key,v); if(f.out.length<16||(i===0&&j===0)) f(msg, A(chars(a),{title:'word1',c:{[i]:'a'}}), A(chars(b),{title:'word2',c:{[j]:'b'}}), V({saved:memo.size})); return v; };
+  const ans=go(0,0); f(`Fewest edits to turn "${a}" into "${b}": ${ans}.`, R([ans],{title:'answer'})); return f.out; },
+"jump-game"(){ const f=rec(), {nums}=IN("jump-game"), n=nums.length, ok=Array(n).fill(false); ok[0]=true;
+  f(`can[i] = can I land on i? Index 0 is yes.`, A(nums,{title:'nums'}), A(ok.map(x=>x?'✓':'·'),{title:'can reach',c:{0:'ok'}}));
+  for(let i=1;i<n;i++){ const from=[...Array(i).keys()].filter(j=>ok[j]&&j+nums[j]>=i); ok[i]=from.length>0;
+    f(ok[i]?`Index ${i} is reachable from ${from.join(', ')}.`:`No reachable index jumps far enough to ${i}.`, A(nums,{title:'nums',c:Object.fromEntries(from.map(j=>[j,'b']).concat([[i,'a']]))}), A(ok.map(x=>x?'✓':'·'),{title:'can reach',c:{[i]:ok[i]?'ok':'bad'}})); }
+  f(`Last index reachable? ${ok[n-1]}.`, R([String(ok[n-1])],{title:'answer'})); return f.out; },
+"find-median-from-data-stream"(){ const f=rec(), {stream}=IN("find-median-from-data-stream"), s=[];
+  stream.forEach(x=>{ let i=0; while(i<s.length&&s[i]<x) i++; s.splice(i,0,x); const n=s.length, med=n%2?s[n>>1]:(s[n/2-1]+s[n/2])/2;
+    f(`Insert ${x} at position ${i} to keep the list sorted (shifting the rest). Median = ${med}.`, A(s,{title:'sorted list',c:Object.assign(n%2?{[n>>1]:'ok'}:{[n/2-1]:'ok',[n/2]:'ok'},{[i]:'a'})}), V({median:med})); });
+  f(`Reading the median is instant, but each insert shifts items: O(n).`); return f.out; },
+"sliding-window-maximum"(){ const f=rec(), {nums,k}=IN("sliding-window-maximum"), h=[], out=[];
+  nums.forEach((x,i)=>{ h.push([x,i]); h.sort((a,b)=>b[0]-a[0]);
+    if(i>=k-1){ while(h[0][1]<=i-k){ h.shift(); } out.push(h[0][0]);
+      f(`Window [${i-k+1}..${i}]: the heap top ${h[0][0]} is inside the window, so it's the max. (Old tops outside the window are thrown away lazily.)`, A(nums,{title:'nums',c:cr(i-k+1,i,'w',{[h[0][1]]:'ok'})}), K(h.map(p=>`${p[0]}@${p[1]}`),{title:'max-heap (value@index)'}), A(out,{title:'maxes'})); }
+    else f(`Push ${x} into the max-heap.`, A(nums,{title:'nums',c:{[i]:'a'}}), K(h.map(p=>`${p[0]}@${p[1]}`),{title:'max-heap (value@index)'})); });
+  f(`Window maxima: ${out.join(', ')}.`, R(out,{title:'answer'})); return f.out; },
+"single-number"(){ const f=rec(), {nums}=IN("single-number"), cnt=new Map();
+  nums.forEach((x,i)=>{ cnt.set(x,(cnt.get(x)||0)+1); f(`Count ${x}: ${cnt.get(x)}.`, A(nums,{title:'nums',c:{[i]:'a'}}), M(cnt,{title:'counts',hl:x})); });
+  const one=[...cnt].find(e=>e[1]===1)[0]; f(`The number with count 1 is ${one}. Works, but needs O(n) memory.`, M(cnt,{title:'counts',hl:one}), R([one],{title:'answer'})); return f.out; },
+};
+(function(){ const base = apFrames; apFrames = function(id, tier){
+  if (tier===1 && BTR[id]){ const X = APX[id]; let fr = [];
+    try { fr = BTR[id](); } catch(e){ fr = []; }
+    if (fr.length){ fr[0].msg = `Better: ${X[2]}. ` + fr[0].msg; fr.push({msg:`Time ${X[4]}, extra space ${X[5]}. Faster than brute force, but there is still a smarter way.`, p:fr.at(-1).p}); return fr.concat(raceFrames(id,1)); } }
+  return base(id, tier); }; })();
+
+/* ---------- collapsible summary panel (Day / stats) ---------- */
+(function(){
+  const KEY="upskill-hero-off";
+  try{ if(localStorage.getItem(KEY)==="1") document.documentElement.classList.add("hero-off"); }catch(e){}
+  const btn=()=>`<button type="button" class="btn hero-tog" data-ui="heroTog" title="Show or hide the summary panel"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 7.5 6 4l3.5 3.5"/></svg><span class="ht-t"></span></button>`;
+  const label=()=>{ document.querySelectorAll(".hero-tog .ht-t").forEach(x=>x.textContent=document.documentElement.classList.contains("hero-off")?"Show summary":"Hide summary"); };
+  const ensure=()=>{ const t=document.querySelector(".hero .gh-tools"); if(t && !t.querySelector(".hero-tog")) t.insertAdjacentHTML("afterbegin", btn()); label(); };
+  const base=afterRender; afterRender=function(){ base(); ensure(); };
+  document.addEventListener("click",e=>{ if(!e.target.closest('[data-ui="heroTog"]')) return; e.preventDefault(); e.stopPropagation();
+    const on=document.documentElement.classList.toggle("hero-off"); try{ localStorage.setItem(KEY,on?"1":"0"); }catch(_){} label(); }, true);
+  setTimeout(ensure,0);
 })();
 
 /* ---------- boot ---------- */
