@@ -1464,6 +1464,20 @@ html[data-site][data-site] .chip.solved{color:var(--teal);border-color:var(--tea
 html[data-site][data-site] .chip.struggled{color:var(--amber);border-color:var(--amber)}
 html[data-site][data-site] .chip.hot{color:var(--pink);border-color:var(--pink)}
 
+
+/* side list: bordered panel + clearly visible collapse control */
+html[data-site][data-site][data-site][data-site] .vz-list{background:var(--surface);border:1px solid #2E3550;border-radius:16px;padding:10px 10px 12px;box-shadow:0 10px 30px -20px rgba(0,0,0,.9)}
+html[data-site][data-site][data-site][data-site] .side-tog{margin:0 0 12px;padding:9px 10px;border:1.5px solid var(--violet);border-radius:10px;background:rgba(167,139,250,.14);color:#E4DCFF;font-weight:600;font-size:13px;gap:10px}
+html[data-site][data-site][data-site][data-site] .side-tog:hover{background:var(--violet);color:#160F2E;border-color:var(--violet)}
+.side-tog .st-ic{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--violet);color:#160F2E;flex:none;transition:transform .2s}
+html[data-site][data-site][data-site][data-site] .side-tog:hover .st-ic{background:#160F2E;color:var(--violet)}
+html[data-site][data-site][data-site][data-site] .side-tog .k{border-color:rgba(167,139,250,.5);color:#C4B5FD;opacity:1}
+html.side-off .side-tog .st-ic{transform:rotate(180deg)}
+html.side-off .side-tog .st-ic svg{transform:none!important}
+html[data-site][data-site][data-site][data-site].side-off .vz-list{padding:6px;border-radius:14px}
+html[data-site][data-site][data-site][data-site].side-off .vz{grid-template-columns:54px minmax(0,1fr)}
+html[data-site][data-site][data-site][data-site].side-off .side-tog{width:40px;margin:0;padding:10px 0 14px;align-items:center;font-size:12.5px}
+html.side-off .side-tog .st-ic{writing-mode:horizontal-tb}
 /* small screens: tidy alignment */
 @media (max-width:820px){
   html[data-site][data-site] .ls{padding:20px 0}
@@ -14423,7 +14437,7 @@ document.addEventListener("change", e=>{ if (e.target.id!=="loadProg" || !e.targ
   rd.readAsText(f); e.target.value = ""; });
 
 /* ---------- collapsible side list ---------- */
-function sideTog(){ return `<button type="button" class="side-tog" data-ui="sideTog" aria-label="Show or hide the list" title="Show or hide the list ( [ )"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="11" rx="2"/><path d="M6 2.5v11"/><path d="M11 6l-2 2 2 2"/></svg><span class="t-hide">Hide list</span><span class="t-show">Show list</span><span class="k">[</span></button>`; }
+function sideTog(){ return `<button type="button" class="side-tog" data-ui="sideTog" aria-label="Show or hide the list" title="Show or hide the list ( [ )"><span class="st-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3.5 5 8l4.5 4.5"/><path d="M13 3.5 8.5 8l4.5 4.5" opacity=".55"/></svg></span><span class="t-hide">Hide list</span><span class="t-show">Show list</span><span class="k">[</span></button>`; }
 (function(){
   const KEY="upskill-side-off";
   try{ if(localStorage.getItem(KEY)==="1") document.documentElement.classList.add("side-off"); }catch(e){}
