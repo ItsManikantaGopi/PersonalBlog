@@ -1,13 +1,14 @@
 export const profile = {
   name: "Manikanta Gopi",
-  role: "Senior Backend & Platform Engineer",
+  role: "Founding Engineer · Backend & Platform",
   tagline: "I build backend systems that stay reliable as they scale.",
   location: "Hyderabad, India",
   description:
     "Backend, platform and infrastructure engineering focused on cost, performance, reliability and systems that remain understandable in production.",
   intro: [
     "I help startups cut cloud spend, fix backend bottlenecks and ship production-ready products — from a fixed-scope review to an end-to-end build.",
-    "My work spans a large Rails platform, Go and NestJS services, real-time systems, media processing, cloud migrations and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
+    "I'm a founding engineer at Praja, a social app for Indian users, and have grown with it since 2021 — from intern to Senior Software Engineer. My work spans a large Rails platform, Go and NestJS services, real-time systems, media processing, cloud migrations and a GitOps-managed Kubernetes fleet across AWS, GCP and Azure.",
+    "Most recently: cut the AWS bill ~30%, shipped on-the-fly WebP delivery for ~6.4M image requests a day, and replaced an OpenAI o3 step with a vision-model pipeline that is ~100× cheaper.",
     "I prefer evidence over architecture theatre: find the real constraint, measure it, make the smallest useful change, and verify what moved.",
   ],
   github: "https://github.com/ItsManikantaGopi",
@@ -22,10 +23,25 @@ export const stats = [
   { value: "~5 yrs", label: "backend engineering", detail: "Nov 2021 → present" },
   { value: "24", label: "services on the fleet", detail: "GitOps-managed on AWS EKS" },
   { value: "3", label: "clouds worked across", detail: "AWS primary, GCP and Azure" },
-  { value: "1", label: "zero-downtime migration", detail: "Azure AKS → AWS EKS, live cutover" },
+  { value: "~30%", label: "off the AWS bill", detail: "≈$600/day → ≈$405–435/day, Oct–Nov 2026" },
 ];
 
 export const results = [
+  {
+    value: "~30% / ~$5.5–6k/mo",
+    label: "AWS bill reduction",
+    detail: "≈$600/day → ≈$405–435/day with Karpenter spot-first pools and caps, right-sizing and GitOps drift fixes. EC2 compute fell from ≈$120/day to $35–60/day.",
+  },
+  {
+    value: "~72% smaller images",
+    label: "WebP delivery at ~6.4M requests/day",
+    detail: "≈200 KB → ≈55 KB per image; CDN transfer down 60–73%; ~$700–760/month saved at our CloudFront rate.",
+  },
+  {
+    value: "~100× cheaper",
+    label: "AI poster ranking (o3 → JEV)",
+    detail: "~$0.074 → ~$0.0007 per creative and 40–120 s → 5–7 s, with better WCAG readability and colour variety.",
+  },
   {
     value: "~$18k → ~$1.8k/mo",
     label: "video processing infrastructure",
@@ -145,7 +161,7 @@ export const problems: Problem[] = [
   {
     title: "Infrastructure costs are too high",
     summary: "Find the expensive workload, storage lifecycle or capacity decision instead of cutting infrastructure blindly.",
-    evidence: "Reduced video-processing infrastructure from roughly $18k/month to ~$1.8k/month and delivered additional DB, S3 and Kubernetes savings.",
+    evidence: "Cut the AWS bill ~30% (≈$600/day → ≈$405–435/day) and video-processing infrastructure from roughly $18k/month to ~$1.8k/month, plus WebP delivery that cut CDN transfer 60–73%.",
     href: "#results",
   },
   {
@@ -191,6 +207,42 @@ export type Project = {
 };
 
 export const projects: Project[] = [
+  {
+    slug: "aws-cost-optimization",
+    title: "Taking ~30% off the AWS bill without touching the product",
+    summary:
+      "≈$600/day to ≈$405–435/day: Karpenter capped at 64 vCPU with spot-first pools after a 192-vCPU on-demand burst, OpenSearch 6 → 4 nodes, paid gp3 IOPS removed (−$265/month), and Helm/Flux drift found and audited across 60 releases — every change checked against Cost Explorer and Savings Plan coverage.",
+    period: "2026",
+    stack: ["AWS EKS", "Karpenter", "EC2 Spot", "Helm", "Flux", "Cost Explorer"],
+    kind: "Infrastructure",
+  },
+  {
+    slug: "webp-delivery",
+    title: "On-the-fly WebP for ~6.4M image requests a day",
+    summary:
+      "The Node.js image service converts the original JPG/PNG from S3 to WebP on request and CloudFront caches it — no backfill. Rolled out internal → 10% → 100% with cohort analytics: images ~72% smaller, CDN transfer down 60–73%, ~$700–760/month saved.",
+    period: "2026",
+    stack: ["Node.js", "CloudFront", "S3", "Ruby on Rails", "Loki"],
+    kind: "Backend",
+  },
+  {
+    slug: "poster-ranking-jev",
+    title: "Measure first, then ask the model: replacing OpenAI o3",
+    summary:
+      "Font and colour ranking for personalized posters: exact WCAG contrast on real pixels, a diverse 24-candidate shortlist, one batched vision-model request. ~100× cheaper, 40–120 s → 5–7 s, more readable picks and more colour variety than o3.",
+    period: "2026",
+    stack: ["Ruby on Rails", "Sidekiq", "Redis", "Vision models", "WCAG"],
+    kind: "ML",
+  },
+  {
+    slug: "realtime-poster-rendering",
+    title: "Realtime poster rendering instead of a batch farm (in review)",
+    summary:
+      "Designed and built on-demand rendering behind JWT-signed CDN URLs, with a browser-free Takumi + sharp renderer at ~9–15 ms per poster vs ~114–300 ms in headless Chrome. Load-tested on pre-production: 75,000 posters at ~57–71/s, 100% success; projected ~$91 → ~$5 per 1M posters.",
+    period: "2026",
+    stack: ["NestJS", "Takumi", "sharp", "Puppeteer", "CloudFront", "JWT"],
+    kind: "Backend",
+  },
   {
     slug: "praja-platform",
     title: "The Rails monolith at the centre of a social platform",
@@ -297,11 +349,15 @@ export const projects: Project[] = [
 export const roles = [
   {
     company: "Circleapp Online Services (Praja)",
-    title: "Senior Software Engineer",
+    title: "Founding Engineer · Senior Software Engineer",
     period: "Apr 2025 – Present",
     summary:
       "Platform and infrastructure ownership alongside product work: the Kubernetes fleet, the media generation pipeline, and the release path everything ships through.",
     highlights: [
+      "Cut the AWS bill ~30% (≈$600/day → ≈$405–435/day, ~$5.5–6k/month) with Karpenter spot-first pools and caps, right-sizing and GitOps drift fixes across 60 Helm releases.",
+      "Shipped on-the-fly WebP delivery for ~6.4M image requests a day: images ~72% smaller, CDN transfer down 60–73%, ~$700–760/month saved.",
+      "Replaced an OpenAI o3 call with a contrast-first vision-model ranking pipeline: ~100× cheaper per creative and 40–120 s → 5–7 s.",
+      "Designed and built realtime poster rendering with a native renderer 6–9× faster than headless Chrome (load-tested on pre-production, in review).",
       "Own the GitOps repository describing ~24 services on the production AWS cluster — Helm charts, per-environment values, automated image bumps on merge.",
       "Reduced video-processing infrastructure from roughly $18k/month to ~$1.8k/month by moving Lambda + FFmpeg workloads to in-house Kubernetes workers.",
       "Optimized database workloads and storage lifecycle, contributing roughly $500/month in DB savings and ~$800 saved in the first month from S3 expiry policies.",
@@ -309,7 +365,7 @@ export const roles = [
       "Migrated queueing infrastructure from Redis to Dragonfly without downtime.",
       "Took background removal from a hosted vendor API to a self-hosted ONNX GPU service in-cluster.",
     ],
-    stack: ["Kubernetes", "Helm", "Terraform", "AWS", "KEDA", "Karpenter", "CircleCI", "Rails", "NestJS", "Go"],
+    stack: ["Kubernetes", "Helm", "Flux", "Terraform", "AWS", "CloudFront", "KEDA", "Karpenter", "Rails", "NestJS", "Go"],
   },
   {
     company: "Circleapp Online Services (Praja)",
@@ -361,19 +417,23 @@ export const skillGroups = [
   },
   {
     name: "Data & storage",
-    items: ["MySQL", "Redis", "MongoDB", "OpenSearch", "PostgreSQL", "S3"],
+    items: ["Aurora MySQL", "Redis", "Redpanda", "MongoDB", "OpenSearch", "PostgreSQL", "S3"],
   },
   {
     name: "Infrastructure",
-    items: ["Kubernetes", "Helm", "Terraform", "Docker", "KEDA", "Karpenter", "Flux / ArgoCD", "APISIX"],
+    items: ["Kubernetes", "Helm", "Terraform", "Docker", "KEDA", "Karpenter", "HPA", "Flux / ArgoCD", "CloudFront", "FinOps"],
   },
   {
     name: "Cloud",
     items: ["AWS", "GCP", "Azure"],
   },
   {
+    name: "Media & applied AI",
+    items: ["sharp / libvips", "Puppeteer", "WebP / JPEG / PNG", "OpenAI API", "Vision models", "ONNX Runtime", "WCAG contrast"],
+  },
+  {
     name: "Delivery & observability",
-    items: ["CircleCI", "GitHub Actions", "New Relic", "Prometheus + Grafana", "Loki", "Velero"],
+    items: ["CircleCI", "GitHub Actions", "New Relic", "Prometheus + Grafana", "Loki", "Tempo", "Load testing"],
   },
 ];
 
