@@ -30,7 +30,6 @@ const nav = [
   { href: "/#products", label: "Products" },
   { href: "/#consulting", label: "Services" },
   { href: "/#experience", label: "Experience" },
-  { href: "/learnings", label: "Learnings", current: true },
   { href: "/#contact", label: "Contact" },
 ];
 
