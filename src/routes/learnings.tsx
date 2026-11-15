@@ -25,9 +25,8 @@ export const Route = createFileRoute("/learnings")({
   component: Learnings,
 });
 
-const nav = [
+const nav: { href: string; label: string; current?: boolean }[] = [
   { href: "/#work", label: "Work" },
-  { href: "/#products", label: "Products" },
   { href: "/#consulting", label: "Services" },
   { href: "/#experience", label: "Experience" },
   { href: "/#contact", label: "Contact" },

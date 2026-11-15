@@ -10,14 +10,13 @@ import {
   education,
   serviceOffer,
   problems,
-  products,
   engagementSteps,
 } from "@/data/portfolio";
 
 const siteUrl = profile.site;
 const pageTitle = "Manikanta Gopi — Senior Backend & Platform Engineer";
 const pageDescription =
-  "Backend, cloud and Kubernetes engineer for startups: infrastructure cost reviews, architecture reviews, AWS migrations, MVP builds and WhatsApp API integrations.";
+  "Backend, cloud and Kubernetes engineer for startups: infrastructure cost reviews, architecture reviews, Kubernetes and AWS migrations.";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -71,7 +70,6 @@ const nav = [
   { href: "#problems", label: "Problems" },
   { href: "#results", label: "Results" },
   { href: "#work", label: "Work" },
-  { href: "#products", label: "Products" },
   { href: "#consulting", label: "Services" },
   { href: "#experience", label: "Experience" },
   { href: "#contact", label: "Contact" },
@@ -280,41 +278,8 @@ function Portfolio() {
         </Section>
 
         <Section
-          id="products"
-          index="04"
-          title="Products I've built"
-          lead="Alongside client and employer work, I design, build and run my own products end to end — client, API, data, infrastructure and launch."
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            {products.map((product) => (
-              <a
-                key={product.name}
-                href={product.href}
-                target="_blank"
-                rel="noreferrer"
-                className="panel group flex flex-col p-6 transition-colors hover:border-primary/60"
-              >
-                <div className="flex items-center justify-between gap-4">
-                  <span className="font-mono text-[11px] uppercase tracking-widest text-accent">{product.company}</span>
-                  <span className="font-mono text-[11px] text-muted-foreground">{product.status}</span>
-                </div>
-                <h3 className="mt-4 text-lg font-semibold tracking-tight group-hover:text-primary">
-                  {product.name} <span aria-hidden="true">↗</span>
-                </h3>
-                <p className="mt-3 flex-1 text-sm leading-relaxed text-muted-foreground">{product.summary}</p>
-                <div className="mt-5 flex flex-wrap gap-1.5">
-                  {product.stack.map((s) => (
-                    <Tag key={s}>{s}</Tag>
-                  ))}
-                </div>
-              </a>
-            ))}
-          </div>
-        </Section>
-
-        <Section
           id="consulting"
-          index="05"
+          index="04"
           title="Services"
           lead="Fixed-scope engagements for startups and product teams — from a focused review of an expensive or unreliable system to a complete product build."
         >
@@ -348,7 +313,7 @@ function Portfolio() {
           <div className="mt-6 panel flex flex-col gap-5 p-6 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="font-mono text-xs uppercase tracking-widest text-primary">Start with the problem</p>
-              <h3 className="mt-2 text-xl font-semibold tracking-tight">Bring the architecture, the bottleneck, the cloud bill or the product idea.</h3>
+              <h3 className="mt-2 text-xl font-semibold tracking-tight">Bring the architecture, the bottleneck, or the cloud bill.</h3>
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
                 Send the context you already have. I reply within one working day and tell you whether a focused engagement makes sense before proposing any larger work.
               </p>
@@ -364,7 +329,7 @@ function Portfolio() {
           </div>
         </Section>
 
-        <Section id="experience" index="06" title="Experience">
+        <Section id="experience" index="05" title="Experience">
           <ol className="space-y-10">
             {roles.map((r) => (
               <li key={r.title + r.period} className="grid gap-4 border-l border-border pl-6 md:grid-cols-[200px_1fr] md:gap-8">
@@ -394,7 +359,7 @@ function Portfolio() {
           </ol>
         </Section>
 
-        <Section id="skills" index="07" title="Toolkit" lead="The current stack is the result of solving the problems above, not the product itself.">
+        <Section id="skills" index="06" title="Toolkit" lead="The current stack is the result of solving the problems above, not the product itself.">
           <div className="grid gap-4 md:grid-cols-3">
             {skillGroups.map((g) => (
               <div key={g.name} className="panel p-5 transition-colors hover:border-primary/50">
@@ -420,7 +385,7 @@ function Portfolio() {
 
         <Section
           id="contact"
-          index="08"
+          index="07"
           title="Let's work together"
           lead="For backend, platform, infrastructure and focused technical consulting conversations."
         >
@@ -452,7 +417,6 @@ function Portfolio() {
                 <li className="flex gap-3"><span className="text-primary" aria-hidden="true">✓</span> Backend bottlenecks and scaling</li>
                 <li className="flex gap-3"><span className="text-primary" aria-hidden="true">✓</span> Kubernetes and cloud decisions</li>
                 <li className="flex gap-3"><span className="text-primary" aria-hidden="true">✓</span> Architecture and reliability reviews</li>
-                <li className="flex gap-3"><span className="text-primary" aria-hidden="true">✓</span> MVPs and WhatsApp API integrations</li>
               </ul>
             </div>
           </div>
@@ -478,7 +442,7 @@ function Portfolio() {
         <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-4 px-6">
           <div>
             <p className="font-mono text-sm font-medium"><span className="text-primary">~/</span>{profile.name}</p>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">Backend systems · Cloud infrastructure · Product builds</p>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">Backend systems · Cloud infrastructure · Cost &amp; reliability</p>
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <a href={`mailto:${profile.email}`} className="font-mono text-xs text-muted-foreground transition-colors hover:text-primary">{profile.email}</a>
